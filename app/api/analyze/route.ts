@@ -25,6 +25,10 @@ export async function POST(request: Request) {
 
 Обязательные правила:
 - Разделяй задания по номерам, заголовкам и разным требованиям. Не объединяй несколько упражнений в одно.
+- Строго разделяй четыре педагогических этапа. Поля instruction, simplerInstruction и comprehensionQuestion относятся ТОЛЬКО к пониманию формулировки задания — что нужно сделать и какой результат получить. В них нельзя объяснять правило, критерий выбора, способ решения или спрашивать «как решить».
+- instruction должна звучать как естественная фраза родителя, обращённая к ребёнку: используй «тебе нужно», «нужно» или повелительную форму. Никогда не начинай её словами «ребёнку нужно».
+- comprehensionQuestion проверяет только понимание инструкции. Ребёнок должен суметь ответить на него сразу после instruction, ещё не зная правила. Хорошие вопросы: «Что нужно сделать в каждом предложении?», «Куда нужно записать слова?», «Что нужно найти в задаче?». Плохие вопросы: «Как понять, какой ответ правильный?», «Как решить?», «Почему здесь нужен the?».
+- Поле rule объясняет, КАК принять решение или выполнить действие. Не повторяй в rule формулировку задания.
 - Для каждого задания дай 3–4 methodSteps, подходящих именно его форме и смыслу.
 - guidedSteps должны провести через полный способ на ОДНОМ минимальном элементе настоящего задания. Обычно 2–4 смысловых шага.
 - Для списка однотипных пунктов выбери один простой показательный пункт из самого задания. Для одной большой задачи вместе пройди только первые смысловые этапы, не решая всё. Для творческой работы помоги с замыслом и планом, но не пиши готовую работу.
@@ -63,10 +67,36 @@ export async function POST(request: Request) {
 
     const raw = result?.choices?.[0]?.message?.content;
     if (!raw) throw new Error("Модель вернула пустой ответ");
-    const analysis = typeof raw === "string" ? JSON.parse(raw) : raw;
+    const parsed = (typeof raw === "string" ? JSON.parse(raw) : raw) as Record<string, unknown>;
+    const analysis = normalizeParentSpeech(parsed);
     return NextResponse.json({ analysis });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Не удалось обработать задание";
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+function normalizeParentSpeech(analysis: Record<string, unknown>) {
+  if (!Array.isArray(analysis.tasks)) return analysis;
+
+  return {
+    ...analysis,
+    tasks: analysis.tasks.map((rawTask) => {
+      if (!rawTask || typeof rawTask !== "object") return rawTask;
+      const task = rawTask as Record<string, unknown>;
+      return {
+        ...task,
+        instruction: addressChildDirectly(task.instruction),
+        simplerInstruction: addressChildDirectly(task.simplerInstruction),
+      };
+    }),
+  };
+}
+
+function addressChildDirectly(value: unknown) {
+  if (typeof value !== "string") return value;
+  return value
+    .replace(/^Реб[ёе]нку нужно\s*/i, "Тебе нужно ")
+    .replace(/^Реб[ёе]нок должен\s*/i, "Тебе нужно ")
+    .replace(/^Ученик должен\s*/i, "Тебе нужно ");
 }

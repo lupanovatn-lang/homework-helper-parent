@@ -121,7 +121,7 @@ function TaskPicker({ tasks, preview, completed, onBack, onChoose }: { tasks: Ho
     {preview && <a className="photo-preview" href={preview} target="_blank" rel="noreferrer"><img src={preview} alt="Фотография домашнего задания" /><span><ImageIcon size={18} /> Открыть фото</span></a>}
     <div className="task-cards">{tasks.map((item, index) => { const done = completed.includes(index); const active = index === (next < 0 ? 0 : next); return <button key={`${item.title}-${index}`} className={`task-card ${active ? "active" : ""} ${done ? "done" : ""}`} onClick={() => onChoose(index)}><span className="task-index">{done ? <Check size={17} weight="bold" /> : index + 1}</span><span><strong>Задание {index + 1}</strong><small>{item.shortTitle}</small></span><span className="task-status">{done ? "Готово" : active ? "Начать" : "Выбрать"} <ArrowRight size={16} /></span></button>; })}</div>
     {next >= 0 ? <button className="primary-button flow-primary" onClick={() => onChoose(next)}>Начать задание {next + 1} <ArrowRight size={21} weight="bold" /></button> : <button className="primary-button flow-primary" onClick={onBack}>Завершить разбор <Check size={21} weight="bold" /></button>}
-    <p className="flow-note"><Sparkle size={16} /> Для каждого задания: объяснить → правило → вместе → самостоятельно</p>
+    <p className="flow-note"><Sparkle size={16} /> Для каждого задания: инструкция → правило → вместе → самостоятельно</p>
   </FlowShell>;
 }
 
@@ -152,11 +152,11 @@ function LearningFlow({ task, taskIndex, taskCount, preview, onBack, onComplete 
 }
 
 function StageOne({ task, simple, onSimple, onNext }: { task: HomeworkTask; simple: boolean; onSimple: () => void; onNext: () => void }) {
-  return <section className="stage-content"><p className="stage-label">Шаг 1 из 4</p><h1>Объясните, что нужно сделать</h1><div className="speech-card"><span>Скажите ребёнку</span><p>«{simple ? task.simplerInstruction : task.instruction}»</p></div><div className="question-card"><Question size={23} /><div><span>Спросите ребёнка</span><p>{task.comprehensionQuestion}</p></div></div><button className="primary-button flow-primary" onClick={onNext}>Ребёнок понял <ArrowRight size={20} weight="bold" /></button>{!simple && <button className="secondary-button flow-secondary" onClick={onSimple}>Объяснить ещё проще</button>}<p className="flow-note"><Lightbulb size={16} /> Дальше напомним правило и способ действия</p></section>;
+  return <section className="stage-content"><p className="stage-label">Шаг 1 из 4 · Инструкция</p><h1>Объясните инструкцию</h1><div className="speech-card"><span>Скажите ребёнку</span><p>«{simple ? task.simplerInstruction : task.instruction}»</p></div><div className="question-card"><Question size={23} /><div><span>Проверьте понимание инструкции</span><p>{task.comprehensionQuestion}</p></div></div><button className="primary-button flow-primary" onClick={onNext}>Инструкция понятна <ArrowRight size={20} weight="bold" /></button>{!simple && <button className="secondary-button flow-secondary" onClick={onSimple}>Сказать ещё проще</button>}<p className="flow-note"><Lightbulb size={16} /> Дальше напомним правило и способ действия</p></section>;
 }
 
 function StageTwo({ task, onBack, onNext }: { task: HomeworkTask; onBack: () => void; onNext: () => void }) {
-  return <section className="stage-content"><p className="stage-label">Шаг 2 из 4</p><h1>Напомните правило и способ</h1><div className="speech-card rule"><span>Скажите ребёнку</span><strong>{task.rule.title}</strong><p>{task.rule.text}</p></div><div className="method-card"><span>Как делать</span><MethodTrail steps={task.methodSteps} active={-1} /></div><button className="primary-button flow-primary" onClick={onNext}>Выполнить один пункт вместе <ArrowRight size={20} weight="bold" /></button><button className="text-link flow-back" onClick={onBack}>Вернуться к объяснению задания</button><p className="flow-note"><Lightbulb size={16} /> Дальше применим этот способ к настоящему заданию</p></section>;
+  return <section className="stage-content"><p className="stage-label">Шаг 2 из 4</p><h1>Напомните правило и способ</h1><div className="speech-card rule"><span>Скажите ребёнку</span><strong>{task.rule.title}</strong><p>{task.rule.text}</p></div><div className="method-card"><span>Как делать</span><MethodTrail steps={task.methodSteps} active={-1} /></div><button className="primary-button flow-primary" onClick={onNext}>Выполнить один пункт вместе <ArrowRight size={20} weight="bold" /></button><button className="text-link flow-back" onClick={onBack}>Вернуться к инструкции</button><p className="flow-note"><Lightbulb size={16} /> Дальше применим этот способ к настоящему заданию</p></section>;
 }
 
 function MethodTrail({ steps, active }: { steps: Array<{ title: string }>; active: number }) {
@@ -164,7 +164,7 @@ function MethodTrail({ steps, active }: { steps: Array<{ title: string }>; activ
 }
 
 function Route({ stage }: { stage: number }) {
-  const labels = ["Объяснить", "Правило", "Вместе", "Сам"];
+  const labels = ["Инструкция", "Правило", "Вместе", "Сам"];
   return <nav className="learning-route" aria-label="Этапы объяснения">{labels.map((label, index) => { const number = index + 1; return <div key={label} className={number === stage ? "active" : number < stage ? "done" : ""}><span>{number < stage ? <Check size={12} weight="bold" /> : number}</span><small>{label}</small></div>; })}</nav>;
 }
 
