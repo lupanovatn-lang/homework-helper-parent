@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "X-OpenRouter-Title": "Помощь с домашним заданием",
+        "X-OpenRouter-Title": "Homework Helper for Parents",
       },
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL || "openai/gpt-5.2",
