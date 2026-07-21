@@ -24,7 +24,10 @@ export async function POST(request: Request) {
       : `Распознай ВСЕ отдельные задания на фото или в тексте и создай для каждого адаптивный сценарий помощи родителю. Верни JSON только такого вида: {"tasks":[{"title":"полное короткое название","shortTitle":"2–6 слов для списка","instruction":"как родителю простыми словами объяснить ребёнку, что требуется","simplerInstruction":"ещё более простая версия инструкции","comprehensionQuestion":"вопрос, проверяющий понимание инструкции","rule":{"title":"главное правило в 3–8 словах","text":"одно простое объяснение"},"methodType":"steps или decision","methodSteps":[{"title":"короткое действие","text":"необязательное пояснение"}],"decisionGuide":{"start":"с чего начать проверку","questions":[{"question":"короткий вопрос да/нет","yes":"что сделать при ответе да","no":"что сделать при ответе нет"}]},"knowledgeAid":{"title":"что можно быстро вспомнить","type":"table, list или examples","columns":["до 3 коротких заголовков"],"rows":[["ячейки справочной таблицы"]],"items":["элементы списка или примеры"]},"guidedTitle":"какой реальный элемент задания делаем вместе","guidedSteps":[{"title":"название смыслового шага","prompt":"конкретный вопрос или действие для ребёнка","display":"необязательный объект работы: слово, выражение, фрагмент","options":["2–4 коротких варианта, только если естественны"],"correctOption":"точная строка одного варианта","hint":"одна мягкая подсказка без полного ответа","success":"коротко почему ответ верный и что поняли"}],"independentInstruction":"короткая естественная фраза ребёнку: сделать остальные пункты так же и при необходимости смотреть в памятку"}]}.
 
 Обязательные правила:
-- Разделяй задания по номерам, заголовкам и разным требованиям. Не объединяй несколько упражнений в одно.
+- Сначала определи границы заданий. Новое задание существует только при отдельной инструкции или явной метке «Задание N», «Упражнение N», «№ N» с собственным требованием.
+- Строки, столбцы, предложения, примеры, слова, пункты внутри одной таблицы и подпункты под одной общей инструкцией — это части ОДНОГО задания. Никогда не создавай из них отдельные tasks.
+- Если на фото одна инструкция и под ней несколько строк или групп примеров, верни ровно один task и разбирай один показательный элемент, а остальные оставь для самостоятельной работы.
+- Перед ответом перепроверь количество tasks: у каждого должна быть собственная формулировка того, что требуется сделать. Не объединяй только действительно разные упражнения.
 - Строго разделяй четыре педагогических этапа. Поля instruction, simplerInstruction и comprehensionQuestion относятся ТОЛЬКО к пониманию формулировки задания — что нужно сделать и какой результат получить. В них нельзя объяснять правило, критерий выбора, способ решения или спрашивать «как решить».
 - instruction должна звучать как естественная фраза родителя, обращённая к ребёнку: используй «тебе нужно», «нужно» или повелительную форму. Никогда не начинай её словами «ребёнку нужно».
 - comprehensionQuestion проверяет только понимание инструкции. Ребёнок должен суметь ответить на него сразу после instruction, ещё не зная правила. Хорошие вопросы: «Что нужно сделать в каждом предложении?», «Куда нужно записать слова?», «Что нужно найти в задаче?». Плохие вопросы: «Как понять, какой ответ правильный?», «Как решить?», «Почему здесь нужен the?».
@@ -73,12 +76,29 @@ export async function POST(request: Request) {
     const raw = result?.choices?.[0]?.message?.content;
     if (!raw) throw new Error("Модель вернула пустой ответ");
     const parsed = (typeof raw === "string" ? JSON.parse(raw) : raw) as Record<string, unknown>;
-    const analysis = normalizeParentSpeech(parsed);
+    const analysis = collapseFalseLineSplits(normalizeParentSpeech(parsed));
     return NextResponse.json({ analysis });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Не удалось обработать задание";
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+function collapseFalseLineSplits(analysis: Record<string, unknown>) {
+  if (!Array.isArray(analysis.tasks) || analysis.tasks.length < 2) return analysis;
+  const tasks = analysis.tasks.filter((task): task is Record<string, unknown> => Boolean(task && typeof task === "object"));
+  if (tasks.length !== analysis.tasks.length) return analysis;
+
+  const looksLikeRows = tasks.every((task) => {
+    const label = `${String(task.title || "")} ${String(task.shortTitle || "")}`;
+    return /(?:строка|ряд)\s*№?\s*\d+/i.test(label);
+  });
+  if (!looksLikeRows) return analysis;
+
+  const first = { ...tasks[0] };
+  first.title = String(first.title || "Задание").replace(/(?:для\s+)?(?:строки|строка|ряда|ряд)\s*№?\s*\d+/gi, "").replace(/\s{2,}/g, " ").trim() || "Разбираем задание";
+  first.shortTitle = "Все строки задания";
+  return { ...analysis, tasks: [first] };
 }
 
 function normalizeParentSpeech(analysis: Record<string, unknown>) {
