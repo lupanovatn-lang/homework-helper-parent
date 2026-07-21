@@ -50,6 +50,7 @@ button { -webkit-tap-highlight-color:transparent; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .promise { margin-top:12px; display:flex; align-items:center; justify-content:center; gap:9px; color:#5a6a87; font-size:10.5px; line-height:1.38; font-weight:600; }
 .promise span { width:34px; height:34px; border-radius:50%; background:#dcffa0; color:#70b80b; display:grid; place-items:center; }
+.error-message { margin:8px 0 -4px; text-align:center; color:#b42318; font-size:11px; line-height:1.4; }
 .visually-hidden { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
 .result-screen { padding-bottom:22px; }
 .result-topbar { justify-content:space-between; }

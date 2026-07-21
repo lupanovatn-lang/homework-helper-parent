@@ -8,6 +8,14 @@ import {
 
 const SAMPLE_TASK = "Вычисли: 48 : 6 + 7 × 3. Объясни порядок действий.";
 type Mode = "explain" | "check";
+type Analysis = {
+  title: string;
+  intro: string;
+  summary?: string;
+  steps?: Array<{ title: string; text: string }>;
+  issue?: { title: string; text: string };
+  parentQuestion?: string;
+};
 
 export function HomeworkApp() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -17,6 +25,8 @@ export function HomeworkApp() {
   const [task, setTask] = useState("");
   const [screen, setScreen] = useState<"start" | "result">("start");
   const [loading, setLoading] = useState(false);
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [error, setError] = useState("");
   const hasTask = Boolean(file || task.trim());
 
   function chooseFile(event: React.ChangeEvent<HTMLInputElement>) {
@@ -24,10 +34,26 @@ export function HomeworkApp() {
     if (picked) { setFile(picked); setTask(""); setShowText(false); }
   }
 
-  function begin() {
+  async function begin() {
     if (!hasTask) { setShowText(true); setTask(SAMPLE_TASK); return; }
     setLoading(true);
-    window.setTimeout(() => { setLoading(false); setScreen("result"); }, 850);
+    setError("");
+    try {
+      const image = file ? await fileToDataUrl(file) : null;
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode, task: task.trim(), image }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Не удалось разобрать задание");
+      setAnalysis(data.analysis);
+      setScreen("result");
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Не удалось разобрать задание");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function reset() { setScreen("start"); setFile(null); setTask(""); setShowText(false); }
@@ -42,10 +68,10 @@ export function HomeworkApp() {
         <div className="result-heading">
           <div className="result-icon"><Sparkle size={25} weight="fill" /></div>
           <p className="eyebrow">{mode === "explain" ? "План объяснения" : "Проверка решения"}</p>
-          <h1>{mode === "explain" ? "Объясните ребёнку по шагам" : "Вот что стоит проверить"}</h1>
-          <p>{mode === "explain" ? "Не называйте ответ сразу — начните с вопроса." : "Покажите ребёнку место ошибки и предложите исправить самому."}</p>
+          <h1>{analysis?.title || (mode === "explain" ? "Объясните ребёнку по шагам" : "Вот что стоит проверить")}</h1>
+          <p>{analysis?.intro || (mode === "explain" ? "Не называйте ответ сразу — начните с вопроса." : "Покажите ребёнку место ошибки и предложите исправить самому.")}</p>
         </div>
-        {mode === "explain" ? <ExplainResult /> : <CheckResult />}
+        {mode === "explain" ? <ExplainResult analysis={analysis} /> : <CheckResult analysis={analysis} />}
         <button className="primary-button compact" onClick={reset}>Разобрать другое задание <ArrowRight size={20} weight="bold" /></button>
       </section></main>
     );
@@ -79,6 +105,7 @@ export function HomeworkApp() {
         {mode === "check" && <p className="context-note"><Camera size={16} /> Добавьте фото задания вместе с решением ребёнка</p>}
       </section>
       <button className="primary-button" onClick={begin} disabled={loading}><span>{loading ? "Разбираем…" : "Начать"}</span>{loading ? <span className="spinner" /> : <ArrowRight size={25} weight="bold" />}</button>
+      {error && <p className="error-message" role="alert">{error}</p>}
       <div className="promise"><span><Plant size={23} weight="fill" /></span>Не выдаём готовый ответ —<br /> помогаем ребёнку понять</div>
     </section></main>
   );
@@ -88,10 +115,24 @@ function ModeCard({ selected, onClick, icon, title, text }: { selected: boolean;
   return <button className={`mode-card ${selected ? "selected" : ""}`} onClick={onClick} role="radio" aria-checked={selected}>{selected && <span className="selected-check"><Check size={13} weight="bold" /></span>}<span className="mode-icon">{icon}</span><strong>{title}</strong><small>{text}</small></button>;
 }
 
-function ExplainResult() {
-  return <div className="steps-list"><div className="step-row"><span>1</span><div><strong>Спросите про порядок действий</strong><p>«Какое действие здесь нужно выполнить первым? Почему?»</p></div></div><div className="step-row"><span>2</span><div><strong>Разберите выражение на части</strong><p>Сначала 48 : 6, отдельно 7 × 3, затем сложение.</p></div></div><div className="step-row"><span>3</span><div><strong>Попросите проверить себя</strong><p>Пусть ребёнок проговорит порядок действий ещё раз.</p></div></div></div>;
+function ExplainResult({ analysis }: { analysis: Analysis | null }) {
+  const steps = analysis?.steps?.length ? analysis.steps : [
+    { title: "Спросите про порядок действий", text: "«Какое действие здесь нужно выполнить первым? Почему?»" },
+    { title: "Разберите выражение на части", text: "Сначала выполните действия по правилу, затем соедините результаты." },
+    { title: "Попросите проверить себя", text: "Пусть ребёнок проговорит ход решения ещё раз." },
+  ];
+  return <div className="steps-list">{steps.slice(0, 4).map((step, index) => <div className="step-row" key={`${step.title}-${index}`}><span>{index + 1}</span><div><strong>{step.title}</strong><p>{step.text}</p></div></div>)}</div>;
 }
 
-function CheckResult() {
-  return <div className="check-list"><div className="check-summary"><CheckCircle size={27} weight="fill" /><div><strong>Начало решения верное</strong><p>Деление выполнено правильно.</p></div></div><div className="issue-box"><span>Обратите внимание</span><strong>Нарушен порядок действий</strong><p>Ребёнок сложил числа до умножения. Предложите отметить действия над выражением цифрами.</p></div><div className="parent-prompt"><Lightbulb size={22} weight="fill" /><p><strong>Что спросить:</strong> «Какое правило помогает выбрать следующее действие?»</p></div></div>;
+function CheckResult({ analysis }: { analysis: Analysis | null }) {
+  return <div className="check-list"><div className="check-summary"><CheckCircle size={27} weight="fill" /><div><strong>{analysis?.summary || "Что уже сделано хорошо"}</strong><p>{analysis?.steps?.[0]?.text || "Проверьте совпадение условия и первого шага решения."}</p></div></div><div className="issue-box"><span>Обратите внимание</span><strong>{analysis?.issue?.title || "Проверьте ход решения"}</strong><p>{analysis?.issue?.text || "Предложите ребёнку самостоятельно найти место, где изменился ход рассуждения."}</p></div><div className="parent-prompt"><Lightbulb size={22} weight="fill" /><p><strong>Что спросить:</strong> {analysis?.parentQuestion || "«Как ты можешь проверить этот шаг другим способом?»"}</p></div></div>;
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Не удалось прочитать фотографию"));
+    reader.readAsDataURL(file);
+  });
 }
