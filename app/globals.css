@@ -203,7 +203,7 @@ button { -webkit-tap-highlight-color:transparent; }
 .guided-feedback strong { font-size:9px; text-transform:uppercase; letter-spacing:.5px; color:#9d6b0b; }
 .guided-feedback.correct strong { color:#559228; }
 .guided-feedback p { margin:4px 0 0; color:#5c687a; font-size:10px; line-height:1.4; }
-.independent .memory-card { margin-top:14px; }
+.independent .memory-card { margin-top:10px; }
 .memory-card { border:1px solid #cfe0f4; border-radius:17px; background:#f3f8ff; overflow:hidden; }
 .memory-head { width:100%; padding:12px 13px; border:0; background:transparent; color:var(--blue); display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
 .memory-head span { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; }
@@ -212,9 +212,8 @@ button { -webkit-tap-highlight-color:transparent; }
 .memory-content>strong { display:block; color:var(--navy); font-size:13px; }
 .memory-content>p { margin:4px 0 0; color:#5f6f89; font-size:9.5px; line-height:1.4; }
 .memory-content .method-trail { margin-top:9px; }
-.child-prompt,.check-card { margin-top:10px; padding:12px; border-radius:15px; background:#edf4ff; }
+.child-prompt { margin-top:10px; padding:12px; border-radius:15px; background:#edf4ff; }
 .child-prompt p { margin:5px 0 0; color:#344b70; font-size:10.5px; line-height:1.4; }
-.check-card { display:flex; align-items:flex-start; gap:8px; color:var(--blue); }
-.check-card p { margin:0; color:#5b6d89; font-size:9.5px; line-height:1.4; }
-.check-card strong { color:var(--navy); }
+.independent-prompt { margin-top:16px; padding:16px; }
+.independent-prompt p { color:var(--navy); font-size:14px; line-height:1.45; font-weight:650; }
 @media(max-width:360px){.learning-route small{font-size:7.5px}.method-trail small{font-size:7px}.stage-content h1,.picker-head h1{font-size:25px}}
