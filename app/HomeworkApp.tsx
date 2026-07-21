@@ -11,9 +11,19 @@ type Mode = "explain" | "check";
 type Analysis = {
   title: string;
   intro: string;
+  taskGoal?: string;
   rule?: { title: string; text: string };
   methodSteps?: Array<{ title: string; text: string }>;
   taskIntro?: string;
+  guidedPractice?: {
+    label: string;
+    item: string;
+    question: string;
+    hint: string;
+    explanation: string;
+  };
+  independentStep?: string;
+  checkPrompt?: string;
   summary?: string;
   steps?: Array<{ title: string; text: string }>;
   issue?: { title: string; text: string };
@@ -72,14 +82,13 @@ export function HomeworkApp() {
           <button className="icon-button" onClick={() => setScreen("start")} aria-label="Назад"><ArrowLeft size={22} weight="bold" /></button>
           <div className="secure"><ShieldCheck size={19} /> Без регистрации</div>
         </header>
-        <div className="result-heading">
+        {mode === "check" && <div className="result-heading">
           <div className="result-icon"><Sparkle size={25} weight="fill" /></div>
-          <p className="eyebrow">{mode === "explain" ? "Разбираем задание" : "Проверка решения"}</p>
-          <h1>{analysis?.title || (mode === "explain" ? "Применяем способ к заданию" : "Вот что стоит проверить")}</h1>
-          <p>{mode === "explain" ? (analysis?.taskIntro || "Теперь пройдите по заданию вместе, не называя готовый ответ.") : (analysis?.intro || "Покажите ребёнку место ошибки и предложите исправить самому.")}</p>
-        </div>
-        {mode === "explain" ? <ExplainResult analysis={analysis} /> : <CheckResult analysis={analysis} />}
-        <button className="primary-button compact" onClick={reset}>Разобрать другое задание <ArrowRight size={20} weight="bold" /></button>
+          <p className="eyebrow">Проверка решения</p>
+          <h1>{analysis?.title || "Вот что стоит проверить"}</h1>
+          <p>{analysis?.intro || "Покажите ребёнку место ошибки и предложите исправить самому."}</p>
+        </div>}
+        {mode === "explain" ? <ExplainResult analysis={analysis} onBack={() => setScreen("method")} onReset={reset} /> : <><CheckResult analysis={analysis} /><button className="primary-button compact" onClick={reset}>Разобрать другое задание <ArrowRight size={20} weight="bold" /></button></>}
       </section></main>
     );
   }
@@ -134,11 +143,11 @@ function MethodScreen({ analysis, onBack, onContinue }: { analysis: Analysis | n
     <div className="method-heading">
       <p className="eyebrow">Способ действия</p>
       <h1>Как выполнять задание</h1>
-      <p>Покажите ребёнку простой порядок действий.</p>
+      <p>{analysis?.taskGoal || "Покажите ребёнку простой порядок действий."}</p>
     </div>
     <div className="rule-strip"><BookOpen size={22} /><div><strong>{rule.title}</strong><p>{rule.text}</p></div></div>
     <div className="method-list">{methodSteps.slice(0, 3).map((step, index) => <div className="method-row" key={`${step.title}-${index}`}><span className="method-number">{index + 1}</span><span className="method-symbol">{index === 0 ? <BookOpen size={21} /> : index === 1 ? <Question size={21} /> : <CheckCircle size={21} />}</span><div><strong>{step.title}</strong><p>{step.text}</p></div></div>)}</div>
-    <div className="main-question"><Lightbulb size={22} /><p><strong>Главный вопрос:</strong> «Какое правило поможет сделать этот шаг?»</p></div>
+    <div className="main-question"><Lightbulb size={22} /><p><strong>После этого</strong> один небольшой шаг из настоящего задания вы сделаете вместе.</p></div>
     <button className="primary-button method-cta" onClick={onContinue}>Перейти к заданию <ArrowRight size={22} weight="bold" /></button>
     <button className="text-link method-back" onClick={onBack}>Вернуться к заданию</button>
   </section></main>;
@@ -148,13 +157,42 @@ function ModeCard({ selected, onClick, icon, title, text }: { selected: boolean;
   return <button className={`mode-card ${selected ? "selected" : ""}`} onClick={onClick} role="radio" aria-checked={selected}>{selected && <span className="selected-check"><Check size={13} weight="bold" /></span>}<span className="mode-icon">{icon}</span><strong>{title}</strong><small>{text}</small></button>;
 }
 
-function ExplainResult({ analysis }: { analysis: Analysis | null }) {
-  const steps = analysis?.steps?.length ? analysis.steps : [
-    { title: "Спросите про порядок действий", text: "«Какое действие здесь нужно выполнить первым? Почему?»" },
-    { title: "Разберите выражение на части", text: "Сначала выполните действия по правилу, затем соедините результаты." },
-    { title: "Попросите проверить себя", text: "Пусть ребёнок проговорит ход решения ещё раз." },
-  ];
-  return <><div className="applied-badge"><CheckCircle size={18} weight="fill" /> Способ уже разобрали</div><div className="steps-list applied-steps">{steps.slice(0, 3).map((step, index) => <div className="step-row" key={`${step.title}-${index}`}><span>{index + 1}</span><div><strong>{step.title}</strong><p>{step.text}</p></div></div>)}</div>{analysis?.parentQuestion && <div className="parent-prompt"><Lightbulb size={22} weight="fill" /><p><strong>Что спросить ребёнка:</strong> {analysis.parentQuestion}</p></div>}</>;
+function ExplainResult({ analysis, onBack, onReset }: { analysis: Analysis | null; onBack: () => void; onReset: () => void }) {
+  const [stage, setStage] = useState<"question" | "hint" | "explained" | "independent">("question");
+  const practice = analysis?.guidedPractice || {
+    label: "Первый шаг из задания",
+    item: analysis?.title || "Начнём с самой простой части",
+    question: analysis?.parentQuestion || "С чего нужно начать? Попросите ребёнка объяснить своими словами.",
+    hint: "Вернитесь к способу действия и найдите подходящий первый шаг.",
+    explanation: analysis?.steps?.[0]?.text || "Проговорите первый шаг вместе, а следующий предложите ребёнку выполнить самостоятельно.",
+  };
+
+  if (stage === "independent") return <div className="independent-state">
+    <div className="success-icon"><Check size={30} weight="bold" /></div>
+    <p className="eyebrow">Теперь самостоятельно</p>
+    <h1>Ребёнок продолжает сам</h1>
+    <p>{analysis?.independentStep || "Предложите выполнить остальные похожие пункты тем же способом."}</p>
+    <div className="check-tip"><MagnifyingGlass size={23} /><div><strong>Как проверить</strong><p>{analysis?.checkPrompt || "Попросите ребёнка проговорить способ и проверить результат ещё раз."}</p></div></div>
+    <button className="primary-button guided-primary" onClick={onReset}>Разобрать другое задание <ArrowRight size={21} weight="bold" /></button>
+    <button className="text-link guided-back" onClick={() => setStage("explained")}>Вернуться к совместному шагу</button>
+  </div>;
+
+  return <div className="guided-practice">
+    <div className="applied-badge"><CheckCircle size={18} weight="fill" /> Способ разобрали</div>
+    <p className="eyebrow guided-eyebrow">Пробуем на самом задании</p>
+    <h1>Сделайте один шаг вместе</h1>
+    <p className="guided-intro">Не показывайте ответ сразу — начните с вопроса.</p>
+    <div className="practice-card">
+      <span className="practice-label">{practice.label}</span>
+      <strong className="practice-item">{practice.item}</strong>
+      <div className="practice-question"><Question size={22} weight="bold" /><p>{practice.question}</p></div>
+      {stage !== "question" && <div className={`reveal-box ${stage === "explained" ? "answer" : ""}`}><span>{stage === "hint" ? "Подсказка" : "Разбор"}</span><p>{stage === "hint" ? practice.hint : practice.explanation}</p></div>}
+    </div>
+    {stage === "question" && <div className="guided-actions"><button className="primary-button guided-primary" onClick={() => setStage("explained")}>Ребёнок ответил <Check size={20} weight="bold" /></button><button className="secondary-button" onClick={() => setStage("hint")}>Нужна подсказка</button></div>}
+    {stage === "hint" && <div className="guided-actions"><button className="primary-button guided-primary" onClick={() => setStage("explained")}>Показать разбор <ArrowRight size={20} weight="bold" /></button></div>}
+    {stage === "explained" && <div className="guided-actions"><button className="primary-button guided-primary" onClick={() => setStage("independent")}>Теперь самостоятельно <ArrowRight size={20} weight="bold" /></button></div>}
+    <button className="text-link guided-back" onClick={onBack}>Ещё раз посмотреть способ</button>
+  </div>;
 }
 
 function CheckResult({ analysis }: { analysis: Analysis | null }) {
