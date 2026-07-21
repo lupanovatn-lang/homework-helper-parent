@@ -93,9 +93,18 @@ export function HomeworkApp() {
     setShowText(false); setAnalysis(null); setCompletedTasks([]);
   }
 
+  function removeRecognizedTask(index: number) {
+    setAnalysis((current) => {
+      if (!current?.tasks || current.tasks.length <= 1) return current;
+      return { ...current, tasks: current.tasks.filter((_, taskIndex) => taskIndex !== index) };
+    });
+    setCompletedTasks((items) => items.filter((item) => item !== index).map((item) => item > index ? item - 1 : item));
+    setCurrentTask(0);
+  }
+
   const tasks = normalizeTasks(analysis);
 
-  if (screen === "tasks") return <TaskPicker tasks={tasks} preview={preview} completed={completedTasks} onBack={() => setScreen("start")} onChoose={(index) => { setCurrentTask(index); setScreen("learn"); }} />;
+  if (screen === "tasks") return <TaskPicker tasks={tasks} preview={preview} completed={completedTasks} onBack={() => setScreen("start")} onChoose={(index) => { setCurrentTask(index); setScreen("learn"); }} onRemove={removeRecognizedTask} />;
   if (screen === "learn") return <LearningFlow task={tasks[currentTask]} taskIndex={currentTask} taskCount={tasks.length} preview={preview} onBack={() => setScreen("tasks")} onComplete={() => { setCompletedTasks((items) => items.includes(currentTask) ? items : [...items, currentTask]); setScreen("tasks"); }} />;
   if (screen === "result") return <CheckResultScreen analysis={analysis} onBack={() => setScreen("start")} onReset={reset} />;
 
@@ -119,11 +128,11 @@ export function HomeworkApp() {
   );
 }
 
-function TaskPicker({ tasks, preview, completed, onBack, onChoose }: { tasks: HomeworkTask[]; preview: string; completed: number[]; onBack: () => void; onChoose: (index: number) => void }) {
+function TaskPicker({ tasks, preview, completed, onBack, onChoose, onRemove }: { tasks: HomeworkTask[]; preview: string; completed: number[]; onBack: () => void; onChoose: (index: number) => void; onRemove: (index: number) => void }) {
   const next = tasks.findIndex((_, index) => !completed.includes(index));
   return <FlowShell onBack={onBack}><div className="picker-head"><p className="success-label"><CheckCircle size={19} weight="fill" /> Фото распознано</p><h1>{tasks.length > 1 ? `На фото нашли ${tasks.length} задания` : "Задание распознано"}</h1><p>{completed.length ? "Продолжим со следующим заданием." : "Разберём по очереди — начнём с первого."}</p></div>
     {preview && <a className="photo-preview" href={preview} target="_blank" rel="noreferrer"><img src={preview} alt="Фотография домашнего задания" /><span><ImageIcon size={18} /> Открыть фото</span></a>}
-    <div className="task-cards">{tasks.map((item, index) => { const done = completed.includes(index); const active = index === (next < 0 ? 0 : next); return <button key={`${item.title}-${index}`} className={`task-card ${active ? "active" : ""} ${done ? "done" : ""}`} onClick={() => onChoose(index)}><span className="task-index">{done ? <Check size={17} weight="bold" /> : index + 1}</span><span><strong>Задание {index + 1}</strong><small>{item.shortTitle}</small></span><span className="task-status">{done ? "Готово" : active ? "Начать" : "Выбрать"} <ArrowRight size={16} /></span></button>; })}</div>
+    <div className="task-cards">{tasks.map((item, index) => { const done = completed.includes(index); const active = index === (next < 0 ? 0 : next); return <div key={`${item.title}-${index}`} className={`task-card ${active ? "active" : ""} ${done ? "done" : ""}`}><button className="task-card-main" onClick={() => onChoose(index)}><span className="task-index">{done ? <Check size={17} weight="bold" /> : index + 1}</span><span><strong>Задание {index + 1}</strong><small>{item.shortTitle}</small></span><span className="task-status">{done ? "Готово" : active ? "Начать" : "Выбрать"} <ArrowRight size={16} /></span></button>{tasks.length > 1 && <button className="task-remove" onClick={() => onRemove(index)} aria-label={`Удалить задание ${index + 1}`} title="Удалить лишнее задание"><X size={16} weight="bold" /></button>}</div>; })}</div>
     {next >= 0 ? <button className="primary-button flow-primary" onClick={() => onChoose(next)}>Начать задание {next + 1} <ArrowRight size={21} weight="bold" /></button> : <button className="primary-button flow-primary" onClick={onBack}>Завершить разбор <Check size={21} weight="bold" /></button>}
     <p className="flow-note"><Sparkle size={16} /> Для каждого задания: инструкция → правило → вместе → самостоятельно</p>
   </FlowShell>;
