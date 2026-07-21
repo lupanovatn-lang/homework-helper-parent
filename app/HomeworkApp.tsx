@@ -32,6 +32,13 @@ type HomeworkTask = {
     start: string;
     questions: Array<{ question: string; yes: string; no: string }>;
   };
+  knowledgeAid?: {
+    title: string;
+    type: "table" | "list" | "examples";
+    columns?: string[];
+    rows?: string[][];
+    items?: string[];
+  } | null;
   guidedTitle: string;
   guidedSteps: GuidedStep[];
   independentInstruction: string;
@@ -160,7 +167,7 @@ function LearningFlow({ task, taskIndex, taskCount, preview, onBack, onComplete 
     {stage === 3 && <section className="stage-content"><p className="stage-label">Шаг 3 из 4</p><h1>Выполняем один пункт вместе</h1><p className="stage-subtitle">Применяем способ к настоящему заданию.</p><div className="guided-card">{task.methodType !== "decision" && <MethodTrail steps={task.methodSteps} active={Math.min(guidedIndex, task.methodSteps.length - 1)} />}<div className="guided-body"><span className="guided-step-title">{guided.title}</span>{guided.display && <strong className="guided-display">{guided.display}</strong>}<p>{guided.prompt}</p>{guided.options?.length ? <div className="answer-grid">{guided.options.map((option) => <button key={option} className={selected === option ? "selected" : ""} onClick={() => { setSelected(option); setFeedback(""); }}>{option}</button>)}</div> : <button className="secondary-button answer-spoken" onClick={() => setFeedback("correct")}>Ребёнок ответил</button>}{feedback && <div className={`guided-feedback ${feedback}`}><strong>{feedback === "hint" ? "Подсказка" : feedback === "correct" ? "Верно" : "Попробуйте ещё раз"}</strong><p>{feedback === "correct" ? guided.success : guided.hint}</p></div>}</div></div>
       {feedback === "correct" ? <button className="primary-button flow-primary" onClick={nextGuided}>{guidedIndex < task.guidedSteps.length - 1 ? "Следующий шаг" : "Теперь самостоятельно"} <ArrowRight size={20} weight="bold" /></button> : <><button className="primary-button flow-primary" disabled={!selected && Boolean(guided.options?.length)} onClick={() => setFeedback(selected === guided.correctOption ? "correct" : "wrong")}>Проверить ответ</button><button className="secondary-button flow-secondary" onClick={() => setFeedback("hint")}><Lightbulb size={18} /> Нужна подсказка</button></>}
       <button className="text-link flow-back" onClick={() => setStage(2)}>Вернуться к правилу</button></section>}
-    {stage === 4 && <section className="stage-content independent"><p className="stage-label">Шаг 4 из 4</p><h1>Теперь остальные — самостоятельно</h1><div className="child-prompt independent-prompt"><span>Скажите ребёнку</span><p>«{task.independentInstruction}»</p></div><div className="memory-card"><button className="memory-head" onClick={() => setMemoryOpen((v) => !v)}><span><BookOpen size={19} /> Памятка, если нужна</span><small>{memoryOpen ? "Свернуть" : "Показать"}</small></button>{memoryOpen && <div className="memory-content"><strong>{task.rule.title}</strong><MethodGuide task={task} compact /></div>}</div><button className="primary-button flow-primary" onClick={onComplete}>Ребёнок закончил <ArrowRight size={20} weight="bold" /></button><button className="secondary-button flow-secondary" onClick={() => { setStage(3); setGuidedIndex(0); setSelected(""); setFeedback(""); }}>Сделать ещё один пункт вместе</button></section>}
+    {stage === 4 && <section className="stage-content independent"><p className="stage-label">Шаг 4 из 4</p><h1>Теперь остальные — самостоятельно</h1><div className="child-prompt independent-prompt"><span>Скажите ребёнку</span><p>«{task.independentInstruction}»</p></div><div className="memory-card"><button className="memory-head" onClick={() => setMemoryOpen((v) => !v)}><span><BookOpen size={19} /> Памятка, если нужна</span><small>{memoryOpen ? "Свернуть" : "Показать"}</small></button>{memoryOpen && <div className="memory-content"><strong>{task.rule.title}</strong><MethodGuide task={task} compact /><KnowledgeAid aid={task.knowledgeAid} /></div>}</div><button className="primary-button flow-primary" onClick={onComplete}>Ребёнок закончил <ArrowRight size={20} weight="bold" /></button><button className="secondary-button flow-secondary" onClick={() => { setStage(3); setGuidedIndex(0); setSelected(""); setFeedback(""); }}>Сделать ещё один пункт вместе</button></section>}
   </FlowShell>;
 }
 
@@ -169,13 +176,21 @@ function StageOne({ task, simple, onSimple, onNext }: { task: HomeworkTask; simp
 }
 
 function StageTwo({ task, onBack, onNext }: { task: HomeworkTask; onBack: () => void; onNext: () => void }) {
-  return <section className="stage-content"><p className="stage-label">Шаг 2 из 4</p><h1>Напомните правило и способ</h1><div className="speech-card rule"><span>Скажите ребёнку</span><strong>{task.rule.title}</strong><p>{task.rule.text}</p></div><div className="method-card"><span>Как делать</span><MethodGuide task={task} /></div><button className="primary-button flow-primary" onClick={onNext}>Выполнить один пункт вместе <ArrowRight size={20} weight="bold" /></button><button className="text-link flow-back" onClick={onBack}>Вернуться к инструкции</button><p className="flow-note"><Lightbulb size={16} /> Дальше применим этот способ к настоящему заданию</p></section>;
+  return <section className="stage-content"><p className="stage-label">Шаг 2 из 4</p><h1>Напомните правило и способ</h1><div className="speech-card rule"><span>Скажите ребёнку</span><strong>{task.rule.title}</strong><p>{task.rule.text}</p></div><div className="method-card"><span>Как делать</span><MethodGuide task={task} /></div><KnowledgeAid aid={task.knowledgeAid} /><button className="primary-button flow-primary" onClick={onNext}>Выполнить один пункт вместе <ArrowRight size={20} weight="bold" /></button><button className="text-link flow-back" onClick={onBack}>Вернуться к инструкции</button><p className="flow-note"><Lightbulb size={16} /> Дальше применим этот способ к настоящему заданию</p></section>;
 }
 
 function MethodGuide({ task, compact = false }: { task: HomeworkTask; compact?: boolean }) {
   const guide = task.decisionGuide;
   if (task.methodType !== "decision" || !guide?.questions?.length) return <MethodTrail steps={task.methodSteps} active={-1} />;
   return <div className={`decision-guide ${compact ? "compact" : ""}`}><div className="decision-start">{guide.start}</div>{guide.questions.slice(0, 3).map((item, index) => <div className="decision-node" key={`${item.question}-${index}`}><strong>{item.question}</strong><div><span><b>Да</b>{item.yes}</span><span><b>Нет</b>{item.no}</span></div></div>)}</div>;
+}
+
+function KnowledgeAid({ aid }: { aid?: HomeworkTask["knowledgeAid"] }) {
+  const [open, setOpen] = useState(false);
+  if (!aid) return null;
+  const hasTable = aid.type === "table" && Boolean(aid.columns?.length && aid.rows?.length);
+  const items = aid.items?.slice(0, 8) || [];
+  return <div className="knowledge-aid"><button onClick={() => setOpen((value) => !value)}><span><Lightbulb size={17} weight="fill" /> {aid.title}</span><small>{open ? "Свернуть" : "Открыть"}</small></button>{open && <div className="knowledge-content">{hasTable ? <div className="knowledge-table"><div className="knowledge-row head">{aid.columns!.slice(0, 3).map((column) => <strong key={column}>{column}</strong>)}</div>{aid.rows!.slice(0, 8).map((row, index) => <div className="knowledge-row" key={`${row.join("-")}-${index}`}>{row.slice(0, 3).map((cell, cellIndex) => <span key={`${cell}-${cellIndex}`}>{cell}</span>)}</div>)}</div> : <ul>{items.map((item) => <li key={item}>{item}</li>)}</ul>}</div>}</div>;
 }
 
 function MethodTrail({ steps, active }: { steps: Array<{ title: string }>; active: number }) {
