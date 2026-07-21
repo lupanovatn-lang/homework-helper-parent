@@ -239,6 +239,7 @@ button { -webkit-tap-highlight-color:transparent; }
 .memory-head small { font-size:9px; }
 .memory-content { padding:0 13px 13px; }
 .memory-content>strong { display:block; color:var(--navy); font-size:13px; }
+.memory-section-label { display:block; color:var(--blue); font-size:8.5px; font-weight:800; text-transform:uppercase; letter-spacing:.55px; }
 .memory-content>p { margin:4px 0 0; color:#5f6f89; font-size:9.5px; line-height:1.4; }
 .memory-content .method-trail { margin-top:9px; }
 .child-prompt { margin-top:10px; padding:12px; border-radius:15px; background:#edf4ff; }
