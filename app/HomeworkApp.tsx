@@ -2,8 +2,8 @@
 
 import { useRef, useState, type ReactNode } from "react";
 import {
-  ArrowLeft, ArrowRight, Camera, Check, CheckCircle, FileImage,
-  Lightbulb, MagnifyingGlass, Plant, ShieldCheck, Sparkle, X,
+  ArrowLeft, ArrowRight, BookOpen, Camera, Check, CheckCircle, FileImage,
+  Lightbulb, MagnifyingGlass, Plant, Question, ShieldCheck, Sparkle, X,
 } from "@phosphor-icons/react";
 
 const SAMPLE_TASK = "Вычисли: 48 : 6 + 7 × 3. Объясни порядок действий.";
@@ -11,6 +11,9 @@ type Mode = "explain" | "check";
 type Analysis = {
   title: string;
   intro: string;
+  rule?: { title: string; text: string };
+  methodSteps?: Array<{ title: string; text: string }>;
+  taskIntro?: string;
   summary?: string;
   steps?: Array<{ title: string; text: string }>;
   issue?: { title: string; text: string };
@@ -23,7 +26,7 @@ export function HomeworkApp() {
   const [file, setFile] = useState<File | null>(null);
   const [showText, setShowText] = useState(false);
   const [task, setTask] = useState("");
-  const [screen, setScreen] = useState<"start" | "result">("start");
+  const [screen, setScreen] = useState<"start" | "method" | "result">("start");
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState("");
@@ -48,7 +51,7 @@ export function HomeworkApp() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Не удалось разобрать задание");
       setAnalysis(data.analysis);
-      setScreen("result");
+      setScreen(mode === "explain" ? "method" : "result");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Не удалось разобрать задание");
     } finally {
@@ -57,6 +60,10 @@ export function HomeworkApp() {
   }
 
   function reset() { setScreen("start"); setFile(null); setTask(""); setShowText(false); }
+
+  if (screen === "method" && mode === "explain") {
+    return <MethodScreen analysis={analysis} onBack={() => setScreen("start")} onContinue={() => setScreen("result")} />;
+  }
 
   if (screen === "result") {
     return (
@@ -67,9 +74,9 @@ export function HomeworkApp() {
         </header>
         <div className="result-heading">
           <div className="result-icon"><Sparkle size={25} weight="fill" /></div>
-          <p className="eyebrow">{mode === "explain" ? "План объяснения" : "Проверка решения"}</p>
-          <h1>{analysis?.title || (mode === "explain" ? "Объясните ребёнку по шагам" : "Вот что стоит проверить")}</h1>
-          <p>{analysis?.intro || (mode === "explain" ? "Не называйте ответ сразу — начните с вопроса." : "Покажите ребёнку место ошибки и предложите исправить самому.")}</p>
+          <p className="eyebrow">{mode === "explain" ? "Разбираем задание" : "Проверка решения"}</p>
+          <h1>{analysis?.title || (mode === "explain" ? "Применяем способ к заданию" : "Вот что стоит проверить")}</h1>
+          <p>{mode === "explain" ? (analysis?.taskIntro || "Теперь пройдите по заданию вместе, не называя готовый ответ.") : (analysis?.intro || "Покажите ребёнку место ошибки и предложите исправить самому.")}</p>
         </div>
         {mode === "explain" ? <ExplainResult analysis={analysis} /> : <CheckResult analysis={analysis} />}
         <button className="primary-button compact" onClick={reset}>Разобрать другое задание <ArrowRight size={20} weight="bold" /></button>
@@ -111,6 +118,32 @@ export function HomeworkApp() {
   );
 }
 
+function MethodScreen({ analysis, onBack, onContinue }: { analysis: Analysis | null; onBack: () => void; onContinue: () => void }) {
+  const methodSteps = analysis?.methodSteps?.length ? analysis.methodSteps : [
+    { title: "Прочитай задание", text: "Пойми, что нужно найти или сделать." },
+    { title: "Спроси себя", text: "Какое правило поможет выполнить задание?" },
+    { title: "Сделай и проверь", text: "Выполни действие и проверь себя по условию." },
+  ];
+  const rule = analysis?.rule || { title: "Сначала вспомним главное", text: analysis?.intro || "Назовите ребёнку только одно правило, которое понадобится в этом задании." };
+
+  return <main className="page-shell"><section className="mobile-prototype method-screen">
+    <header className="topbar result-topbar">
+      <button className="icon-button" onClick={onBack} aria-label="Назад"><ArrowLeft size={22} weight="bold" /></button>
+      <div className="secure"><ShieldCheck size={19} /> Без регистрации</div>
+    </header>
+    <div className="method-heading">
+      <p className="eyebrow">Способ действия</p>
+      <h1>Как выполнять задание</h1>
+      <p>Покажите ребёнку простой порядок действий.</p>
+    </div>
+    <div className="rule-strip"><BookOpen size={22} /><div><strong>{rule.title}</strong><p>{rule.text}</p></div></div>
+    <div className="method-list">{methodSteps.slice(0, 3).map((step, index) => <div className="method-row" key={`${step.title}-${index}`}><span className="method-number">{index + 1}</span><span className="method-symbol">{index === 0 ? <BookOpen size={21} /> : index === 1 ? <Question size={21} /> : <CheckCircle size={21} />}</span><div><strong>{step.title}</strong><p>{step.text}</p></div></div>)}</div>
+    <div className="main-question"><Lightbulb size={22} /><p><strong>Главный вопрос:</strong> «Какое правило поможет сделать этот шаг?»</p></div>
+    <button className="primary-button method-cta" onClick={onContinue}>Перейти к заданию <ArrowRight size={22} weight="bold" /></button>
+    <button className="text-link method-back" onClick={onBack}>Вернуться к заданию</button>
+  </section></main>;
+}
+
 function ModeCard({ selected, onClick, icon, title, text }: { selected: boolean; onClick: () => void; icon: ReactNode; title: string; text: string }) {
   return <button className={`mode-card ${selected ? "selected" : ""}`} onClick={onClick} role="radio" aria-checked={selected}>{selected && <span className="selected-check"><Check size={13} weight="bold" /></span>}<span className="mode-icon">{icon}</span><strong>{title}</strong><small>{text}</small></button>;
 }
@@ -121,7 +154,7 @@ function ExplainResult({ analysis }: { analysis: Analysis | null }) {
     { title: "Разберите выражение на части", text: "Сначала выполните действия по правилу, затем соедините результаты." },
     { title: "Попросите проверить себя", text: "Пусть ребёнок проговорит ход решения ещё раз." },
   ];
-  return <div className="steps-list">{steps.slice(0, 4).map((step, index) => <div className="step-row" key={`${step.title}-${index}`}><span>{index + 1}</span><div><strong>{step.title}</strong><p>{step.text}</p></div></div>)}</div>;
+  return <><div className="applied-badge"><CheckCircle size={18} weight="fill" /> Способ уже разобрали</div><div className="steps-list applied-steps">{steps.slice(0, 3).map((step, index) => <div className="step-row" key={`${step.title}-${index}`}><span>{index + 1}</span><div><strong>{step.title}</strong><p>{step.text}</p></div></div>)}</div>{analysis?.parentQuestion && <div className="parent-prompt"><Lightbulb size={22} weight="fill" /><p><strong>Что спросить ребёнка:</strong> {analysis.parentQuestion}</p></div>}</>;
 }
 
 function CheckResult({ analysis }: { analysis: Analysis | null }) {
