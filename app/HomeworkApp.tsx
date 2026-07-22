@@ -4,10 +4,12 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft, ArrowRight, BookOpen, Camera, Check, CheckCircle, FileImage,
   Image as ImageIcon, Lightbulb, MagnifyingGlass, Plant,
-  Question, ShieldCheck, Sparkle, X,
+  ShieldCheck, Sparkle, X,
 } from "@phosphor-icons/react";
 
 const SAMPLE_TASK = "Вычисли: 48 : 6 + 7 × 3. Объясни порядок действий.";
+type KnowledgeKind = "rule" | "formula" | "table" | "scheme" | "list" | "definition" | "principle";
+type ExampleKind = "demo" | "example" | "compare" | "scheme";
 const LOADING_STEPS = [
   { after: 0, label: "Смотрим задание" },
   { after: 5, label: "Понимаем, что нужно сделать" },
@@ -35,8 +37,8 @@ type HomeworkTask = {
   simplerInstruction: string;
   comprehensionQuestion: string;
   guidingQuestions?: string[];
-  rule: { title: string; text: string };
-  ruleExample?: { display: string; explanation: string } | null;
+  rule: { title: string; text: string; kind?: KnowledgeKind };
+  ruleExample?: { display: string; explanation: string; kind?: ExampleKind } | null;
   methodType?: "steps" | "decision";
   methodSteps: Array<{ title: string; text?: string }>;
   decisionGuide?: {
@@ -212,49 +214,39 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
       <p className="stage-label">Шаг 1 из 4</p>
       <h1>Поймём, что нужно сделать</h1>
       <div className="instruction-panel">
-        <div className="instruction-section">
-          <span className="instruction-number">1</span>
-          <div>
-            <h2>Прочитайте инструкцию вместе</h2>
+        <ParentStep order="Сначала" title="Прочитайте задание вместе">
+          <div className="child-material">
             <InstructionText text={task.instruction} />
           </div>
-        </div>
+        </ParentStep>
         {phase === "check" && (
-          <div className="instruction-section">
-            <span className="instruction-number">2</span>
-            <div>
-              <h2>Проверьте понимание</h2>
-              <p className="parent-line">Расскажи своими словами, что нужно сделать.</p>
+          <ParentStep order="Затем" title="Спросите ребёнка">
+            <div className="child-material speech">
+              <p>Расскажи своими словами, что нужно сделать.</p>
             </div>
-          </div>
+          </ParentStep>
         )}
         {phase === "guide" && (
-          <div className="instruction-section guidance-step">
-            <Question size={21} />
-            <div>
-              <span>Уточняющий вопрос {guideIndex + 1} из {guidingQuestions.length}</span>
-              <p className="parent-line">{currentQuestion}</p>
-              <small>Задайте его, только если ребёнок не назвал это действие.</small>
+          <ParentStep order="Затем" title="Спросите ребёнка">
+            <div className="child-material speech">
+              <p>{currentQuestion}</p>
             </div>
-          </div>
+            <small className="parent-hint">Задайте вопрос, только если ребёнок не назвал это действие.</small>
+          </ParentStep>
         )}
         {phase === "retell" && (
-          <div className="instruction-section retell-step">
-            <Question size={21} />
-            <div>
-              <h2>Попросите пересказать ещё раз</h2>
-              <p className="parent-line">Теперь ещё раз расскажи своими словами, что нужно сделать во всём задании.</p>
+          <ParentStep order="Затем" title="Попросите пересказать ещё раз">
+            <div className="child-material speech">
+              <p>Теперь ещё раз расскажи своими словами, что нужно сделать во всём задании.</p>
             </div>
-          </div>
+          </ParentStep>
         )}
         {phase === "fallback" && (
-          <div className="instruction-section fallback-step">
-            <Lightbulb size={21} />
-            <div>
-              <h2>Объясните ещё проще</h2>
-              <p className="parent-line">{task.simplerInstruction}</p>
+          <ParentStep order="Затем" title="Объясните ещё проще">
+            <div className="child-material speech">
+              <p>{task.simplerInstruction}</p>
             </div>
-          </div>
+          </ParentStep>
         )}
       </div>
       {phase === "check" && (
@@ -282,6 +274,16 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
         </>
       )}
     </section>
+  );
+}
+
+function ParentStep({ order, title, children }: { order: "Сначала" | "Затем"; title: string; children: ReactNode }) {
+  return (
+    <div className="parent-step">
+      <span className="parent-step-order">{order}</span>
+      <h2 className="parent-step-title">{title}</h2>
+      {children}
+    </div>
   );
 }
 
@@ -356,35 +358,28 @@ function StageTwo({ task, aidOpen, onAidOpenChange, onBack, onNext }: { task: Ho
   const example = task.ruleExample?.display?.trim() ? task.ruleExample : null;
   const requiredAid = task.knowledgeAid?.required ? task.knowledgeAid : null;
   const optionalAid = task.knowledgeAid && !task.knowledgeAid.required ? task.knowledgeAid : null;
-  const showNumbers = Boolean(example);
+  const knowledgeTitle = knowledgeActionTitle(inferKnowledgeKind(task));
+  const exampleTitle = exampleActionTitle(inferExampleKind(example));
 
   return (
     <section className="stage-content instruction-stage">
       <p className="stage-label">Шаг 2 из 4</p>
       <h1>Вспомним правило</h1>
       <div className="instruction-panel">
-        <div className={`instruction-section ${showNumbers ? "" : "solo"}`.trim()}>
-          {showNumbers && <span className="instruction-number">1</span>}
-          <div>
-            <h2>Прочитайте вместе</h2>
-            <div className="knowledge-block">
-              <strong>{task.rule.title}</strong>
-              <p>{task.rule.text}</p>
-              {requiredAid && <div className="knowledge-required"><KnowledgeAidBody aid={requiredAid} /></div>}
-            </div>
+        <ParentStep order="Сначала" title={knowledgeTitle}>
+          <div className="child-material">
+            <strong>{task.rule.title}</strong>
+            <p>{task.rule.text}</p>
+            {requiredAid && <div className="knowledge-required"><KnowledgeAidBody aid={requiredAid} /></div>}
           </div>
-        </div>
+        </ParentStep>
         {example && (
-          <div className="instruction-section">
-            <span className="instruction-number">2</span>
-            <div>
-              <h2>Разберите пример вместе</h2>
-              <div className="knowledge-example">
-                <strong>{example.display}</strong>
-                {example.explanation?.trim() && <p>{example.explanation}</p>}
-              </div>
+          <ParentStep order="Затем" title={exampleTitle}>
+            <div className="child-material">
+              <strong className="example-display">{example.display}</strong>
+              {example.explanation?.trim() && <p>{example.explanation}</p>}
             </div>
-          </div>
+          </ParentStep>
         )}
       </div>
       {optionalAid && <KnowledgeAid aid={optionalAid} open={aidOpen} onOpenChange={onAidOpenChange} />}
@@ -392,6 +387,44 @@ function StageTwo({ task, aidOpen, onAidOpenChange, onBack, onNext }: { task: Ho
       <button className="text-link flow-back" onClick={onBack}>Вернуться к инструкции</button>
     </section>
   );
+}
+
+function inferKnowledgeKind(task: HomeworkTask): KnowledgeKind {
+  if (task.rule.kind) return task.rule.kind;
+  const blob = `${task.rule.title} ${task.knowledgeAid?.title || ""}`.toLocaleLowerCase("ru");
+  if (/формул/.test(blob)) return "formula";
+  if (/таблиц/.test(blob)) return "table";
+  if (/схем/.test(blob)) return "scheme";
+  if (/определен/.test(blob)) return "definition";
+  if (/признак|слов/.test(blob) || task.knowledgeAid?.type === "list") return "list";
+  if (/принцип/.test(blob)) return "principle";
+  return "rule";
+}
+
+function knowledgeActionTitle(kind: KnowledgeKind) {
+  if (kind === "formula") return "Посмотрите формулу вместе";
+  if (kind === "table") return "Посмотрите таблицу вместе";
+  if (kind === "scheme") return "Разберите схему вместе";
+  if (kind === "list") return "Вспомните вместе";
+  if (kind === "definition") return "Прочитайте определение вместе";
+  return "Прочитайте правило вместе";
+}
+
+function inferExampleKind(example: { kind?: ExampleKind; display: string; explanation?: string } | null): ExampleKind {
+  if (!example) return "demo";
+  if (example.kind) return example.kind;
+  const blob = `${example.display} ${example.explanation || ""}`.toLocaleLowerCase("ru");
+  if (/сравн|versus|vs\.|↔|—(?=.+—)/i.test(blob) || /\bа\b.+\bб\b/i.test(blob)) return "compare";
+  if (/схем/.test(blob)) return "scheme";
+  if (/пример/.test(blob)) return "example";
+  return "demo";
+}
+
+function exampleActionTitle(kind: ExampleKind) {
+  if (kind === "compare") return "Сравните два случая";
+  if (kind === "scheme") return "Посмотрите на схему";
+  if (kind === "example") return "Рассмотрите пример";
+  return "Посмотрите, как это работает";
 }
 
 function MethodGuide({ task, compact = false }: { task: HomeworkTask; compact?: boolean }) {
@@ -503,7 +536,7 @@ function normalizeTasks(analysis: Analysis | null): HomeworkTask[] {
 }
 
 function fallbackTask(): HomeworkTask {
-  return { title: "Разбираем задание", shortTitle: "Выполняем по шагам", instruction: "Прочитай условие и определи, что нужно сделать.", simplerInstruction: "Сначала поймём вопрос задания, затем выполним его по шагам.", comprehensionQuestion: "Что нужно получить в результате?", rule: { title: "Сначала пойми условие", text: "В условии важно отделить известные данные от того, что требуется узнать." }, ruleExample: { display: "Что известно? → Что нужно узнать?", explanation: "Так мы связываем данные задания с его вопросом." }, methodSteps: [{ title: "Прочитать" }, { title: "Выбрать способ" }, { title: "Выполнить" }, { title: "Проверить" }], guidedTitle: "Первый шаг", guidedSteps: [{ title: "Начинаем вместе", prompt: "С чего нужно начать?", options: ["Прочитать условие", "Угадать ответ"], correctOption: "Прочитать условие", hint: "Посмотри, что именно спрашивается в задании.", success: "Верно: сначала внимательно читаем условие." }], independentInstruction: "Теперь сделай так же с остальными пунктами. Если забудешь шаг — посмотри в памятку." };
+  return { title: "Разбираем задание", shortTitle: "Выполняем по шагам", instruction: "Прочитай условие и определи, что нужно сделать.", simplerInstruction: "Сначала поймём вопрос задания, затем выполним его по шагам.", comprehensionQuestion: "Что нужно получить в результате?", rule: { title: "Сначала пойми условие", kind: "rule", text: "В условии важно отделить известные данные от того, что требуется узнать." }, ruleExample: { display: "Что известно? → Что нужно узнать?", explanation: "Так мы связываем данные задания с его вопросом.", kind: "demo" }, methodSteps: [{ title: "Прочитать" }, { title: "Выбрать способ" }, { title: "Выполнить" }, { title: "Проверить" }], guidedTitle: "Первый шаг", guidedSteps: [{ title: "Начинаем вместе", prompt: "С чего нужно начать?", options: ["Прочитать условие", "Угадать ответ"], correctOption: "Прочитать условие", hint: "Посмотри, что именно спрашивается в задании.", success: "Верно: сначала внимательно читаем условие." }], independentInstruction: "Теперь сделай так же с остальными пунктами. Если забудешь шаг — посмотри в памятку." };
 }
 
 function fileToCompressedDataUrl(file: File): Promise<string> {
