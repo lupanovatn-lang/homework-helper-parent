@@ -236,6 +236,7 @@ function removeAnswerFromQuestion(value: unknown) {
 }
 
 function repairLineBreakHyphenation(value: string) {
+  if (typeof value !== "string" || !value) return "";
   return value
     .replace(/\u00AD/g, "")
     .replace(/([A-Za-zА-Яа-яЁё])-\r?\n+([A-Za-zА-Яа-яЁё])/g, "$1$2")
