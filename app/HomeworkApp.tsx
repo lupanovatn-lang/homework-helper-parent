@@ -92,7 +92,7 @@ export function HomeworkApp() {
     }
   }
 
-  async function begin() {
+  async function analyzeHomework(nextMode: Mode) {
     if (!hasTask) { setShowText(true); setTask(SAMPLE_TASK); return; }
     setLoading(true); setError("");
     try {
@@ -100,12 +100,13 @@ export function HomeworkApp() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode, task: task.trim(), image }),
+        body: JSON.stringify({ mode: nextMode, task: task.trim(), image }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Не удалось разобрать задание");
       setAnalysis(data.analysis); setCurrentTask(0); setCompletedTasks([]);
-      if (mode === "check") setScreen("result");
+      setMode(nextMode);
+      if (nextMode === "check") setScreen("result");
       else {
         const nextTasks = normalizeTasks(data.analysis);
         setScreen(nextTasks.length === 1 ? "learn" : "tasks");
@@ -113,6 +114,15 @@ export function HomeworkApp() {
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Не удалось разобрать задание");
     } finally { setLoading(false); }
+  }
+
+  function begin() {
+    void analyzeHomework(mode);
+  }
+
+  function checkFinishedWork() {
+    setScreen("start");
+    void analyzeHomework("check");
   }
 
   function reset() {
@@ -136,7 +146,18 @@ export function HomeworkApp() {
   if (screen === "learn") {
     const task = tasks[currentTask] || tasks[0];
     if (!task) return <main className="page-shell"><section className="mobile-prototype"><p className="error-message" role="alert">Не удалось открыть задание. Попробуйте ещё раз.</p><button className="primary-button" onClick={() => setScreen("start")}>На главную</button></section></main>;
-    return <LearningFlow task={task} taskIndex={currentTask} taskCount={tasks.length} preview={preview} onBack={() => setScreen(tasks.length > 1 ? "tasks" : "start")} onComplete={() => { setCompletedTasks((items) => items.includes(currentTask) ? items : [...items, currentTask]); setScreen(tasks.length > 1 ? "tasks" : "start"); }} />;
+    return (
+      <LearningFlow
+        task={task}
+        taskIndex={currentTask}
+        taskCount={tasks.length}
+        preview={preview}
+        onBack={() => setScreen(tasks.length > 1 ? "tasks" : "start")}
+        onMarkComplete={() => { setCompletedTasks((items) => items.includes(currentTask) ? items : [...items, currentTask]); }}
+        onLeave={() => setScreen(tasks.length > 1 ? "tasks" : "start")}
+        onCheckWork={checkFinishedWork}
+      />
+    );
   }
   if (screen === "result") return <CheckResultScreen analysis={analysis} onBack={() => setScreen("start")} onReset={reset} />;
 
@@ -150,8 +171,8 @@ export function HomeworkApp() {
       : <button className="upload-zone" onClick={() => inputRef.current?.click()} disabled={loading}><span className="camera-circle"><Camera size={46} /></span><strong>Сфотографировать задание</strong><small>Поддерживаются фото, сканы и скриншоты</small></button>}
       {!showText && !file && <button className="text-link" onClick={() => setShowText(true)} disabled={loading}>Ввести текстом</button>}
       <section className="mode-section"><h2>Чем помочь?</h2><div className="mode-grid" role="radiogroup">
-        <ModeCard selected={mode === "explain"} onClick={() => !loading && setMode("explain")} icon={<Lightbulb size={31} />} title="Разобрать задание" text="Поняли инструкцию → пример вместе → дальше сами" />
-        <ModeCard selected={mode === "check"} onClick={() => !loading && setMode("check")} icon={<MagnifyingGlass size={31} />} title="Проверить работу" text="Найдём ошибки и подскажем, как их исправить" />
+        <ModeCard selected={mode === "explain"} onClick={() => !loading && setMode("explain")} icon={<Lightbulb size={31} />} title="Объяснить" text="Задание → первый пункт вместе → дальше сам" />
+        <ModeCard selected={mode === "check"} onClick={() => !loading && setMode("check")} icon={<MagnifyingGlass size={31} />} title="Проверить решение" text="Разберём ошибки и поможем исправить самому" />
       </div>{mode === "check" && <p className="context-note"><Camera size={16} /> Добавьте фото задания вместе с решением ребёнка</p>}</section>
       <button className="primary-button" onClick={begin} disabled={loading}><span>{loading ? "Разбираем…" : "Начать"}</span>{loading ? <span className="spinner" /> : <ArrowRight size={25} weight="bold" />}</button>
       {loading && <LoadingStatus elapsed={loadingProgress.elapsed} label={loadingProgress.label} progress={loadingProgress.progress} eta={loadingProgress.eta} />}
@@ -167,34 +188,66 @@ function TaskPicker({ tasks, preview, completed, onBack, onChoose, onRemove }: {
     {preview && <a className="photo-preview" href={preview} target="_blank" rel="noreferrer"><img src={preview} alt="Фотография домашнего задания" /><span><ImageIcon size={18} /> Открыть фото</span></a>}
     <div className="task-cards">{tasks.map((item, index) => { const done = completed.includes(index); const active = index === (next < 0 ? 0 : next); return <div key={`${item.title}-${index}`} className={`task-card ${active ? "active" : ""} ${done ? "done" : ""}`}><button className="task-card-main" onClick={() => onChoose(index)}><span className="task-index">{done ? <Check size={17} weight="bold" /> : index + 1}</span><span><strong>Задание {index + 1}</strong><small>{item.shortTitle}</small></span><span className="task-status">{done ? "Готово" : active ? "Начать" : "Выбрать"} <ArrowRight size={16} /></span></button>{tasks.length > 1 && <button className="task-remove" onClick={() => onRemove(index)} aria-label={`Удалить задание ${index + 1}`} title="Удалить лишнее задание"><X size={16} weight="bold" /></button>}</div>; })}</div>
     {next >= 0 ? <button className="primary-button flow-primary" onClick={() => onChoose(next)}>Начать задание {next + 1} <ArrowRight size={21} weight="bold" /></button> : <button className="primary-button flow-primary" onClick={onBack}>Завершить разбор <Check size={21} weight="bold" /></button>}
-    <p className="flow-note"><Sparkle size={16} /> Короткий путь: поняли задание → разобрали пример → остальные сами</p>
+    <p className="flow-note"><Sparkle size={16} /> Задание → вместе первый пункт → остальные сам</p>
   </FlowShell>;
 }
 
-function LearningFlow({ task, taskIndex, taskCount, preview, onBack, onComplete }: { task: HomeworkTask; taskIndex: number; taskCount: number; preview: string; onBack: () => void; onComplete: () => void }) {
+function LearningFlow({
+  task,
+  taskIndex,
+  taskCount,
+  preview,
+  onBack,
+  onMarkComplete,
+  onLeave,
+  onCheckWork,
+}: {
+  task: HomeworkTask;
+  taskIndex: number;
+  taskCount: number;
+  preview: string;
+  onBack: () => void;
+  onMarkComplete: () => void;
+  onLeave: () => void;
+  onCheckWork: () => void;
+}) {
   const [stage, setStage] = useState<1 | 2 | 3>(1);
   const [guidedIndex, setGuidedIndex] = useState(0);
   const [selected, setSelected] = useState("");
   const [typedAnswer, setTypedAnswer] = useState("");
   const [feedback, setFeedback] = useState<"" | "hint" | "correct" | "wrong">("");
-  const [memoryOpen, setMemoryOpen] = useState(false);
-  const [aidOpen, setAidOpen] = useState(Boolean(task.knowledgeAid?.required));
+  const [supportsUnlocked, setSupportsUnlocked] = useState(false);
+  const [aidOpen, setAidOpen] = useState(false);
   const [practiceRound, setPracticeRound] = useState<1 | 2>(1);
+  const [wrapUp, setWrapUp] = useState(false);
   const activeGuidedSteps = practiceRound === 2 && task.extraGuidedSteps?.length ? task.extraGuidedSteps : task.guidedSteps;
   const guided = activeGuidedSteps[guidedIndex] || activeGuidedSteps[0];
 
+  function resetStepState() {
+    setSelected("");
+    setTypedAnswer("");
+    setFeedback("");
+  }
+
   function nextGuided() {
-    if (guidedIndex < activeGuidedSteps.length - 1) { setGuidedIndex((v) => v + 1); setSelected(""); setTypedAnswer(""); setFeedback(""); }
-    else setStage(3);
+    if (guidedIndex < activeGuidedSteps.length - 1) {
+      setGuidedIndex((v) => v + 1);
+      resetStepState();
+    } else setStage(3);
   }
 
   function startAnotherTogether() {
     setPracticeRound(2);
     setStage(2);
     setGuidedIndex(0);
-    setSelected("");
-    setTypedAnswer("");
-    setFeedback("");
+    setSupportsUnlocked(false);
+    setWrapUp(false);
+    resetStepState();
+  }
+
+  function finishAlone() {
+    onMarkComplete();
+    setWrapUp(true);
   }
 
   return <FlowShell onBack={onBack}>
@@ -212,11 +265,11 @@ function LearningFlow({ task, taskIndex, taskCount, preview, onBack, onComplete 
           selected={selected}
           typedAnswer={typedAnswer}
           feedback={feedback}
-          aidOpen={aidOpen}
-          onSelect={(option) => { setSelected(option); setFeedback(""); }}
-          onTypedAnswer={(value) => { setTypedAnswer(value); setFeedback(""); }}
+          supportsUnlocked={supportsUnlocked}
+          onSelect={setSelected}
+          onTypedAnswer={setTypedAnswer}
           onFeedback={setFeedback}
-          onAidOpenChange={setAidOpen}
+          onUnlockSupports={() => setSupportsUnlocked(true)}
           onBack={() => setStage(1)}
           onNext={nextGuided}
         />
@@ -224,12 +277,14 @@ function LearningFlow({ task, taskIndex, taskCount, preview, onBack, onComplete 
       {stage === 3 && (
         <StageAlone
           task={task}
+          taskCount={taskCount}
           practiceRound={practiceRound}
-          memoryOpen={memoryOpen}
+          wrapUp={wrapUp}
           aidOpen={aidOpen}
-          onMemoryToggle={() => setMemoryOpen((v) => !v)}
           onAidOpenChange={setAidOpen}
-          onComplete={onComplete}
+          onFinish={finishAlone}
+          onCheckWork={onCheckWork}
+          onLeave={onLeave}
           onAnotherTogether={startAnotherTogether}
         />
       )}
@@ -249,12 +304,13 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
   return (
     <section className="stage-content instruction-stage">
       <div className="stage-main">
+        <h1>Поймём задание</h1>
         {phase === "check" ? (
           <div className="parent-actions">
             <div className="parent-action">
               <div className="parent-action-head">
                 <BookOpen size={22} weight="regular" />
-                <p>Попросите ребёнка прочитать инструкцию.</p>
+                <p>Попросите ребёнка прочитать инструкцию из учебника.</p>
               </div>
               <div className="instruction-quote focus-block">
                 <InstructionText text={task.instruction} />
@@ -263,13 +319,13 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
             <div className="parent-action">
               <div className="parent-action-head">
                 <ChatCircleDots size={22} weight="regular" />
-                <p>Попросите рассказать своими словами, что нужно сделать.</p>
+                <p>Попросите пересказать своими словами, что нужно сделать.</p>
               </div>
             </div>
           </div>
         ) : (
           <>
-            <h1>Поможем разобраться</h1>
+            <p className="stage-subtitle">Уточним, что ребёнок понял</p>
             <div className="instruction-quote focus-block compact">
               <InstructionText text={task.instruction} />
             </div>
@@ -294,8 +350,8 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
       <div className="stage-actions">
         {phase === "check" && (
           <>
-            <button className="primary-button flow-primary" onClick={onNext}>Понятно, что делать <ArrowRight size={20} weight="bold" /></button>
-            <button className="secondary-button flow-secondary" onClick={() => setPhase("guide")}>Помочь разобраться</button>
+            <button className="primary-button flow-primary" onClick={onNext}>Начать первый пункт <ArrowRight size={20} weight="bold" /></button>
+            <button className="secondary-button flow-secondary" onClick={() => setPhase("guide")}>Не понял — помочь вопросами</button>
           </>
         )}
         {phase === "guide" && (
@@ -306,13 +362,13 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
         )}
         {phase === "retell" && (
           <>
-            <button className="primary-button flow-primary" onClick={onNext}>Понятно, что делать <ArrowRight size={20} weight="bold" /></button>
+            <button className="primary-button flow-primary" onClick={onNext}>Начать первый пункт <ArrowRight size={20} weight="bold" /></button>
             <button className="secondary-button flow-secondary" onClick={() => setPhase("fallback")}>Всё ещё непонятно</button>
           </>
         )}
         {phase === "fallback" && (
           <>
-            <button className="primary-button flow-primary" onClick={onNext}>Понятно, что делать <ArrowRight size={20} weight="bold" /></button>
+            <button className="primary-button flow-primary" onClick={onNext}>Начать первый пункт <ArrowRight size={20} weight="bold" /></button>
             <button className="secondary-button flow-secondary" onClick={() => { setPhase("guide"); setGuideIndex(0); }}>Вернуться к вопросам</button>
           </>
         )}
@@ -411,11 +467,11 @@ function StageTogether({
   selected,
   typedAnswer,
   feedback,
-  aidOpen,
+  supportsUnlocked,
   onSelect,
   onTypedAnswer,
   onFeedback,
-  onAidOpenChange,
+  onUnlockSupports,
   onBack,
   onNext,
 }: {
@@ -427,113 +483,119 @@ function StageTogether({
   selected: string;
   typedAnswer: string;
   feedback: "" | "hint" | "correct" | "wrong";
-  aidOpen: boolean;
+  supportsUnlocked: boolean;
   onSelect: (option: string) => void;
   onTypedAnswer: (value: string) => void;
   onFeedback: (value: "" | "hint" | "correct" | "wrong") => void;
-  onAidOpenChange: (open: boolean) => void;
+  onUnlockSupports: () => void;
   onBack: () => void;
   onNext: () => void;
 }) {
   const example = task.ruleExample?.display?.trim() ? task.ruleExample : null;
   const requiredAid = task.knowledgeAid?.required ? task.knowledgeAid : null;
-  const optionalAid = task.knowledgeAid && !task.knowledgeAid.required ? task.knowledgeAid : null;
-  const [ruleOpen, setRuleOpen] = useState(Boolean(requiredAid));
   const hasOptions = Boolean(guided.options?.length);
   const isText = guided.answerType === "text" && Boolean(guided.acceptableAnswers?.length);
-  const canCheck = hasOptions ? Boolean(selected) : isText ? Boolean(typedAnswer.trim()) : false;
-  const isDecision = task.methodType === "decision" && Boolean(task.decisionGuide?.questions?.length);
-  const showSteps = !isDecision && Boolean(task.methodSteps?.length);
-  const rulePreview = task.rule.text.trim().replace(/\s+/g, " ");
+  const isSpokenOnly = !hasOptions && !isText;
 
-  function checkAnswer() {
+  function evaluate(option?: string, typed?: string) {
     const correct = hasOptions
-      ? selected === guided.correctOption
-      : guided.acceptableAnswers?.some((answer) => normalizeAnswer(answer) === normalizeAnswer(typedAnswer));
+      ? (option ?? selected) === guided.correctOption
+      : guided.acceptableAnswers?.some((answer) => normalizeAnswer(answer) === normalizeAnswer(typed ?? typedAnswer));
+    if (!correct) onUnlockSupports();
     onFeedback(correct ? "correct" : "wrong");
+  }
+
+  function askHint() {
+    onUnlockSupports();
+    onFeedback("hint");
+  }
+
+  function chooseOption(option: string) {
+    onSelect(option);
+    evaluate(option);
+  }
+
+  function submitTyped() {
+    if (!typedAnswer.trim()) return;
+    evaluate(undefined, typedAnswer);
   }
 
   return (
     <section className="stage-content together-stage">
       <div className="stage-main">
-        <h1>{practiceRound === 2 ? "Разбираем ещё один пункт" : "Разбираем на примере"}</h1>
-        <p className="stage-subtitle">Делаем пример вместе — правило и алгоритм под рукой</p>
-
-        <div className="together-supports">
-          <div className="rule-compact">
-            <button type="button" className="rule-compact-head" onClick={() => setRuleOpen((open) => !open)} aria-expanded={ruleOpen}>
-              <span>Правило</span>
-              <small>{ruleOpen ? "Свернуть" : "Показать"}</small>
-            </button>
-            {!ruleOpen && rulePreview && <p className="rule-compact-preview">{rulePreview}</p>}
-            {ruleOpen && (
-              <div className="rule-compact-body">
-                <p className="rule-text">{task.rule.text}</p>
-                {example && (
-                  <div className="rule-example-box">
-                    <span>Как это работает:</span>
-                    <strong>{example.display}</strong>
-                    {example.explanation?.trim() && <p>{example.explanation}</p>}
-                  </div>
-                )}
-                {requiredAid && <div className="knowledge-required"><KnowledgeAidBody aid={requiredAid} /></div>}
-              </div>
-            )}
-          </div>
-
-          {(isDecision || showSteps) && (
-            <div className="algorithm-block">
-              <span className="rule-kicker">{isDecision ? "Как рассуждать" : "Алгоритм"}</span>
-              {isDecision ? <MethodGuide task={task} compact /> : <MethodTrail steps={task.methodSteps} active={-1} />}
-            </div>
-          )}
-        </div>
+        <h1>{practiceRound === 2 ? "Сделаем ещё один пункт вместе" : "Сделаем первый пункт вместе"}</h1>
+        <p className="stage-subtitle">Сначала пусть ребёнок попробует сам — правило появится, если понадобится подсказка</p>
 
         <GuidedProgress index={guidedIndex} count={guidedCount} title={guided.title} />
         <div className="practice-material focus-block">
-          <span className="rule-kicker">{guided.title}</span>
+          <span className="rule-kicker">{guided.title || "Первый пункт"}</span>
           <div className="practice-quote-box">
             {guided.display && <strong className="guided-display">{guided.display}</strong>}
             <p className="practice-prompt">{guided.prompt}</p>
             {hasOptions ? (
               <div className="answer-grid">
                 {guided.options!.map((option) => (
-                  <button key={option} className={selected === option ? "selected" : ""} onClick={() => onSelect(option)}>{option}</button>
+                  <button
+                    key={option}
+                    className={selected === option ? `selected ${feedback === "correct" ? "is-correct" : feedback === "wrong" ? "is-wrong" : ""}` : ""}
+                    onClick={() => chooseOption(option)}
+                    disabled={feedback === "correct"}
+                  >
+                    {option}
+                  </button>
                 ))}
               </div>
             ) : isText ? (
-              <>
-                <label className="answer-input">
-                  <span>Ответ ребёнка</span>
-                  <input value={typedAnswer} onChange={(event) => onTypedAnswer(event.target.value)} placeholder="Введите ответ" autoComplete="off" />
-                </label>
-                <button className="secondary-button answer-spoken" onClick={() => onFeedback("correct")}>Ребёнок ответил вслух</button>
-              </>
-            ) : (
-              <button className="secondary-button answer-spoken" onClick={() => onFeedback("correct")}>Ребёнок ответил вслух</button>
-            )}
+              <label className="answer-input">
+                <span>Ответ ребёнка</span>
+                <input
+                  value={typedAnswer}
+                  onChange={(event) => { onTypedAnswer(event.target.value); if (feedback) onFeedback(""); }}
+                  onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); submitTyped(); } }}
+                  placeholder="Введите ответ и нажмите Enter"
+                  autoComplete="off"
+                  disabled={feedback === "correct"}
+                />
+              </label>
+            ) : null}
             {feedback && (
               <div className={`guided-feedback ${feedback}`}>
-                <strong>{feedback === "hint" ? "Подсказка" : feedback === "correct" ? "Верно" : "Попробуйте ещё раз"}</strong>
+                <strong>{feedback === "hint" ? "Подсказка" : feedback === "correct" ? "Верно" : "Разберём ошибку"}</strong>
                 <p>{feedback === "correct" ? guided.success : guided.hint}</p>
               </div>
             )}
           </div>
         </div>
 
-        {optionalAid && <KnowledgeAid aid={optionalAid} open={aidOpen} onOpenChange={onAidOpenChange} />}
+        {supportsUnlocked && (
+          <div className="applied-rule focus-block">
+            <span className="rule-kicker">Нужное правило</span>
+            <p className="rule-text">{task.rule.text}</p>
+            {example && (
+              <div className="rule-example-box">
+                <span>Как применить здесь:</span>
+                <strong>{example.display}</strong>
+                {example.explanation?.trim() && <p>{example.explanation}</p>}
+              </div>
+            )}
+            {requiredAid && <div className="knowledge-required"><KnowledgeAidBody aid={requiredAid} /></div>}
+          </div>
+        )}
       </div>
       <div className="stage-actions">
         {feedback === "correct" ? (
           <button className="primary-button flow-primary" onClick={onNext}>
-            {guidedIndex < guidedCount - 1 ? "Следующий шаг" : "Дальше сам"} <ArrowRight size={20} weight="bold" />
+            {guidedIndex < guidedCount - 1 ? "Дальше" : "Теперь попробуй сам"} <ArrowRight size={20} weight="bold" />
           </button>
         ) : (
           <>
-            {(hasOptions || isText) && (
-              <button className="primary-button flow-primary" disabled={!canCheck} onClick={checkAnswer}>Проверить ответ</button>
+            {isText && (
+              <button className="primary-button flow-primary" disabled={!typedAnswer.trim()} onClick={submitTyped}>Проверить ответ</button>
             )}
-            <button className="secondary-button flow-secondary" onClick={() => onFeedback("hint")}><Lightbulb size={18} /> Нужна подсказка</button>
+            {isSpokenOnly && feedback !== "hint" && (
+              <button className="primary-button flow-primary" onClick={() => onFeedback("correct")}>Ребёнок ответил вслух</button>
+            )}
+            <button className="secondary-button flow-secondary" onClick={askHint}><Lightbulb size={18} /> Нужна подсказка</button>
             <button className="text-link flow-skip" onClick={onNext}>Пропустить этот шаг</button>
           </>
         )}
@@ -542,7 +604,7 @@ function StageTogether({
             <CheckCircle size={18} weight="fill" /> Я проверил(а): ответ верный
           </button>
         )}
-        <button className="text-link flow-back" onClick={onBack}>Вернуться к инструкции</button>
+        <button className="text-link flow-back" onClick={onBack}>Вернуться к заданию</button>
       </div>
     </section>
   );
@@ -550,58 +612,69 @@ function StageTogether({
 
 function StageAlone({
   task,
+  taskCount,
   practiceRound,
-  memoryOpen,
+  wrapUp,
   aidOpen,
-  onMemoryToggle,
   onAidOpenChange,
-  onComplete,
+  onFinish,
+  onCheckWork,
+  onLeave,
   onAnotherTogether,
 }: {
   task: HomeworkTask;
+  taskCount: number;
   practiceRound: 1 | 2;
-  memoryOpen: boolean;
+  wrapUp: boolean;
   aidOpen: boolean;
-  onMemoryToggle: () => void;
   onAidOpenChange: (open: boolean) => void;
-  onComplete: () => void;
+  onFinish: () => void;
+  onCheckWork: () => void;
+  onLeave: () => void;
   onAnotherTogether: () => void;
 }) {
+  const [hintOpen, setHintOpen] = useState(false);
+  const tip = task.guidedSteps[0]?.hint || task.rule.text;
+
   return (
     <section className="stage-content independent-stage">
       <div className="stage-main">
-        <h1>Дальше сам</h1>
-        <p className="stage-subtitle">Опора рядом: алгоритм и подсказки, если понадобятся</p>
+        <h1>Теперь попробуй сам</h1>
+        <p className="stage-subtitle">Родитель может отойти — рядом короткая памятка</p>
         <div className="independent-material focus-block">
           <span className="rule-kicker">Скажите ребёнку</span>
           <div className="practice-quote-box">
             <p className="independent-speech">{task.independentInstruction}</p>
           </div>
         </div>
-        <div className="memory-card">
-          <button className="memory-head" onClick={onMemoryToggle}>
-            <span><BookOpen size={19} /> Алгоритм и опоры</span>
-            <small>{memoryOpen ? "Свернуть" : "Показать"}</small>
-          </button>
-          {memoryOpen && (
-            <div className="memory-content">
-              <span className="memory-section-label">Как действовать</span>
-              <MethodGuide task={task} compact />
-              {task.rule.text && (
-                <>
-                  <span className="memory-section-label memory-rule-label">Правило</span>
-                  <p className="rule-text">{task.rule.text}</p>
-                </>
-              )}
-            </div>
-          )}
+        <div className="alone-memo">
+          <span className="rule-kicker">Памятка</span>
+          <div className="alone-memo-body">
+            <span className="memory-section-label">Правило</span>
+            <p className="rule-text">{task.rule.text}</p>
+            <span className="memory-section-label memory-rule-label">Порядок действий</span>
+            <MethodGuide task={task} compact />
+            <button className="secondary-button alone-hint-button" onClick={() => setHintOpen((open) => !open)}>
+              <Lightbulb size={18} /> {hintOpen ? "Скрыть подсказку" : "Нужна подсказка"}
+            </button>
+            {hintOpen && <p className="alone-hint-text">{tip}</p>}
+          </div>
         </div>
         {task.knowledgeAid && <KnowledgeAid aid={task.knowledgeAid} open={aidOpen} onOpenChange={onAidOpenChange} />}
       </div>
       <div className="stage-actions">
-        <button className="primary-button flow-primary" onClick={onComplete}>Ребёнок закончил <ArrowRight size={20} weight="bold" /></button>
-        {practiceRound === 1 && Boolean(task.extraGuidedSteps?.length) && (
-          <button className="secondary-button flow-secondary" onClick={onAnotherTogether}>Разобрать ещё один пункт вместе</button>
+        {!wrapUp ? (
+          <>
+            <button className="primary-button flow-primary" onClick={onFinish}>Ребёнок закончил <ArrowRight size={20} weight="bold" /></button>
+            {practiceRound === 1 && Boolean(task.extraGuidedSteps?.length) && (
+              <button className="secondary-button flow-secondary" onClick={onAnotherTogether}>Разобрать ещё один пункт вместе</button>
+            )}
+          </>
+        ) : (
+          <>
+            <button className="primary-button flow-primary" onClick={onCheckWork}>Проверить работу <MagnifyingGlass size={20} weight="bold" /></button>
+            <button className="secondary-button flow-secondary" onClick={onLeave}>К списку заданий</button>
+          </>
         )}
       </div>
     </section>
@@ -669,7 +742,7 @@ function MethodTrail({ steps, active }: { steps: Array<{ title: string }>; activ
 }
 
 function Route({ stage }: { stage: number }) {
-  const labels = ["Инструкция", "Вместе", "Сами"];
+  const labels = ["Задание", "Вместе", "Сам"];
   return <nav className="learning-route" aria-label="Этапы объяснения">{labels.map((label, index) => { const number = index + 1; return <div key={label} className={number === stage ? "active" : number < stage ? "done" : ""}><span>{number < stage ? <Check size={12} weight="bold" /> : number}</span><small>{label}</small></div>; })}</nav>;
 }
 

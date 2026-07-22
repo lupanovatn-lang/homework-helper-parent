@@ -207,24 +207,21 @@ button { -webkit-tap-highlight-color:transparent; }
 .practice-stage .practice-material,
 .together-stage .practice-material,
 .independent-stage .independent-material { background:#eef3fa; box-shadow:inset 0 0 0 1px #d7e3f4; }
-.together-supports { margin-top:10px; display:grid; gap:8px; }
-.rule-compact { border-radius:16px; background:#eef3fa; box-shadow:inset 0 0 0 1px #d7e3f4; overflow:hidden; }
-.rule-compact-head { width:100%; padding:10px 14px; border:0; background:transparent; display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; color:var(--blue); }
-.rule-compact-head>span { font-size:12px; font-weight:800; }
-.rule-compact-head>small { color:#7a869c; font-size:10px; font-weight:600; }
-.rule-compact-preview { margin:0; padding:0 14px 11px; color:#5a6b86; font-size:13px; line-height:1.4; font-weight:400; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.rule-compact-body { padding:0 14px 14px; }
-.rule-compact-body .rule-example-box { margin-top:10px; }
-.algorithm-block { border-radius:16px; background:#f5f8fc; box-shadow:inset 0 0 0 1px #e0e8f3; padding:10px 12px 12px; }
-.algorithm-block .rule-kicker { margin-bottom:8px; }
-.algorithm-block .method-trail { margin-top:0; }
-.algorithm-block .method-trail>div { min-height:44px; }
-.algorithm-block .decision-guide { margin-top:0; }
 .together-stage .flow-skip { margin-top:2px; color:#7a869c; }
+.applied-rule { margin-top:12px; padding:16px; border-radius:18px; background:#fff8e6; box-shadow:inset 0 0 0 1px #eadba9; }
+.applied-rule .rule-example-box { margin-top:10px; }
+.answer-grid>button.is-correct { box-shadow:inset 0 0 0 2px #6f9f5d; }
+.answer-grid>button.is-wrong { box-shadow:inset 0 0 0 2px #c56a4e; }
+.alone-memo { margin-top:12px; border-radius:18px; background:#f3f8ff; box-shadow:inset 0 0 0 1px #cfe0f4; padding:14px 15px 15px; }
+.alone-memo-body { margin-top:4px; }
+.alone-memo .method-trail { margin-top:8px; }
+.alone-hint-button { margin-top:12px; width:100%; }
+.alone-hint-text { margin:10px 0 0; padding:12px; border-radius:12px; background:#fff8e6; color:#5a4a20; font-size:13.5px; line-height:1.45; }
 .practice-quote-box { margin-top:0; padding:15px 16px; border-radius:14px; background:#fff; box-shadow:0 1px 0 rgba(10,36,90,.04); }
 .practice-material .rule-kicker,
 .independent-material .rule-kicker,
-.algorithm-block .rule-kicker { margin-bottom:10px; }
+.applied-rule .rule-kicker,
+.alone-memo .rule-kicker { margin-bottom:10px; }
 .practice-prompt { margin:0; color:#435675; font-size:14.5px; line-height:1.5; font-weight:400; }
 .guided-display + .practice-prompt { margin-top:10px; }
 .guided-progress { margin-top:12px; }
