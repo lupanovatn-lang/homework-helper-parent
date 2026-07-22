@@ -195,16 +195,14 @@ function LearningFlow({ task, taskIndex, taskCount, preview, onBack, onComplete 
   }
 
   return <FlowShell onBack={onBack}>
-    <TaskContext task={task} index={taskIndex} count={taskCount} preview={preview} />
-    <Route stage={stage} />
-    {stage === 1 && <StageOne task={task} onNext={() => setStage(2)} />}
-    {stage === 2 && <StageTwo task={task} aidOpen={aidOpen} onAidOpenChange={changeAidOpen} onBack={() => setStage(1)} onNext={() => setStage(3)} />}
-    {stage === 3 && <section className="stage-content"><p className="stage-label">Шаг 3 из 4</p><h1>{practiceRound === 2 ? "Разбираем ещё один пункт" : "Выполняем один пункт вместе"}</h1><p className="stage-subtitle">Применяем способ к настоящему заданию.</p><div className="guided-card">{task.methodType !== "decision" && <MethodTrail steps={task.methodSteps} active={Math.min(guidedIndex, task.methodSteps.length - 1)} />}<div className="guided-body"><span className="guided-step-title">{guided.title}</span>{guided.display && <strong className="guided-display">{guided.display}</strong>}<p>{guided.prompt}</p>{guided.options?.length ? <div className="answer-grid">{guided.options.map((option) => <button key={option} className={selected === option ? "selected" : ""} onClick={() => { setSelected(option); setFeedback(""); }}>{option}</button>)}</div> : guided.answerType === "text" && guided.acceptableAnswers?.length ? <label className="answer-input"><span>Ответ ребёнка</span><input value={typedAnswer} onChange={(event) => { setTypedAnswer(event.target.value); setFeedback(""); }} placeholder="Введите ответ" autoComplete="off" /></label> : <button className="secondary-button answer-spoken" onClick={() => setFeedback("correct")}>Ребёнок объяснил ответ</button>}{feedback && <div className={`guided-feedback ${feedback}`}><strong>{feedback === "hint" ? "Подсказка" : feedback === "correct" ? "Верно" : "Попробуйте ещё раз"}</strong><p>{feedback === "correct" ? guided.success : guided.hint}</p></div>}</div></div>
-      {feedback === "correct" ? <button className="primary-button flow-primary" onClick={nextGuided}>{guidedIndex < activeGuidedSteps.length - 1 ? "Следующий шаг" : "Теперь самостоятельно"} <ArrowRight size={20} weight="bold" /></button> : <><button className="primary-button flow-primary" disabled={Boolean(guided.options?.length) ? !selected : guided.answerType === "text" ? !typedAnswer.trim() : true} onClick={() => { const correct = guided.options?.length ? selected === guided.correctOption : guided.acceptableAnswers?.some((answer) => normalizeAnswer(answer) === normalizeAnswer(typedAnswer)); setFeedback(correct ? "correct" : "wrong"); }}>Проверить ответ</button><button className="secondary-button flow-secondary" onClick={() => setFeedback("hint")}><Lightbulb size={18} /> Нужна подсказка</button></>}
-      {feedback === "wrong" && <button className="text-link parent-override" onClick={() => setFeedback("correct")}><CheckCircle size={18} weight="fill" /> Я проверил(а): ответ верный</button>}
-      {aidAvailable && <KnowledgeAid aid={task.knowledgeAid} open={aidOpen} onOpenChange={changeAidOpen} />}
-      <button className="text-link flow-back" onClick={() => setStage(2)}>Вернуться к правилу</button></section>}
-    {stage === 4 && <section className="stage-content independent"><p className="stage-label">Шаг 4 из 4</p><h1>Теперь остальные — самостоятельно</h1><div className="child-prompt independent-prompt"><span>Скажите ребёнку</span><p>«{task.independentInstruction}»</p></div><div className="memory-card"><button className="memory-head" onClick={() => setMemoryOpen((v) => !v)}><span><BookOpen size={19} /> Памятка, если нужна</span><small>{memoryOpen ? "Свернуть" : "Показать"}</small></button>{memoryOpen && <div className="memory-content"><span className="memory-section-label">Как действовать</span><MethodGuide task={task} compact /></div>}</div>{aidAvailable && <KnowledgeAid aid={task.knowledgeAid} open={aidOpen} onOpenChange={changeAidOpen} />}<button className="primary-button flow-primary" onClick={onComplete}>Ребёнок закончил <ArrowRight size={20} weight="bold" /></button>{practiceRound === 1 && Boolean(task.extraGuidedSteps?.length) && <button className="secondary-button flow-secondary" onClick={() => { setPracticeRound(2); setStage(3); setGuidedIndex(0); setSelected(""); setTypedAnswer(""); setFeedback(""); }}>Сделать ещё один пункт вместе</button>}</section>}
+    <div className="flow-body">
+      <TaskContext task={task} index={taskIndex} count={taskCount} preview={preview} />
+      <Route stage={stage} />
+      {stage === 1 && <StageOne task={task} onNext={() => setStage(2)} />}
+      {stage === 2 && <StageTwo task={task} aidOpen={aidOpen} onAidOpenChange={changeAidOpen} onBack={() => setStage(1)} onNext={() => setStage(3)} />}
+      {stage === 3 && <section className="stage-content"><div className="stage-main"><p className="stage-label">Шаг 3 из 4</p><h1>{practiceRound === 2 ? "Разбираем ещё один пункт" : "Выполняем один пункт вместе"}</h1><p className="stage-subtitle">Применяем способ к настоящему заданию.</p><div className="guided-card">{task.methodType !== "decision" && <MethodTrail steps={task.methodSteps} active={Math.min(guidedIndex, task.methodSteps.length - 1)} />}<div className="guided-body"><span className="guided-step-title">{guided.title}</span>{guided.display && <strong className="guided-display">{guided.display}</strong>}<p>{guided.prompt}</p>{guided.options?.length ? <div className="answer-grid">{guided.options.map((option) => <button key={option} className={selected === option ? "selected" : ""} onClick={() => { setSelected(option); setFeedback(""); }}>{option}</button>)}</div> : guided.answerType === "text" && guided.acceptableAnswers?.length ? <label className="answer-input"><span>Ответ ребёнка</span><input value={typedAnswer} onChange={(event) => { setTypedAnswer(event.target.value); setFeedback(""); }} placeholder="Введите ответ" autoComplete="off" /></label> : <button className="secondary-button answer-spoken" onClick={() => setFeedback("correct")}>Ребёнок объяснил ответ</button>}{feedback && <div className={`guided-feedback ${feedback}`}><strong>{feedback === "hint" ? "Подсказка" : feedback === "correct" ? "Верно" : "Попробуйте ещё раз"}</strong><p>{feedback === "correct" ? guided.success : guided.hint}</p></div>}</div></div>{aidAvailable && <KnowledgeAid aid={task.knowledgeAid} open={aidOpen} onOpenChange={changeAidOpen} />}</div><div className="stage-actions">{feedback === "correct" ? <button className="primary-button flow-primary" onClick={nextGuided}>{guidedIndex < activeGuidedSteps.length - 1 ? "Следующий шаг" : "Теперь самостоятельно"} <ArrowRight size={20} weight="bold" /></button> : <><button className="primary-button flow-primary" disabled={Boolean(guided.options?.length) ? !selected : guided.answerType === "text" ? !typedAnswer.trim() : true} onClick={() => { const correct = guided.options?.length ? selected === guided.correctOption : guided.acceptableAnswers?.some((answer) => normalizeAnswer(answer) === normalizeAnswer(typedAnswer)); setFeedback(correct ? "correct" : "wrong"); }}>Проверить ответ</button><button className="secondary-button flow-secondary" onClick={() => setFeedback("hint")}><Lightbulb size={18} /> Нужна подсказка</button></>}{feedback === "wrong" && <button className="text-link parent-override" onClick={() => setFeedback("correct")}><CheckCircle size={18} weight="fill" /> Я проверил(а): ответ верный</button>}<button className="text-link flow-back" onClick={() => setStage(2)}>Вернуться к правилу</button></div></section>}
+      {stage === 4 && <section className="stage-content independent"><div className="stage-main"><p className="stage-label">Шаг 4 из 4</p><h1>Теперь остальные — самостоятельно</h1><div className="child-prompt independent-prompt"><span>Скажите ребёнку</span><p>«{task.independentInstruction}»</p></div><div className="memory-card"><button className="memory-head" onClick={() => setMemoryOpen((v) => !v)}><span><BookOpen size={19} /> Памятка, если нужна</span><small>{memoryOpen ? "Свернуть" : "Показать"}</small></button>{memoryOpen && <div className="memory-content"><span className="memory-section-label">Как действовать</span><MethodGuide task={task} compact /></div>}</div>{aidAvailable && <KnowledgeAid aid={task.knowledgeAid} open={aidOpen} onOpenChange={changeAidOpen} />}</div><div className="stage-actions"><button className="primary-button flow-primary" onClick={onComplete}>Ребёнок закончил <ArrowRight size={20} weight="bold" /></button>{practiceRound === 1 && Boolean(task.extraGuidedSteps?.length) && <button className="secondary-button flow-secondary" onClick={() => { setPracticeRound(2); setStage(3); setGuidedIndex(0); setSelected(""); setTypedAnswer(""); setFeedback(""); }}>Сделать ещё один пункт вместе</button>}</div></section>}
+    </div>
   </FlowShell>;
 }
 
@@ -220,67 +218,71 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
   }
   return (
     <section className="stage-content instruction-stage" onClick={() => tipOpen && setTipOpen(false)}>
-      <h1 className="stage-heading-with-tip">
-        <span>Прочитайте инструкцию</span>
-        <span className={`heading-tip ${tipOpen ? "open" : ""}`} onClick={(event) => event.stopPropagation()}>
-          <button
-            type="button"
-            aria-label="Подсказка: самостоятельно или попросите ребёнка"
-            aria-expanded={tipOpen}
-            onClick={() => setTipOpen((open) => !open)}
-          >
-            <span aria-hidden="true">i</span>
-          </button>
-          {tipOpen && <span className="heading-tip-bubble" role="tooltip">Самостоятельно или попросите ребёнка</span>}
-        </span>
-      </h1>
-      <div className="child-material instruction-source">
-        <InstructionText text={task.instruction} />
+      <div className="stage-main">
+        <h1 className="stage-heading-with-tip">
+          <span>Прочитайте инструкцию</span>
+          <span className={`heading-tip ${tipOpen ? "open" : ""}`} onClick={(event) => event.stopPropagation()}>
+            <button
+              type="button"
+              aria-label="Подсказка: самостоятельно или попросите ребёнка"
+              aria-expanded={tipOpen}
+              onClick={() => setTipOpen((open) => !open)}
+            >
+              <span aria-hidden="true">i</span>
+            </button>
+            {tipOpen && <span className="heading-tip-bubble" role="tooltip">Самостоятельно или попросите ребёнка</span>}
+          </span>
+        </h1>
+        <div className="child-material instruction-source focus-block">
+          <InstructionText text={task.instruction} />
+        </div>
+        {phase === "check" && (
+          <Recommendation title="Рекомендация">
+            Попросите ребёнка рассказать своими словами, что нужно сделать.
+          </Recommendation>
+        )}
+        {phase === "guide" && (
+          <Recommendation title="Спросите ребёнка" note="Задайте вопрос, только если ребёнок не назвал это действие.">
+            {currentQuestion}
+          </Recommendation>
+        )}
+        {phase === "retell" && (
+          <Recommendation title="Попросите пересказать ещё раз">
+            Теперь ещё раз расскажи своими словами, что нужно сделать во всём задании.
+          </Recommendation>
+        )}
+        {phase === "fallback" && (
+          <Recommendation title="Объясните ещё проще">
+            {task.simplerInstruction}
+          </Recommendation>
+        )}
       </div>
-      {phase === "check" && (
-        <Recommendation title="Рекомендация">
-          Попросите ребёнка рассказать своими словами, что нужно сделать.
-        </Recommendation>
-      )}
-      {phase === "guide" && (
-        <Recommendation title="Спросите ребёнка" note="Задайте вопрос, только если ребёнок не назвал это действие.">
-          {currentQuestion}
-        </Recommendation>
-      )}
-      {phase === "retell" && (
-        <Recommendation title="Попросите пересказать ещё раз">
-          Теперь ещё раз расскажи своими словами, что нужно сделать во всём задании.
-        </Recommendation>
-      )}
-      {phase === "fallback" && (
-        <Recommendation title="Объясните ещё проще">
-          {task.simplerInstruction}
-        </Recommendation>
-      )}
-      {phase === "check" && (
-        <>
-          <button className="primary-button flow-primary" onClick={onNext}>Понятно, что делать <ArrowRight size={20} weight="bold" /></button>
-          <button className="secondary-button flow-secondary" onClick={() => setPhase("guide")}>Объяснить задание</button>
-        </>
-      )}
-      {phase === "guide" && (
-        <>
-          <button className="primary-button flow-primary" onClick={nextQuestion}>{guideIndex < guidingQuestions.length - 1 ? "Следующий вопрос" : "Снова пересказать всё"} <ArrowRight size={20} weight="bold" /></button>
-          <button className="secondary-button flow-secondary" onClick={nextQuestion}>Это действие уже назвал</button>
-        </>
-      )}
-      {phase === "retell" && (
-        <>
-          <button className="primary-button flow-primary" onClick={onNext}>Понятно, что делать <ArrowRight size={20} weight="bold" /></button>
-          <button className="secondary-button flow-secondary" onClick={() => setPhase("fallback")}>Всё ещё непонятно</button>
-        </>
-      )}
-      {phase === "fallback" && (
-        <>
-          <button className="primary-button flow-primary" onClick={onNext}>Понятно, что делать <ArrowRight size={20} weight="bold" /></button>
-          <button className="secondary-button flow-secondary" onClick={() => { setPhase("guide"); setGuideIndex(0); }}>Вернуться к вопросам</button>
-        </>
-      )}
+      <div className="stage-actions">
+        {phase === "check" && (
+          <>
+            <button className="primary-button flow-primary" onClick={onNext}>Понятно, что делать <ArrowRight size={20} weight="bold" /></button>
+            <button className="secondary-button flow-secondary" onClick={() => setPhase("guide")}>Объяснить задание</button>
+          </>
+        )}
+        {phase === "guide" && (
+          <>
+            <button className="primary-button flow-primary" onClick={nextQuestion}>{guideIndex < guidingQuestions.length - 1 ? "Следующий вопрос" : "Снова пересказать всё"} <ArrowRight size={20} weight="bold" /></button>
+            <button className="secondary-button flow-secondary" onClick={nextQuestion}>Это действие уже назвал</button>
+          </>
+        )}
+        {phase === "retell" && (
+          <>
+            <button className="primary-button flow-primary" onClick={onNext}>Понятно, что делать <ArrowRight size={20} weight="bold" /></button>
+            <button className="secondary-button flow-secondary" onClick={() => setPhase("fallback")}>Всё ещё непонятно</button>
+          </>
+        )}
+        {phase === "fallback" && (
+          <>
+            <button className="primary-button flow-primary" onClick={onNext}>Понятно, что делать <ArrowRight size={20} weight="bold" /></button>
+            <button className="secondary-button flow-secondary" onClick={() => { setPhase("guide"); setGuideIndex(0); }}>Вернуться к вопросам</button>
+          </>
+        )}
+      </div>
     </section>
   );
 }
@@ -382,30 +384,35 @@ function StageTwo({ task, aidOpen, onAidOpenChange, onBack, onNext }: { task: Ho
   }
 
   return (
-    <section className="stage-content instruction-stage">
-      <h1>{heading}</h1>
-      <div className="rule-material">
-        <p className="rule-text">{task.rule.text}</p>
-        {example && (
-          <div className="rule-example-box">
-            <span>Пример:</span>
-            <strong>{example.display}</strong>
-            {example.explanation?.trim() && <p>{example.explanation}</p>}
-          </div>
+    <section className="stage-content instruction-stage rule-stage">
+      <div className="stage-main">
+        <h1>{heading}</h1>
+        <div className="rule-material focus-block">
+          {task.rule.title?.trim() && <span className="rule-kicker">{task.rule.title}</span>}
+          <p className="rule-text">{task.rule.text}</p>
+          {example && (
+            <div className="rule-example-box">
+              <span>Пример:</span>
+              <strong>{example.display}</strong>
+              {example.explanation?.trim() && <p>{example.explanation}</p>}
+            </div>
+          )}
+          {requiredAid && <div className="knowledge-required"><KnowledgeAidBody aid={requiredAid} /></div>}
+        </div>
+        <Recommendation title="Рекомендация">
+          Попросите ребёнка объяснить правило своими словами или привести свой пример.
+        </Recommendation>
+        {(optionalAid || hintOpen) && (
+          optionalAid
+            ? <KnowledgeAid aid={optionalAid} open={aidOpen || hintOpen} onOpenChange={(open) => { onAidOpenChange(open); if (!open) setHintOpen(false); }} />
+            : <Recommendation title="Подсказка">{tip}</Recommendation>
         )}
-        {requiredAid && <div className="knowledge-required"><KnowledgeAidBody aid={requiredAid} /></div>}
       </div>
-      <Recommendation title="Рекомендация">
-        Попросите ребёнка объяснить правило своими словами или привести свой пример.
-      </Recommendation>
-      {(optionalAid || hintOpen) && (
-        optionalAid
-          ? <KnowledgeAid aid={optionalAid} open={aidOpen || hintOpen} onOpenChange={(open) => { onAidOpenChange(open); if (!open) setHintOpen(false); }} />
-          : <Recommendation title="Подсказка">{tip}</Recommendation>
-      )}
-      <button className="primary-button flow-primary" onClick={onNext}>Дальше, к выполнению <ArrowRight size={20} weight="bold" /></button>
-      <button className="secondary-button flow-secondary" onClick={askHint}><Lightbulb size={18} /> Нужна подсказка</button>
-      <button className="text-link flow-back" onClick={onBack}>Вернуться к инструкции</button>
+      <div className="stage-actions">
+        <button className="primary-button flow-primary" onClick={onNext}>Дальше, к выполнению <ArrowRight size={20} weight="bold" /></button>
+        <button className="secondary-button flow-secondary" onClick={askHint}><Lightbulb size={18} /> Нужна подсказка</button>
+        <button className="text-link flow-back" onClick={onBack}>Вернуться к инструкции</button>
+      </div>
     </section>
   );
 }
