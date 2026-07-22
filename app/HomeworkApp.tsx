@@ -486,7 +486,7 @@ function FlowShell({ children, onBack }: { children: ReactNode; onBack: () => vo
 function Secure() { return <div className="secure"><ShieldCheck size={19} /> Без регистрации</div>; }
 
 function LoadingStatus({ elapsed, label, progress, eta }: { elapsed: number; label: string; progress: number; eta: string }) {
-  const overEta = elapsed > (eta.includes("30") ? 35 : 25);
+  const overEta = elapsed > 70;
   return (
     <div className="loading-status" role="status" aria-live="polite">
       <div className="loading-status-head">
