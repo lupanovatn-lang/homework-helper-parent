@@ -191,20 +191,20 @@ button { -webkit-tap-highlight-color:transparent; }
 .heading-tip-bubble { position:absolute; right:0; top:calc(100% + 10px); width:max-content; max-width:min(230px,70vw); padding:9px 11px; border-radius:10px; background:var(--navy); color:#fff; font-size:11px; line-height:1.4; font-weight:600; z-index:20; box-shadow:0 10px 24px rgba(10,36,90,.2); }
 .heading-tip-bubble::before { content:""; position:absolute; right:8px; bottom:100%; border:6px solid transparent; border-bottom-color:var(--navy); }
 .instruction-stage { position:relative; }
-.child-material.instruction-source { margin-top:14px; }
-.rule-material { margin-top:14px; padding:15px 15px 14px; border-radius:16px; background:#f0f5ff; }
-.rule-text { margin:0; color:var(--navy); font-size:14.5px; line-height:1.5; font-weight:500; }
-.rule-example-box { margin-top:12px; padding:12px 13px; border-radius:12px; background:#fff; }
-.rule-example-box>span { display:block; margin-bottom:6px; color:var(--blue); font-size:10px; font-weight:800; }
-.rule-example-box>strong { display:block; color:var(--navy); font-size:18px; line-height:1.35; font-weight:750; white-space:pre-wrap; }
-.rule-example-box>p { margin:7px 0 0; color:#52627e; font-size:12px; line-height:1.45; font-weight:500; }
-.rule-material .knowledge-required { margin-top:12px; padding-top:12px; border-top:1px solid #d5e2f8; }
-.recommendation-card { margin-top:12px; padding:13px 14px; border-radius:14px; background:#fff8e8; border:1px solid #f0e0b0; }
-.recommendation-card.guide { background:#fffaf0; }
-.recommendation-head { display:flex; align-items:center; gap:7px; color:#8a650d; }
-.recommendation-head strong { font-size:12px; font-weight:800; }
-.recommendation-card>p { margin:8px 0 0; color:#5c5340; font-size:12.5px; line-height:1.45; font-weight:550; }
-.recommendation-card small { display:block; margin-top:7px; color:#8a7a55; font-size:9.5px; line-height:1.4; }
+.child-material.instruction-source { margin-top:14px; padding:16px 17px; border-radius:18px; background:#eef3fa; }
+.rule-material { margin-top:14px; padding:16px 17px; border-radius:18px; background:#eef3fa; }
+.rule-text { margin:0; color:#2f3b52; font-size:14.5px; line-height:1.55; font-weight:400; }
+.rule-example-box { margin-top:12px; padding:13px 14px; border-radius:14px; background:#fff; }
+.rule-example-box>span { display:block; margin-bottom:6px; color:var(--blue); font-size:10px; font-weight:700; }
+.rule-example-box>strong { display:block; color:var(--navy); font-size:18px; line-height:1.35; font-weight:700; white-space:pre-wrap; }
+.rule-example-box>p { margin:7px 0 0; color:#5a6578; font-size:12.5px; line-height:1.45; font-weight:400; }
+.rule-material .knowledge-required { margin-top:12px; padding-top:12px; border-top:1px solid #d9e2f0; }
+.recommendation-card { margin-top:12px; padding:15px 16px 14px; border-radius:18px; background:#fff8e6; border:0; }
+.recommendation-card.guide { background:#fff8e6; }
+.recommendation-head { display:flex; align-items:center; gap:8px; color:#e0b43c; }
+.recommendation-head strong { color:#9a7408; font-size:13px; line-height:1.2; font-weight:700; letter-spacing:-.1px; }
+.recommendation-card>p { margin:8px 0 0; color:#3f4758; font-size:13.5px; line-height:1.5; font-weight:400; }
+.recommendation-card small { display:block; margin-top:7px; color:#8a7a55; font-size:10px; line-height:1.4; font-weight:400; }
 .speech-card { margin-top:17px; padding:16px; border:1px solid #d6e4f5; border-radius:18px; background:#f5f9ff; }
 .speech-card>span,.question-card span,.child-prompt span,.guided-step-title,.method-card>span { display:block; color:var(--blue); font-size:8.5px; font-weight:800; text-transform:uppercase; letter-spacing:.55px; }
 .speech-card>p { margin:9px 0 0; color:var(--navy); font-size:16px; line-height:1.45; font-weight:650; }

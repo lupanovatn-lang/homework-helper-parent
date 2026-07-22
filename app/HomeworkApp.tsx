@@ -230,41 +230,24 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
         <InstructionText text={task.instruction} />
       </div>
       {phase === "check" && (
-        <div className="recommendation-card">
-          <div className="recommendation-head">
-            <Lightbulb size={18} weight="fill" />
-            <strong>Рекомендация</strong>
-          </div>
-          <p>Попросите ребёнка рассказать своими словами, что нужно сделать.</p>
-        </div>
+        <Recommendation title="Рекомендация">
+          Попросите ребёнка рассказать своими словами, что нужно сделать.
+        </Recommendation>
       )}
       {phase === "guide" && (
-        <div className="recommendation-card guide">
-          <div className="recommendation-head">
-            <Lightbulb size={18} weight="fill" />
-            <strong>Спросите ребёнка</strong>
-          </div>
-          <p>{currentQuestion}</p>
-          <small>Задайте вопрос, только если ребёнок не назвал это действие.</small>
-        </div>
+        <Recommendation title="Спросите ребёнка" note="Задайте вопрос, только если ребёнок не назвал это действие.">
+          {currentQuestion}
+        </Recommendation>
       )}
       {phase === "retell" && (
-        <div className="recommendation-card">
-          <div className="recommendation-head">
-            <Lightbulb size={18} weight="fill" />
-            <strong>Попросите пересказать ещё раз</strong>
-          </div>
-          <p>Теперь ещё раз расскажи своими словами, что нужно сделать во всём задании.</p>
-        </div>
+        <Recommendation title="Попросите пересказать ещё раз">
+          Теперь ещё раз расскажи своими словами, что нужно сделать во всём задании.
+        </Recommendation>
       )}
       {phase === "fallback" && (
-        <div className="recommendation-card">
-          <div className="recommendation-head">
-            <Lightbulb size={18} weight="fill" />
-            <strong>Объясните ещё проще</strong>
-          </div>
-          <p>{task.simplerInstruction}</p>
-        </div>
+        <Recommendation title="Объясните ещё проще">
+          {task.simplerInstruction}
+        </Recommendation>
       )}
       {phase === "check" && (
         <>
@@ -390,17 +373,13 @@ function StageTwo({ task, aidOpen, onAidOpenChange, onBack, onNext }: { task: Ho
         )}
         {requiredAid && <div className="knowledge-required"><KnowledgeAidBody aid={requiredAid} /></div>}
       </div>
-      <div className="recommendation-card">
-        <div className="recommendation-head">
-          <Lightbulb size={18} weight="fill" />
-          <strong>Рекомендация</strong>
-        </div>
-        <p>Попросите ребёнка объяснить правило своими словами или привести свой пример.</p>
-      </div>
+      <Recommendation title="Рекомендация">
+        Попросите ребёнка объяснить правило своими словами или привести свой пример.
+      </Recommendation>
       {(optionalAid || hintOpen) && (
         optionalAid
           ? <KnowledgeAid aid={optionalAid} open={aidOpen || hintOpen} onOpenChange={(open) => { onAidOpenChange(open); if (!open) setHintOpen(false); }} />
-          : <div className="recommendation-card guide"><div className="recommendation-head"><Lightbulb size={18} weight="fill" /><strong>Подсказка</strong></div><p>{tip}</p></div>
+          : <Recommendation title="Подсказка">{tip}</Recommendation>
       )}
       <button className="primary-button flow-primary" onClick={onNext}>Дальше, к выполнению <ArrowRight size={20} weight="bold" /></button>
       <button className="secondary-button flow-secondary" onClick={askHint}><Lightbulb size={18} /> Нужна подсказка</button>
