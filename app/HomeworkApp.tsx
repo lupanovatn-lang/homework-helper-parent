@@ -288,16 +288,6 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
   );
 }
 
-function ParentStep({ order, title, children }: { order: "Сначала" | "Затем"; title: string; children: ReactNode }) {
-  return (
-    <div className="parent-step">
-      <span className="parent-step-order">{order}</span>
-      <h2 className="parent-step-title">{title}</h2>
-      {children}
-    </div>
-  );
-}
-
 function InstructionText({ text }: { text: string }) {
   const blocks = splitInstructionBlocks(repairLineBreakHyphenation(text));
   return (
@@ -366,38 +356,48 @@ function protectShortTokens(value: string) {
 }
 
 function StageTwo({ task, aidOpen, onAidOpenChange, onBack, onNext }: { task: HomeworkTask; aidOpen: boolean; onAidOpenChange: (open: boolean) => void; onBack: () => void; onNext: () => void }) {
+  const [hintOpen, setHintOpen] = useState(false);
   const example = task.ruleExample?.display?.trim() ? task.ruleExample : null;
   const requiredAid = task.knowledgeAid?.required ? task.knowledgeAid : null;
-  // If the screen already has an application example, don't offer another "examples" dump.
   const optionalAid = task.knowledgeAid && !task.knowledgeAid.required && !(example && task.knowledgeAid.type === "examples")
     ? task.knowledgeAid
     : null;
-  const knowledgeTitle = knowledgeActionTitle(inferKnowledgeKind(task));
-  const exampleTitle = exampleActionTitle(inferExampleKind(example));
+  const heading = knowledgeHeading(inferKnowledgeKind(task));
+  const tip = task.methodSteps?.[0]?.text || task.methodSteps?.[0]?.title || task.decisionGuide?.start || "Вместе вспомните, с чего начать применение правила к заданию.";
+
+  function askHint() {
+    if (optionalAid) onAidOpenChange(true);
+    else setHintOpen(true);
+  }
 
   return (
     <section className="stage-content instruction-stage">
-      <p className="stage-label">Шаг 2 из 4</p>
-      <h1>Вспомним правило</h1>
-      <div className="instruction-panel">
-        <ParentStep order="Сначала" title={knowledgeTitle}>
-          <div className="child-material">
-            <strong>{task.rule.title}</strong>
-            <p>{task.rule.text}</p>
-            {requiredAid && <div className="knowledge-required"><KnowledgeAidBody aid={requiredAid} /></div>}
-          </div>
-        </ParentStep>
+      <h1>{heading}</h1>
+      <div className="rule-material">
+        <p className="rule-text">{task.rule.text}</p>
         {example && (
-          <ParentStep order="Затем" title={exampleTitle}>
-            <div className="child-material">
-              <strong className="example-display">{example.display}</strong>
-              {example.explanation?.trim() && <p>{example.explanation}</p>}
-            </div>
-          </ParentStep>
+          <div className="rule-example-box">
+            <span>Пример:</span>
+            <strong>{example.display}</strong>
+            {example.explanation?.trim() && <p>{example.explanation}</p>}
+          </div>
         )}
+        {requiredAid && <div className="knowledge-required"><KnowledgeAidBody aid={requiredAid} /></div>}
       </div>
-      {optionalAid && <KnowledgeAid aid={optionalAid} open={aidOpen} onOpenChange={onAidOpenChange} />}
-      <button className="primary-button flow-primary" onClick={onNext}>Перейти к выполнению <ArrowRight size={20} weight="bold" /></button>
+      <div className="recommendation-card">
+        <div className="recommendation-head">
+          <Lightbulb size={18} weight="fill" />
+          <strong>Рекомендация</strong>
+        </div>
+        <p>Попросите ребёнка объяснить правило своими словами или привести свой пример.</p>
+      </div>
+      {(optionalAid || hintOpen) && (
+        optionalAid
+          ? <KnowledgeAid aid={optionalAid} open={aidOpen || hintOpen} onOpenChange={(open) => { onAidOpenChange(open); if (!open) setHintOpen(false); }} />
+          : <div className="recommendation-card guide"><div className="recommendation-head"><Lightbulb size={18} weight="fill" /><strong>Подсказка</strong></div><p>{tip}</p></div>
+      )}
+      <button className="primary-button flow-primary" onClick={onNext}>Дальше, к выполнению <ArrowRight size={20} weight="bold" /></button>
+      <button className="secondary-button flow-secondary" onClick={askHint}><Lightbulb size={18} /> Нужна подсказка</button>
       <button className="text-link flow-back" onClick={onBack}>Вернуться к инструкции</button>
     </section>
   );
@@ -415,30 +415,13 @@ function inferKnowledgeKind(task: HomeworkTask): KnowledgeKind {
   return "rule";
 }
 
-function knowledgeActionTitle(kind: KnowledgeKind) {
-  if (kind === "formula") return "Посмотрите формулу вместе";
-  if (kind === "table") return "Посмотрите таблицу вместе";
-  if (kind === "scheme") return "Разберите схему вместе";
+function knowledgeHeading(kind: KnowledgeKind) {
+  if (kind === "formula") return "Посмотрите формулу";
+  if (kind === "table") return "Посмотрите таблицу";
+  if (kind === "scheme") return "Разберите схему";
   if (kind === "list") return "Вспомните вместе";
-  if (kind === "definition") return "Прочитайте определение вместе";
-  return "Прочитайте правило вместе";
-}
-
-function inferExampleKind(example: { kind?: ExampleKind; display: string; explanation?: string } | null): ExampleKind {
-  if (!example) return "demo";
-  if (example.kind) return example.kind;
-  const blob = `${example.display} ${example.explanation || ""}`.toLocaleLowerCase("ru");
-  if (/сравн|versus|vs\.|↔|—(?=.+—)/i.test(blob) || /\bа\b.+\bб\b/i.test(blob)) return "compare";
-  if (/схем/.test(blob)) return "scheme";
-  if (/пример/.test(blob)) return "example";
-  return "demo";
-}
-
-function exampleActionTitle(kind: ExampleKind) {
-  if (kind === "compare") return "Сравните два случая";
-  if (kind === "scheme") return "Посмотрите на схему";
-  if (kind === "example") return "Рассмотрите пример";
-  return "Посмотрите, как это работает";
+  if (kind === "definition") return "Прочитайте определение";
+  return "Прочитайте правило";
 }
 
 function MethodGuide({ task, compact = false }: { task: HomeworkTask; compact?: boolean }) {

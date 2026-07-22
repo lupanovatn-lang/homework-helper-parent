@@ -192,6 +192,13 @@ button { -webkit-tap-highlight-color:transparent; }
 .heading-tip-bubble::before { content:""; position:absolute; left:50%; bottom:100%; transform:translateX(-50%); border:6px solid transparent; border-bottom-color:var(--navy); }
 .heading-tip:hover .heading-tip-bubble,.heading-tip:focus-within .heading-tip-bubble { opacity:1; }
 .child-material.instruction-source { margin-top:14px; }
+.rule-material { margin-top:14px; padding:15px 15px 14px; border-radius:16px; background:#f0f5ff; }
+.rule-text { margin:0; color:var(--navy); font-size:14.5px; line-height:1.5; font-weight:600; }
+.rule-example-box { margin-top:12px; padding:12px 13px; border-radius:12px; background:#fff; }
+.rule-example-box>span { display:block; margin-bottom:6px; color:var(--blue); font-size:10px; font-weight:800; }
+.rule-example-box>strong { display:block; color:var(--navy); font-size:18px; line-height:1.35; font-weight:750; white-space:pre-wrap; }
+.rule-example-box>p { margin:7px 0 0; color:#52627e; font-size:12px; line-height:1.45; font-weight:500; }
+.rule-material .knowledge-required { margin-top:12px; padding-top:12px; border-top:1px solid #d5e2f8; }
 .recommendation-card { margin-top:12px; padding:13px 14px; border-radius:14px; background:#fff8e8; border:1px solid #f0e0b0; }
 .recommendation-card.guide { background:#fffaf0; }
 .recommendation-head { display:flex; align-items:center; gap:7px; color:#8a650d; }
