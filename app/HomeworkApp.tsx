@@ -209,7 +209,6 @@ function LearningFlow({ task, taskIndex, taskCount, preview, onBack, onComplete 
 function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) {
   const [phase, setPhase] = useState<"check" | "guide" | "retell" | "fallback">("check");
   const [guideIndex, setGuideIndex] = useState(0);
-  const [tipOpen, setTipOpen] = useState(false);
   const guidingQuestions = task.guidingQuestions?.length ? task.guidingQuestions : [task.comprehensionQuestion];
   const currentQuestion = guidingQuestions[Math.min(guideIndex, guidingQuestions.length - 1)];
   function nextQuestion() {
@@ -217,22 +216,10 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
     else setPhase("retell");
   }
   return (
-    <section className="stage-content instruction-stage" onClick={() => tipOpen && setTipOpen(false)}>
+    <section className="stage-content instruction-stage">
       <div className="stage-main">
-        <h1 className="stage-heading-with-tip">
-          <span>Прочитайте инструкцию</span>
-          <span className={`heading-tip ${tipOpen ? "open" : ""}`} onClick={(event) => event.stopPropagation()}>
-            <button
-              type="button"
-              aria-label="Подсказка: самостоятельно или попросите ребёнка"
-              aria-expanded={tipOpen}
-              onClick={() => setTipOpen((open) => !open)}
-            >
-              <span aria-hidden="true">i</span>
-            </button>
-            {tipOpen && <span className="heading-tip-bubble" role="tooltip">Самостоятельно или попросите ребёнка</span>}
-          </span>
-        </h1>
+        <h1>Прочитайте инструкцию</h1>
+        <p className="stage-subtitle">Сами или вместе с ребёнком</p>
         <div className="instruction-material focus-block">
           <span className="rule-kicker">Что сделать</span>
           <div className="instruction-quote-box">
