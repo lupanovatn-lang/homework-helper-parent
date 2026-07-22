@@ -27,6 +27,7 @@ type HomeworkTask = {
   instruction: string;
   simplerInstruction: string;
   comprehensionQuestion: string;
+  guidingQuestions?: string[];
   rule: { title: string; text: string };
   methodType?: "steps" | "decision";
   methodSteps: Array<{ title: string; text?: string }>;
@@ -178,7 +179,8 @@ function LearningFlow({ task, taskIndex, taskCount, preview, onBack, onComplete 
 }
 
 function StageOne({ task, simple, onSimple, onNext }: { task: HomeworkTask; simple: boolean; onSimple: () => void; onNext: () => void }) {
-  return <section className="stage-content"><p className="stage-label">Шаг 1 из 4 · Инструкция</p><h1>Объясните инструкцию</h1><div className="speech-card"><span>Скажите ребёнку</span><p>«{simple ? task.simplerInstruction : task.instruction}»</p></div><div className="question-card"><Question size={23} /><div><span>Сначала спросите без подсказки</span><p>{task.comprehensionQuestion}</p></div></div><button className="primary-button flow-primary" onClick={onNext}>Инструкция понятна <ArrowRight size={20} weight="bold" /></button>{!simple && <button className="secondary-button flow-secondary" onClick={onSimple}>Не понял — подсказать</button>}<p className="flow-note"><Lightbulb size={16} /> Дальше напомним правило и способ действия</p></section>;
+  const guidingQuestions = task.guidingQuestions?.length ? task.guidingQuestions : [task.comprehensionQuestion];
+  return <section className="stage-content"><p className="stage-label">Шаг 1 из 4 · Инструкция</p><h1>Объясните инструкцию</h1><div className="speech-card"><span>{simple ? "Скажите ещё проще" : "Скажите ребёнку"}</span><p>«{simple ? task.simplerInstruction : task.instruction}»</p></div><div className={`question-card ${simple ? "with-guidance" : ""}`}><Question size={23} /><div><span>{simple ? "Помогите вопросами" : "Сначала — без подсказки"}</span>{simple ? <ol className="guiding-list">{guidingQuestions.slice(0, 3).map((question) => <li key={question}>{question}</li>)}</ol> : <p>Расскажи своими словами, что нужно сделать в этом задании?</p>}</div></div><button className="primary-button flow-primary" onClick={onNext}>Инструкция понятна <ArrowRight size={20} weight="bold" /></button>{!simple && <button className="secondary-button flow-secondary" onClick={onSimple}>Не понял — помочь вопросами</button>}<p className="flow-note"><Lightbulb size={16} /> Дальше напомним правило и способ действия</p></section>;
 }
 
 function StageTwo({ task, onBack, onNext }: { task: HomeworkTask; onBack: () => void; onNext: () => void }) {

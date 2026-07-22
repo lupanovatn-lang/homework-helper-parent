@@ -185,6 +185,8 @@ button { -webkit-tap-highlight-color:transparent; }
 .question-card { margin-top:11px; padding:13px; border-radius:16px; background:#edf4ff; display:flex; align-items:flex-start; gap:10px; color:var(--blue); }
 .question-card>svg { flex:none; }
 .question-card p { margin:5px 0 0; color:#344c72; font-size:11px; line-height:1.4; font-weight:650; }
+.guiding-list { margin:7px 0 0; padding-left:17px; color:#344c72; font-size:10.5px; line-height:1.45; font-weight:650; }
+.guiding-list li+li { margin-top:5px; }
 .secondary-button.flow-secondary { display:flex; align-items:center; justify-content:center; gap:6px; flex:none; }
 .flow-back { display:block; margin:4px auto 0; padding:7px; font-size:10px; }
 .method-card { margin-top:11px; padding:13px; border:1px solid #dce5f1; border-radius:16px; background:#fff; }
