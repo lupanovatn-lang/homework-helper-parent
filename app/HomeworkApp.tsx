@@ -251,7 +251,7 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
       {phase === "check" && (
         <>
           <button className="primary-button flow-primary" onClick={onNext}>Понятно, что делать <ArrowRight size={20} weight="bold" /></button>
-          <button className="secondary-button flow-secondary" onClick={() => setPhase("guide")}>Помочь разобраться</button>
+          <button className="secondary-button flow-secondary" onClick={() => setPhase("guide")}>Объяснить задание</button>
         </>
       )}
       {phase === "guide" && (
