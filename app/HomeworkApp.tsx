@@ -131,13 +131,13 @@ export function HomeworkApp() {
       : showText ? <div className="text-state"><label htmlFor="task">Введите условие задания</label><textarea id="task" autoFocus value={task} onChange={(e) => setTask(e.target.value)} placeholder="Например: реши задачу № 5…" /><button className="text-link small" onClick={() => { setShowText(false); setTask(""); }}><Camera size={18} /> Добавить фото</button></div>
       : <button className="upload-zone" onClick={() => inputRef.current?.click()}><span className="camera-circle"><Camera size={46} /></span><strong>Сфотографировать задание</strong><small>Поддерживаются фото, сканы и скриншоты</small></button>}
       {!showText && !file && <button className="text-link" onClick={() => setShowText(true)}>Ввести текстом</button>}
-      <section className="mode-section"><h2>Что нужно сделать?</h2><div className="mode-grid" role="radiogroup">
-        <ModeCard selected={mode === "explain"} onClick={() => setMode("explain")} icon={<Lightbulb size={31} />} title="Объяснить ребёнку" text="Пошагово, вопросами и подсказками" />
-        <ModeCard selected={mode === "check"} onClick={() => setMode("check")} icon={<MagnifyingGlass size={31} />} title="Проверить решение" text="Найдём ошибку и подскажем, что исправить" />
+      <section className="mode-section"><h2>Чем помочь?</h2><div className="mode-grid" role="radiogroup">
+        <ModeCard selected={mode === "explain"} onClick={() => setMode("explain")} icon={<Lightbulb size={31} />} title="Помочь разобраться" text="Поймём задание, вспомним правило и начнём вместе" />
+        <ModeCard selected={mode === "check"} onClick={() => setMode("check")} icon={<MagnifyingGlass size={31} />} title="Проверить работу" text="Найдём ошибки и подскажем, как их исправить" />
       </div>{mode === "check" && <p className="context-note"><Camera size={16} /> Добавьте фото задания вместе с решением ребёнка</p>}</section>
       <button className="primary-button" onClick={begin} disabled={loading}><span>{loading ? "Разбираем…" : "Начать"}</span>{loading ? <span className="spinner" /> : <ArrowRight size={25} weight="bold" />}</button>
       {error && <p className="error-message" role="alert">{error}</p>}
-      <div className="promise"><span><Plant size={23} weight="fill" /></span>Не выдаём готовый ответ —<br /> помогаем ребёнку понять</div>
+      <div className="promise"><span><Plant size={23} weight="fill" /></span>Без готовых ответов —<br /> помогаем ребёнку понять</div>
     </section></main>
   );
 }
