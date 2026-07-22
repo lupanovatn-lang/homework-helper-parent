@@ -514,9 +514,9 @@ function useLoadingProgress(active: boolean, hasPhoto: boolean) {
     return () => window.clearInterval(id);
   }, [active]);
   const label = [...LOADING_STEPS].reverse().find((step) => elapsed >= step.after)?.label || LOADING_STEPS[0].label;
-  const expected = hasPhoto ? 32 : 18;
+  const expected = hasPhoto ? 55 : 40;
   const progress = Math.min(94, Math.round(12 + (elapsed / expected) * 82));
-  const eta = hasPhoto ? "20–35 секунд" : "10–20 секунд";
+  const eta = "1 минуту";
   return { elapsed, label, progress, eta };
 }
 
