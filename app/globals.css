@@ -184,6 +184,20 @@ button { -webkit-tap-highlight-color:transparent; }
 .learning-route .done span { color:#fff; background:#40aa45; }
 .stage-content { padding-top:20px; }
 .stage-label { margin:0 0 8px; color:#74819a; font-size:9px; font-weight:800; letter-spacing:.7px; text-transform:uppercase; }
+.stage-heading-with-tip { display:flex; align-items:center; gap:8px; }
+.stage-heading-with-tip>span:first-child { min-width:0; }
+.heading-tip { position:relative; flex:none; display:inline-flex; }
+.heading-tip>button { width:28px; height:28px; border:0; border-radius:50%; background:#e8f0ff; color:var(--blue); display:grid; place-items:center; cursor:pointer; padding:0; }
+.heading-tip-bubble { position:absolute; left:50%; top:calc(100% + 8px); transform:translateX(-50%); width:max-content; max-width:210px; padding:8px 10px; border-radius:10px; background:var(--navy); color:#fff; font-size:10px; line-height:1.35; font-weight:600; opacity:0; pointer-events:none; transition:opacity .15s ease; z-index:5; box-shadow:0 8px 20px rgba(10,36,90,.18); }
+.heading-tip-bubble::before { content:""; position:absolute; left:50%; bottom:100%; transform:translateX(-50%); border:6px solid transparent; border-bottom-color:var(--navy); }
+.heading-tip:hover .heading-tip-bubble,.heading-tip:focus-within .heading-tip-bubble { opacity:1; }
+.child-material.instruction-source { margin-top:14px; }
+.recommendation-card { margin-top:12px; padding:13px 14px; border-radius:14px; background:#fff8e8; border:1px solid #f0e0b0; }
+.recommendation-card.guide { background:#fffaf0; }
+.recommendation-head { display:flex; align-items:center; gap:7px; color:#8a650d; }
+.recommendation-head strong { font-size:12px; font-weight:800; }
+.recommendation-card>p { margin:8px 0 0; color:#5c5340; font-size:12.5px; line-height:1.45; font-weight:550; }
+.recommendation-card small { display:block; margin-top:7px; color:#8a7a55; font-size:9.5px; line-height:1.4; }
 .speech-card { margin-top:17px; padding:16px; border:1px solid #d6e4f5; border-radius:18px; background:#f5f9ff; }
 .speech-card>span,.question-card span,.child-prompt span,.guided-step-title,.method-card>span { display:block; color:var(--blue); font-size:8.5px; font-weight:800; text-transform:uppercase; letter-spacing:.55px; }
 .speech-card>p { margin:9px 0 0; color:var(--navy); font-size:16px; line-height:1.45; font-weight:650; }

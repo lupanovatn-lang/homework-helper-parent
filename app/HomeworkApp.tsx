@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft, ArrowRight, BookOpen, Camera, Check, CheckCircle, FileImage,
-  Image as ImageIcon, Lightbulb, MagnifyingGlass, Plant,
+  Image as ImageIcon, Info, Lightbulb, MagnifyingGlass, Plant,
   ShieldCheck, Sparkle, X,
 } from "@phosphor-icons/react";
 
@@ -211,44 +211,55 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
   }
   return (
     <section className="stage-content instruction-stage">
-      <p className="stage-label">Шаг 1 из 4</p>
-      <h1>Поймём, что нужно сделать</h1>
-      <div className="instruction-panel">
-        <ParentStep order="Сначала" title="Прочитайте задание вместе">
-          <div className="child-material">
-            <InstructionText text={task.instruction} />
-          </div>
-        </ParentStep>
-        {phase === "check" && (
-          <ParentStep order="Затем" title="Спросите ребёнка">
-            <div className="child-material speech">
-              <p>Расскажи своими словами, что нужно сделать.</p>
-            </div>
-          </ParentStep>
-        )}
-        {phase === "guide" && (
-          <ParentStep order="Затем" title="Спросите ребёнка">
-            <div className="child-material speech">
-              <p>{currentQuestion}</p>
-            </div>
-            <small className="parent-hint">Задайте вопрос, только если ребёнок не назвал это действие.</small>
-          </ParentStep>
-        )}
-        {phase === "retell" && (
-          <ParentStep order="Затем" title="Попросите пересказать ещё раз">
-            <div className="child-material speech">
-              <p>Теперь ещё раз расскажи своими словами, что нужно сделать во всём задании.</p>
-            </div>
-          </ParentStep>
-        )}
-        {phase === "fallback" && (
-          <ParentStep order="Затем" title="Объясните ещё проще">
-            <div className="child-material speech">
-              <p>{task.simplerInstruction}</p>
-            </div>
-          </ParentStep>
-        )}
+      <h1 className="stage-heading-with-tip">
+        <span>Прочитайте инструкцию</span>
+        <span className="heading-tip">
+          <button type="button" aria-label="Подсказка" title="Самостоятельно или попросите ребёнка">
+            <Info size={18} weight="fill" />
+          </button>
+          <span className="heading-tip-bubble" role="tooltip">Самостоятельно или попросите ребёнка</span>
+        </span>
+      </h1>
+      <div className="child-material instruction-source">
+        <InstructionText text={task.instruction} />
       </div>
+      {phase === "check" && (
+        <div className="recommendation-card">
+          <div className="recommendation-head">
+            <Lightbulb size={18} weight="fill" />
+            <strong>Рекомендация</strong>
+          </div>
+          <p>Попросите ребёнка рассказать своими словами, что нужно сделать.</p>
+        </div>
+      )}
+      {phase === "guide" && (
+        <div className="recommendation-card guide">
+          <div className="recommendation-head">
+            <Lightbulb size={18} weight="fill" />
+            <strong>Спросите ребёнка</strong>
+          </div>
+          <p>{currentQuestion}</p>
+          <small>Задайте вопрос, только если ребёнок не назвал это действие.</small>
+        </div>
+      )}
+      {phase === "retell" && (
+        <div className="recommendation-card">
+          <div className="recommendation-head">
+            <Lightbulb size={18} weight="fill" />
+            <strong>Попросите пересказать ещё раз</strong>
+          </div>
+          <p>Теперь ещё раз расскажи своими словами, что нужно сделать во всём задании.</p>
+        </div>
+      )}
+      {phase === "fallback" && (
+        <div className="recommendation-card">
+          <div className="recommendation-head">
+            <Lightbulb size={18} weight="fill" />
+            <strong>Объясните ещё проще</strong>
+          </div>
+          <p>{task.simplerInstruction}</p>
+        </div>
+      )}
       {phase === "check" && (
         <>
           <button className="primary-button flow-primary" onClick={onNext}>Понятно, что делать <ArrowRight size={20} weight="bold" /></button>
