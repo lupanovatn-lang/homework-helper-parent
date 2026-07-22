@@ -179,7 +179,7 @@ button { -webkit-tap-highlight-color:transparent; }
 .task-context strong { font-size:11px; }
 .task-context span { margin-top:3px; color:var(--muted); font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .task-context a { border:0; background:transparent; color:var(--blue); display:flex; align-items:center; gap:4px; font-size:9.5px; font-weight:700; cursor:pointer; text-decoration:none; }
-.learning-route { margin:10px 0 0; display:grid; grid-template-columns:repeat(4,1fr); border-bottom:1px solid #dce5f1; flex:none; }
+.learning-route { margin:10px 0 0; display:grid; grid-template-columns:repeat(3,1fr); border-bottom:1px solid #dce5f1; flex:none; }
 .learning-route>div { min-width:0; padding:0 1px 8px; display:flex; align-items:center; justify-content:center; gap:4px; color:#7e8aa1; position:relative; }
 .learning-route>div::after { content:""; position:absolute; left:7px; right:7px; bottom:-1px; height:2px; border-radius:2px; background:transparent; }
 .learning-route span { width:21px; height:21px; flex:none; display:grid; place-items:center; border-radius:50%; background:#e9eef6; font-size:9px; font-weight:800; }
@@ -205,10 +205,21 @@ button { -webkit-tap-highlight-color:transparent; }
 .child-material.instruction-source,.rule-material,.practice-material,.independent-material { margin-top:14px; padding:18px; border-radius:20px; background:#eef3fa; }
 .focus-block { box-shadow:inset 0 0 0 1px #d7e3f4; }
 .practice-stage .practice-material,
+.together-stage .practice-material,
 .independent-stage .independent-material { background:#eef3fa; box-shadow:inset 0 0 0 1px #d7e3f4; }
+.rule-compact { margin-top:12px; border-radius:16px; background:#eef3fa; box-shadow:inset 0 0 0 1px #d7e3f4; overflow:hidden; }
+.rule-compact-head { width:100%; padding:11px 14px; border:0; background:transparent; display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; color:var(--blue); }
+.rule-compact-head>span { font-size:12px; font-weight:800; }
+.rule-compact-head>small { color:#7a869c; font-size:10px; font-weight:600; }
+.rule-compact-body { padding:0 14px 14px; }
+.rule-compact-body .rule-example-box { margin-top:10px; }
+.algorithm-block { margin-top:12px; }
+.algorithm-block .method-trail { margin-top:8px; }
+.algorithm-block .method-trail>div { min-height:48px; }
 .practice-quote-box { margin-top:0; padding:15px 16px; border-radius:14px; background:#fff; box-shadow:0 1px 0 rgba(10,36,90,.04); }
 .practice-material .rule-kicker,
-.independent-material .rule-kicker { margin-bottom:10px; }
+.independent-material .rule-kicker,
+.algorithm-block .rule-kicker { margin-bottom:10px; }
 .practice-prompt { margin:0; color:#435675; font-size:14.5px; line-height:1.5; font-weight:400; }
 .guided-display + .practice-prompt { margin-top:10px; }
 .guided-progress { margin-top:12px; }
@@ -219,16 +230,26 @@ button { -webkit-tap-highlight-color:transparent; }
 .guided-progress-bar>span { flex:1; height:4px; border-radius:999px; background:#e2e9f4; }
 .guided-progress-bar>span.done { background:#8fbf7a; }
 .guided-progress-bar>span.active { background:var(--blue); }
+.together-stage .answer-spoken,
 .practice-stage .answer-spoken { margin-top:12px; }
+.together-stage .answer-input,
 .practice-stage .answer-input { margin-top:12px; }
+.together-stage .answer-grid,
 .practice-stage .answer-grid { margin-top:12px; }
+.together-stage .guided-feedback,
 .practice-stage .guided-feedback { margin-top:12px; border:0; }
+.together-stage .guided-feedback.hint,
 .practice-stage .guided-feedback.hint,
+.together-stage .guided-feedback:not(.correct):not(.wrong),
 .practice-stage .guided-feedback:not(.correct):not(.wrong) { background:#fff8e6; }
+.together-stage .guided-feedback.wrong,
 .practice-stage .guided-feedback.wrong { background:#fff4f0; }
+.together-stage .guided-feedback.wrong strong,
 .practice-stage .guided-feedback.wrong strong { color:#b24a2d; }
 .independent-speech { margin:0; color:#2f3b52; font-size:15px; line-height:1.5; font-weight:400; }
 .independent-stage .memory-card { margin-top:10px; }
+.memory-content .memory-section-label + .memory-section-label,
+.memory-rule-label { margin-top:12px; }
 .rule-kicker { display:block; margin:0 0 10px; color:var(--blue); font-size:11px; font-weight:800; letter-spacing:.2px; }
 .rule-text { margin:0; color:#435675; font-size:14.5px; line-height:1.55; font-weight:400 !important; font-synthesis:none; }
 .rule-material>.rule-text,
