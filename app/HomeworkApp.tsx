@@ -200,7 +200,26 @@ function LearningFlow({ task, taskIndex, taskCount, preview, onBack, onComplete 
       <Route stage={stage} />
       {stage === 1 && <StageOne task={task} onNext={() => setStage(2)} />}
       {stage === 2 && <StageTwo task={task} aidOpen={aidOpen} onAidOpenChange={changeAidOpen} onBack={() => setStage(1)} onNext={() => setStage(3)} />}
-      {stage === 3 && <section className="stage-content"><div className="stage-main"><p className="stage-label">Шаг 3 из 4</p><h1>{practiceRound === 2 ? "Разбираем ещё один пункт" : "Выполняем один пункт вместе"}</h1><p className="stage-subtitle">Применяем способ к настоящему заданию.</p><div className="guided-card">{task.methodType !== "decision" && <MethodTrail steps={task.methodSteps} active={Math.min(guidedIndex, task.methodSteps.length - 1)} />}<div className="guided-body"><span className="guided-step-title">{guided.title}</span>{guided.display && <strong className="guided-display">{guided.display}</strong>}<p>{guided.prompt}</p>{guided.options?.length ? <div className="answer-grid">{guided.options.map((option) => <button key={option} className={selected === option ? "selected" : ""} onClick={() => { setSelected(option); setFeedback(""); }}>{option}</button>)}</div> : guided.answerType === "text" && guided.acceptableAnswers?.length ? <label className="answer-input"><span>Ответ ребёнка</span><input value={typedAnswer} onChange={(event) => { setTypedAnswer(event.target.value); setFeedback(""); }} placeholder="Введите ответ" autoComplete="off" /></label> : <button className="secondary-button answer-spoken" onClick={() => setFeedback("correct")}>Ребёнок объяснил ответ</button>}{feedback && <div className={`guided-feedback ${feedback}`}><strong>{feedback === "hint" ? "Подсказка" : feedback === "correct" ? "Верно" : "Попробуйте ещё раз"}</strong><p>{feedback === "correct" ? guided.success : guided.hint}</p></div>}</div></div>{aidAvailable && <KnowledgeAid aid={task.knowledgeAid} open={aidOpen} onOpenChange={changeAidOpen} />}</div><div className="stage-actions">{feedback === "correct" ? <button className="primary-button flow-primary" onClick={nextGuided}>{guidedIndex < activeGuidedSteps.length - 1 ? "Следующий шаг" : "Теперь самостоятельно"} <ArrowRight size={20} weight="bold" /></button> : <><button className="primary-button flow-primary" disabled={Boolean(guided.options?.length) ? !selected : guided.answerType === "text" ? !typedAnswer.trim() : true} onClick={() => { const correct = guided.options?.length ? selected === guided.correctOption : guided.acceptableAnswers?.some((answer) => normalizeAnswer(answer) === normalizeAnswer(typedAnswer)); setFeedback(correct ? "correct" : "wrong"); }}>Проверить ответ</button><button className="secondary-button flow-secondary" onClick={() => setFeedback("hint")}><Lightbulb size={18} /> Нужна подсказка</button></>}{feedback === "wrong" && <button className="text-link parent-override" onClick={() => setFeedback("correct")}><CheckCircle size={18} weight="fill" /> Я проверил(а): ответ верный</button>}<button className="text-link flow-back" onClick={() => setStage(2)}>Вернуться к правилу</button></div></section>}
+      {stage === 3 && (
+        <StageThree
+          task={task}
+          practiceRound={practiceRound}
+          guided={guided}
+          guidedIndex={guidedIndex}
+          guidedCount={activeGuidedSteps.length}
+          selected={selected}
+          typedAnswer={typedAnswer}
+          feedback={feedback}
+          aidOpen={aidOpen}
+          aidAvailable={aidAvailable}
+          onSelect={(option) => { setSelected(option); setFeedback(""); }}
+          onTypedAnswer={(value) => { setTypedAnswer(value); setFeedback(""); }}
+          onFeedback={setFeedback}
+          onAidOpenChange={changeAidOpen}
+          onBack={() => setStage(2)}
+          onNext={nextGuided}
+        />
+      )}
       {stage === 4 && <section className="stage-content independent"><div className="stage-main"><p className="stage-label">Шаг 4 из 4</p><h1>Теперь остальные — самостоятельно</h1><div className="child-prompt independent-prompt"><span>Скажите ребёнку</span><p>«{task.independentInstruction}»</p></div><div className="memory-card"><button className="memory-head" onClick={() => setMemoryOpen((v) => !v)}><span><BookOpen size={19} /> Памятка, если нужна</span><small>{memoryOpen ? "Свернуть" : "Показать"}</small></button>{memoryOpen && <div className="memory-content"><span className="memory-section-label">Как действовать</span><MethodGuide task={task} compact /></div>}</div>{aidAvailable && <KnowledgeAid aid={task.knowledgeAid} open={aidOpen} onOpenChange={changeAidOpen} />}</div><div className="stage-actions"><button className="primary-button flow-primary" onClick={onComplete}>Ребёнок закончил <ArrowRight size={20} weight="bold" /></button>{practiceRound === 1 && Boolean(task.extraGuidedSteps?.length) && <button className="secondary-button flow-secondary" onClick={() => { setPracticeRound(2); setStage(3); setGuidedIndex(0); setSelected(""); setTypedAnswer(""); setFeedback(""); }}>Сделать ещё один пункт вместе</button>}</div></section>}
     </div>
   </FlowShell>;
@@ -402,6 +421,111 @@ function StageTwo({ task, aidOpen, onAidOpenChange, onBack, onNext }: { task: Ho
         <button className="primary-button flow-primary" onClick={onNext}>Дальше, к выполнению <ArrowRight size={20} weight="bold" /></button>
         <button className="secondary-button flow-secondary" onClick={askHint}><Lightbulb size={18} /> Нужна подсказка</button>
         <button className="text-link flow-back" onClick={onBack}>Вернуться к инструкции</button>
+      </div>
+    </section>
+  );
+}
+
+function StageThree({
+  task,
+  practiceRound,
+  guided,
+  guidedIndex,
+  guidedCount,
+  selected,
+  typedAnswer,
+  feedback,
+  aidOpen,
+  aidAvailable,
+  onSelect,
+  onTypedAnswer,
+  onFeedback,
+  onAidOpenChange,
+  onBack,
+  onNext,
+}: {
+  task: HomeworkTask;
+  practiceRound: 1 | 2;
+  guided: GuidedStep;
+  guidedIndex: number;
+  guidedCount: number;
+  selected: string;
+  typedAnswer: string;
+  feedback: "" | "hint" | "correct" | "wrong";
+  aidOpen: boolean;
+  aidAvailable: boolean;
+  onSelect: (option: string) => void;
+  onTypedAnswer: (value: string) => void;
+  onFeedback: (value: "" | "hint" | "correct" | "wrong") => void;
+  onAidOpenChange: (open: boolean) => void;
+  onBack: () => void;
+  onNext: () => void;
+}) {
+  const hasOptions = Boolean(guided.options?.length);
+  const isText = guided.answerType === "text" && Boolean(guided.acceptableAnswers?.length);
+  const canCheck = hasOptions ? Boolean(selected) : isText ? Boolean(typedAnswer.trim()) : false;
+
+  function checkAnswer() {
+    const correct = hasOptions
+      ? selected === guided.correctOption
+      : guided.acceptableAnswers?.some((answer) => normalizeAnswer(answer) === normalizeAnswer(typedAnswer));
+    onFeedback(correct ? "correct" : "wrong");
+  }
+
+  return (
+    <section className="stage-content practice-stage">
+      <div className="stage-main">
+        <h1>{practiceRound === 2 ? "Разбираем ещё один пункт" : "Выполняем вместе"}</h1>
+        <p className="stage-subtitle">Применяем способ к настоящему заданию</p>
+        {task.methodType !== "decision" && (
+          <MethodTrail steps={task.methodSteps} active={Math.min(guidedIndex, task.methodSteps.length - 1)} />
+        )}
+        <div className="practice-material focus-block">
+          <span className="rule-kicker">{guided.title}</span>
+          <div className="practice-quote-box">
+            {guided.display && <strong className="guided-display">{guided.display}</strong>}
+            <p className="practice-prompt">{guided.prompt}</p>
+            {hasOptions ? (
+              <div className="answer-grid">
+                {guided.options!.map((option) => (
+                  <button key={option} className={selected === option ? "selected" : ""} onClick={() => onSelect(option)}>{option}</button>
+                ))}
+              </div>
+            ) : isText ? (
+              <label className="answer-input">
+                <span>Ответ ребёнка</span>
+                <input value={typedAnswer} onChange={(event) => onTypedAnswer(event.target.value)} placeholder="Введите ответ" autoComplete="off" />
+              </label>
+            ) : (
+              <button className="secondary-button answer-spoken" onClick={() => onFeedback("correct")}>Ребёнок объяснил ответ</button>
+            )}
+            {feedback && (
+              <div className={`guided-feedback ${feedback}`}>
+                <strong>{feedback === "hint" ? "Подсказка" : feedback === "correct" ? "Верно" : "Попробуйте ещё раз"}</strong>
+                <p>{feedback === "correct" ? guided.success : guided.hint}</p>
+              </div>
+            )}
+          </div>
+        </div>
+        {aidAvailable && <KnowledgeAid aid={task.knowledgeAid} open={aidOpen} onOpenChange={onAidOpenChange} />}
+      </div>
+      <div className="stage-actions">
+        {feedback === "correct" ? (
+          <button className="primary-button flow-primary" onClick={onNext}>
+            {guidedIndex < guidedCount - 1 ? "Следующий шаг" : "Теперь самостоятельно"} <ArrowRight size={20} weight="bold" />
+          </button>
+        ) : (
+          <>
+            <button className="primary-button flow-primary" disabled={!canCheck} onClick={checkAnswer}>Проверить ответ</button>
+            <button className="secondary-button flow-secondary" onClick={() => onFeedback("hint")}><Lightbulb size={18} /> Нужна подсказка</button>
+          </>
+        )}
+        {feedback === "wrong" && (
+          <button className="text-link parent-override" onClick={() => onFeedback("correct")}>
+            <CheckCircle size={18} weight="fill" /> Я проверил(а): ответ верный
+          </button>
+        )}
+        <button className="text-link flow-back" onClick={onBack}>Вернуться к правилу</button>
       </div>
     </section>
   );
