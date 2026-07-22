@@ -11,6 +11,18 @@ const SYSTEM_PROMPT = `Ты — педагогический помощник д
 - Если данных недостаточно или фото нечитаемое, честно скажи об этом.
 - Верни только корректный JSON без markdown.`;
 
+const REVIEW_PROMPT = `Ты — старший учитель начальной и средней школы и редактор учебных материалов. Проверь подготовленный ИИ-ответ до показа родителю.
+
+Обязательно проверь:
+- фактическую и предметную правильность каждого правила, примера, таблицы, подсказки и автоматического ответа;
+- соответствие исходному заданию и отсутствие выдуманных условий;
+- порядок рассуждения и педагогическую терминологию;
+- орфографию, ударения, вычисления, единицы измерения и грамматику;
+- что acceptableAnswers и correctOption действительно верны;
+- что пример не перевёрнут местами. Для проверяемых слов направление всегда: слово с безударной гласной → проверочное слово, где эта гласная под ударением, например «леса́ → лес».
+
+Исправь все найденные ошибки, сохрани исходную JSON-структуру и верни только корректный JSON без markdown.`;
+
 export async function POST(request: Request) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "Ключ OpenRouter ещё не добавлен в Render" }, { status: 503 });
@@ -49,6 +61,7 @@ export async function POST(request: Request) {
 - answerType="choice" используй только когда варианты педагогически естественны; заполни options и correctOption. answerType="spoken" — только для открытого объяснения, которое невозможно проверить точным сравнением. Никогда не используй spoken для букв, чисел или однозначных словесных ответов.
 - Не выдавай ответы ко всему домашнему заданию. Полностью разбирай только один минимальный элемент.
 - independentInstruction — одно короткое обращение прямо к ребёнку. Не добавляй сюда проверку работы, новые правила или исключения.
+- В заданиях на проверяемую безударную гласную всегда пиши пары в направлении «проверяемое слово → проверочное слово»: сначала слово с безударной гласной, затем однокоренное слово, где эта гласная под ударением. Пример: «леса́ → лес», а не наоборот. Отмечай ударение, если без него пример неоднозначен.
 - Пиши для родителя коротко, конкретно и без педагогического канцелярита.`;
 
     const content: Array<Record<string, unknown>> = [
@@ -83,11 +96,48 @@ export async function POST(request: Request) {
     const raw = result?.choices?.[0]?.message?.content;
     if (!raw) throw new Error("Модель вернула пустой ответ");
     const parsed = (typeof raw === "string" ? JSON.parse(raw) : raw) as Record<string, unknown>;
-    const analysis = removeRedundantGuidedSteps(collapseFalseLineSplits(normalizeParentSpeech(parsed)));
+    const reviewed = await reviewPedagogicalAccuracy({ apiKey, analysis: parsed, task, image });
+    const analysis = removeRedundantGuidedSteps(collapseFalseLineSplits(normalizeParentSpeech(reviewed)));
     return NextResponse.json({ analysis });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Не удалось обработать задание";
     return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+async function reviewPedagogicalAccuracy({ apiKey, analysis, task, image }: { apiKey: string; analysis: Record<string, unknown>; task?: string; image?: string }) {
+  try {
+    const content: Array<Record<string, unknown>> = [{
+      type: "text",
+      text: `Исходный текст пользователя: ${task || "текст не введён, проверь по фото"}\n\nПодготовленный ответ для проверки:\n${JSON.stringify(analysis)}`,
+    }];
+    if (image) content.push({ type: "image_url", image_url: { url: image } });
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "X-OpenRouter-Title": "Homework Helper Quality Review",
+      },
+      body: JSON.stringify({
+        model: process.env.OPENROUTER_MODEL || "openai/gpt-5.2",
+        messages: [
+          { role: "system", content: REVIEW_PROMPT },
+          { role: "user", content },
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.1,
+      }),
+    });
+
+    if (!response.ok) return analysis;
+    const result = await response.json();
+    const raw = result?.choices?.[0]?.message?.content;
+    if (!raw) return analysis;
+    return (typeof raw === "string" ? JSON.parse(raw) : raw) as Record<string, unknown>;
+  } catch {
+    return analysis;
   }
 }
 
