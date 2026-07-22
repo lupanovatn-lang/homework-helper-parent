@@ -198,9 +198,13 @@ button { -webkit-tap-highlight-color:transparent; }
 .heading-tip-bubble { position:absolute; right:0; top:calc(100% + 10px); width:max-content; max-width:min(230px,70vw); padding:9px 11px; border-radius:10px; background:var(--navy); color:#fff; font-size:11px; line-height:1.4; font-weight:600; z-index:20; box-shadow:0 10px 24px rgba(10,36,90,.2); }
 .heading-tip-bubble::before { content:""; position:absolute; right:8px; bottom:100%; border:6px solid transparent; border-bottom-color:var(--navy); }
 .instruction-stage { position:relative; }
-.child-material.instruction-source,.rule-material { margin-top:14px; padding:18px 18px; border-radius:20px; background:#eef3fa; }
+.child-material.instruction-source,.rule-material,.instruction-material { margin-top:14px; padding:18px; border-radius:20px; background:#eef3fa; }
 .focus-block { box-shadow:inset 0 0 0 1px #d7e3f4; }
+.instruction-stage .instruction-material,
 .rule-stage .rule-material { background:linear-gradient(180deg,#e8f0ff 0%,#eef4fb 100%); box-shadow:inset 0 0 0 1.5px #b9cff0; }
+.instruction-quote-box { margin-top:0; padding:15px 16px; border-radius:14px; background:#fff; box-shadow:0 1px 0 rgba(10,36,90,.04); }
+.instruction-material .rule-kicker { margin-bottom:10px; }
+.instruction-quote-box .instruction-text { color:var(--navy); font-size:16px; line-height:1.5; font-weight:650; }
 .rule-kicker { display:block; margin:0 0 10px; color:var(--blue); font-size:11px; font-weight:800; letter-spacing:.2px; }
 .rule-text { margin:0; color:var(--navy); font-size:16px; line-height:1.5; font-weight:650; }
 .rule-example-box { margin-top:14px; padding:14px 15px; border-radius:14px; background:#fff; box-shadow:0 1px 0 rgba(10,36,90,.04); }

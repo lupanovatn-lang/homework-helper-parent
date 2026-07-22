@@ -233,8 +233,11 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
             {tipOpen && <span className="heading-tip-bubble" role="tooltip">Самостоятельно или попросите ребёнка</span>}
           </span>
         </h1>
-        <div className="child-material instruction-source focus-block">
-          <InstructionText text={task.instruction} />
+        <div className="instruction-material focus-block">
+          <span className="rule-kicker">Что сделать</span>
+          <div className="instruction-quote-box">
+            <InstructionText text={task.instruction} />
+          </div>
         </div>
         {phase === "check" && (
           <Recommendation title="Рекомендация">
