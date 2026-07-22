@@ -220,7 +220,26 @@ function LearningFlow({ task, taskIndex, taskCount, preview, onBack, onComplete 
           onNext={nextGuided}
         />
       )}
-      {stage === 4 && <section className="stage-content independent"><div className="stage-main"><p className="stage-label">Шаг 4 из 4</p><h1>Теперь остальные — самостоятельно</h1><div className="child-prompt independent-prompt"><span>Скажите ребёнку</span><p>«{task.independentInstruction}»</p></div><div className="memory-card"><button className="memory-head" onClick={() => setMemoryOpen((v) => !v)}><span><BookOpen size={19} /> Памятка, если нужна</span><small>{memoryOpen ? "Свернуть" : "Показать"}</small></button>{memoryOpen && <div className="memory-content"><span className="memory-section-label">Как действовать</span><MethodGuide task={task} compact /></div>}</div>{aidAvailable && <KnowledgeAid aid={task.knowledgeAid} open={aidOpen} onOpenChange={changeAidOpen} />}</div><div className="stage-actions"><button className="primary-button flow-primary" onClick={onComplete}>Ребёнок закончил <ArrowRight size={20} weight="bold" /></button>{practiceRound === 1 && Boolean(task.extraGuidedSteps?.length) && <button className="secondary-button flow-secondary" onClick={() => { setPracticeRound(2); setStage(3); setGuidedIndex(0); setSelected(""); setTypedAnswer(""); setFeedback(""); }}>Сделать ещё один пункт вместе</button>}</div></section>}
+      {stage === 4 && (
+        <StageFour
+          task={task}
+          practiceRound={practiceRound}
+          memoryOpen={memoryOpen}
+          aidOpen={aidOpen}
+          aidAvailable={aidAvailable}
+          onMemoryToggle={() => setMemoryOpen((v) => !v)}
+          onAidOpenChange={changeAidOpen}
+          onComplete={onComplete}
+          onAnotherTogether={() => {
+            setPracticeRound(2);
+            setStage(3);
+            setGuidedIndex(0);
+            setSelected("");
+            setTypedAnswer("");
+            setFeedback("");
+          }}
+        />
+      )}
     </div>
   </FlowShell>;
 }
@@ -472,9 +491,7 @@ function StageThree({
       <div className="stage-main">
         <h1>{practiceRound === 2 ? "Разбираем ещё один пункт" : "Выполняем вместе"}</h1>
         <p className="stage-subtitle">Применяем способ к настоящему заданию</p>
-        {task.methodType !== "decision" && (
-          <MethodTrail steps={task.methodSteps} active={Math.min(guidedIndex, task.methodSteps.length - 1)} />
-        )}
+        <GuidedProgress index={guidedIndex} count={guidedCount} title={guided.title} />
         <div className="practice-material focus-block">
           <span className="rule-kicker">{guided.title}</span>
           <div className="practice-quote-box">
@@ -523,6 +540,79 @@ function StageThree({
         <button className="text-link flow-back" onClick={onBack}>Вернуться к правилу</button>
       </div>
     </section>
+  );
+}
+
+function StageFour({
+  task,
+  practiceRound,
+  memoryOpen,
+  aidOpen,
+  aidAvailable,
+  onMemoryToggle,
+  onAidOpenChange,
+  onComplete,
+  onAnotherTogether,
+}: {
+  task: HomeworkTask;
+  practiceRound: 1 | 2;
+  memoryOpen: boolean;
+  aidOpen: boolean;
+  aidAvailable: boolean;
+  onMemoryToggle: () => void;
+  onAidOpenChange: (open: boolean) => void;
+  onComplete: () => void;
+  onAnotherTogether: () => void;
+}) {
+  return (
+    <section className="stage-content independent-stage">
+      <div className="stage-main">
+        <h1>Теперь самостоятельно</h1>
+        <p className="stage-subtitle">Остальные пункты ребёнок делает сам</p>
+        <div className="independent-material focus-block">
+          <span className="rule-kicker">Скажите ребёнку</span>
+          <div className="practice-quote-box">
+            <p className="independent-speech">{task.independentInstruction}</p>
+          </div>
+        </div>
+        <div className="memory-card">
+          <button className="memory-head" onClick={onMemoryToggle}>
+            <span><BookOpen size={19} /> Памятка, если нужна</span>
+            <small>{memoryOpen ? "Свернуть" : "Показать"}</small>
+          </button>
+          {memoryOpen && (
+            <div className="memory-content">
+              <span className="memory-section-label">Как действовать</span>
+              <MethodGuide task={task} compact />
+            </div>
+          )}
+        </div>
+        {aidAvailable && <KnowledgeAid aid={task.knowledgeAid} open={aidOpen} onOpenChange={onAidOpenChange} />}
+      </div>
+      <div className="stage-actions">
+        <button className="primary-button flow-primary" onClick={onComplete}>Ребёнок закончил <ArrowRight size={20} weight="bold" /></button>
+        {practiceRound === 1 && Boolean(task.extraGuidedSteps?.length) && (
+          <button className="secondary-button flow-secondary" onClick={onAnotherTogether}>Сделать ещё один пункт вместе</button>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function GuidedProgress({ index, count, title }: { index: number; count: number; title: string }) {
+  if (count <= 1) return null;
+  return (
+    <div className="guided-progress">
+      <div className="guided-progress-head">
+        <span>Шаг {index + 1} из {count}</span>
+        <small>{title}</small>
+      </div>
+      <div className="guided-progress-bar" aria-hidden="true">
+        {Array.from({ length: count }, (_, step) => (
+          <span key={step} className={step === index ? "active" : step < index ? "done" : ""} />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -591,7 +681,7 @@ function MethodTrail({ steps, active }: { steps: Array<{ title: string }>; activ
 }
 
 function Route({ stage }: { stage: number }) {
-  const labels = ["Инструкция", "Правило", "Выполнение", "Проверим"];
+  const labels = ["Инструкция", "Правило", "Выполнение", "Сами"];
   return <nav className="learning-route" aria-label="Этапы объяснения">{labels.map((label, index) => { const number = index + 1; return <div key={label} className={number === stage ? "active" : number < stage ? "done" : ""}><span>{number < stage ? <Check size={12} weight="bold" /> : number}</span><small>{label}</small></div>; })}</nav>;
 }
 
