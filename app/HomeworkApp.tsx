@@ -357,7 +357,10 @@ function protectShortTokens(value: string) {
 function StageTwo({ task, aidOpen, onAidOpenChange, onBack, onNext }: { task: HomeworkTask; aidOpen: boolean; onAidOpenChange: (open: boolean) => void; onBack: () => void; onNext: () => void }) {
   const example = task.ruleExample?.display?.trim() ? task.ruleExample : null;
   const requiredAid = task.knowledgeAid?.required ? task.knowledgeAid : null;
-  const optionalAid = task.knowledgeAid && !task.knowledgeAid.required ? task.knowledgeAid : null;
+  // If the screen already has an application example, don't offer another "examples" dump.
+  const optionalAid = task.knowledgeAid && !task.knowledgeAid.required && !(example && task.knowledgeAid.type === "examples")
+    ? task.knowledgeAid
+    : null;
   const knowledgeTitle = knowledgeActionTitle(inferKnowledgeKind(task));
   const exampleTitle = exampleActionTitle(inferExampleKind(example));
 
