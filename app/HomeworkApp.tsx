@@ -673,7 +673,7 @@ function StageAlone({
         ) : (
           <>
             <button className="primary-button flow-primary" onClick={onCheckWork}>Проверить работу <MagnifyingGlass size={20} weight="bold" /></button>
-            <button className="secondary-button flow-secondary" onClick={onLeave}>К списку заданий</button>
+            <button className="secondary-button flow-secondary" onClick={onLeave}>{taskCount > 1 ? "К списку заданий" : "На главную"}</button>
           </>
         )}
       </div>
