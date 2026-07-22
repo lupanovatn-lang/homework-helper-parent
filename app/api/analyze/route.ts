@@ -23,7 +23,7 @@ const REVIEW_PROMPT = `Ты — старший учитель начальной
 - что пример не перевёрнут местами. Для проверяемых слов направление всегда: слово с безударной гласной → проверочное слово, где эта гласная под ударением, например «леса́ → лес».
 - поле instruction — дословная формулировка требования из исходного задания с сохранением абзацев, списков и символов. Не перефразируй, не упрощай, не сокращай, не заключай весь текст в кавычки и не добавляй в неё обращения к ребёнку;
 - ruleExample должен быть предметно верным, показывать полный переход от затруднения к проверке и результату и не раскрывать ответ ни к одному элементу текущего задания;
-- guidedSteps должны разбирать самый первый элемент упражнения после инструкции, а extraGuidedSteps — следующий элемент строго по порядку. Сверь порядок со снимком или исходным текстом и исправь любые случайно выбранные поздние пункты;
+- guidedSteps должны разбирать самый первый элемент упражнения после инструкции, а extraGuidedSteps — следующий элемент строго по порядку. Сверь порядок с полями instruction/title/display и исправь любые случайно выбранные поздние пункты;
 
 Исправь все найденные ошибки, сохрани исходную JSON-структуру и верни только корректный JSON без markdown.`;
 
@@ -109,7 +109,9 @@ export async function POST(request: Request) {
     const raw = result?.choices?.[0]?.message?.content;
     if (!raw) throw new Error("Модель вернула пустой ответ");
     const parsed = (typeof raw === "string" ? JSON.parse(raw) : raw) as Record<string, unknown>;
-    const reviewed = await reviewPedagogicalAccuracy({ apiKey, analysis: parsed, task, image });
+    // Review without re-sending the photo: the first call already transcribed the page,
+    // and a second vision pass roughly doubles latency.
+    const reviewed = await reviewPedagogicalAccuracy({ apiKey, analysis: parsed, task });
     const analysis = removeRedundantGuidedSteps(collapseFalseLineSplits(normalizeParentSpeech(reviewed)));
     return NextResponse.json({ analysis });
   } catch (error) {
@@ -118,13 +120,12 @@ export async function POST(request: Request) {
   }
 }
 
-async function reviewPedagogicalAccuracy({ apiKey, analysis, task, image }: { apiKey: string; analysis: Record<string, unknown>; task?: string; image?: string }) {
+async function reviewPedagogicalAccuracy({ apiKey, analysis, task }: { apiKey: string; analysis: Record<string, unknown>; task?: string }) {
   try {
     const content: Array<Record<string, unknown>> = [{
       type: "text",
-      text: `Исходный текст пользователя: ${task || "текст не введён, проверь по фото"}\n\nПодготовленный ответ для проверки:\n${JSON.stringify(analysis)}`,
+      text: `Исходный текст пользователя: ${task || "текст не введён; опирайся на поля instruction/title/guidedSteps как на транскрипт фото"}\n\nПодготовленный ответ для проверки:\n${JSON.stringify(analysis)}`,
     }];
-    if (image) content.push({ type: "image_url", image_url: { url: image } });
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -134,7 +135,7 @@ async function reviewPedagogicalAccuracy({ apiKey, analysis, task, image }: { ap
         "X-OpenRouter-Title": "Homework Helper Quality Review",
       },
       body: JSON.stringify({
-        model: process.env.OPENROUTER_MODEL || "openai/gpt-5.2",
+        model: process.env.OPENROUTER_REVIEW_MODEL || process.env.OPENROUTER_MODEL || "openai/gpt-5.2",
         messages: [
           { role: "system", content: REVIEW_PROMPT },
           { role: "user", content },
@@ -142,6 +143,7 @@ async function reviewPedagogicalAccuracy({ apiKey, analysis, task, image }: { ap
         response_format: { type: "json_object" },
         temperature: 0.1,
       }),
+      signal: AbortSignal.timeout(25_000),
     });
 
     if (!response.ok) return analysis;

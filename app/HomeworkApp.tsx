@@ -94,7 +94,7 @@ export function HomeworkApp() {
     if (!hasTask) { setShowText(true); setTask(SAMPLE_TASK); return; }
     setLoading(true); setError("");
     try {
-      const image = file ? await fileToDataUrl(file) : null;
+      const image = file ? await fileToCompressedDataUrl(file) : null;
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -408,9 +408,9 @@ function useLoadingProgress(active: boolean, hasPhoto: boolean) {
     return () => window.clearInterval(id);
   }, [active]);
   const label = [...LOADING_STEPS].reverse().find((step) => elapsed >= step.after)?.label || LOADING_STEPS[0].label;
-  const expected = hasPhoto ? 40 : 28;
+  const expected = hasPhoto ? 28 : 20;
   const progress = Math.min(94, Math.round(10 + (elapsed / expected) * 84));
-  const eta = hasPhoto ? "25–45 секунд" : "15–30 секунд";
+  const eta = hasPhoto ? "15–30 секунд" : "10–20 секунд";
   return { elapsed, label, progress, eta };
 }
 
@@ -431,6 +431,37 @@ function normalizeTasks(analysis: Analysis | null): HomeworkTask[] {
 
 function fallbackTask(): HomeworkTask {
   return { title: "Разбираем задание", shortTitle: "Выполняем по шагам", instruction: "Прочитай условие и определи, что нужно сделать.", simplerInstruction: "Сначала поймём вопрос задания, затем выполним его по шагам.", comprehensionQuestion: "Что нужно получить в результате?", rule: { title: "Сначала пойми условие", text: "В условии важно отделить известные данные от того, что требуется узнать." }, ruleExample: { display: "Что известно? → Что нужно узнать?", explanation: "Так мы связываем данные задания с его вопросом." }, methodSteps: [{ title: "Прочитать" }, { title: "Выбрать способ" }, { title: "Выполнить" }, { title: "Проверить" }], guidedTitle: "Первый шаг", guidedSteps: [{ title: "Начинаем вместе", prompt: "С чего нужно начать?", options: ["Прочитать условие", "Угадать ответ"], correctOption: "Прочитать условие", hint: "Посмотри, что именно спрашивается в задании.", success: "Верно: сначала внимательно читаем условие." }], independentInstruction: "Теперь сделай так же с остальными пунктами. Если забудешь шаг — посмотри в памятку." };
+}
+
+function fileToCompressedDataUrl(file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) return fileToDataUrl(file);
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Не удалось прочитать фотографию"));
+    reader.onload = () => {
+      const source = String(reader.result);
+      const image = new Image();
+      image.onload = () => {
+        const maxSide = 1600;
+        const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d");
+        if (!context) {
+          resolve(source);
+          return;
+        }
+        context.drawImage(image, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      image.onerror = () => resolve(source);
+      image.src = source;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function fileToDataUrl(file: File): Promise<string> { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(new Error("Не удалось прочитать фотографию")); reader.readAsDataURL(file); }); }
