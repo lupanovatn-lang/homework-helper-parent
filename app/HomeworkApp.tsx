@@ -750,8 +750,10 @@ function normalizeTasks(analysis: Analysis | null): HomeworkTask[] {
     const blankVisible = hasVisibleBlankText(task.instruction)
       || guidedSteps.some((step) => hasVisibleBlankText(step.display))
       || extraGuidedSteps.some((step) => hasVisibleBlankText(step.display));
-    const methodSteps = blankVisible
-      ? (methodSource.filter((step) => !isFindBlankStepText(step.title, step.text)).slice(0, 4) || methodSource)
+    const objectVisible = guidedSteps.some((step) => hasVisibleWorkObjectText(step.display))
+      || extraGuidedSteps.some((step) => hasVisibleWorkObjectText(step.display));
+    const methodFiltered = (blankVisible || objectVisible)
+      ? methodSource.filter((step) => !isEmptyRitualStepText(step.title, step.text, { blankVisible, objectVisible: objectVisible || blankVisible }))
       : methodSource;
     return {
       ...fallback,
@@ -774,9 +776,9 @@ function normalizeTasks(analysis: Analysis | null): HomeworkTask[] {
             kind: task.ruleExample.kind,
           }
         : null,
-      methodSteps: methodSteps.length ? methodSteps : methodSource,
-      guidedSteps: stripFindBlankClientSteps(guidedSteps),
-      extraGuidedSteps: stripFindBlankClientSteps(extraGuidedSteps),
+      methodSteps: methodFiltered.length ? methodFiltered : methodSource,
+      guidedSteps: stripRitualClientSteps(guidedSteps),
+      extraGuidedSteps: stripRitualClientSteps(extraGuidedSteps),
       knowledgeAid: task.knowledgeAid || null,
       independentInstruction: String(task.independentInstruction || fallback.independentInstruction),
     };
@@ -787,6 +789,10 @@ function hasVisibleBlankText(value?: string) {
   return /(?:[A-Za-zА-Яа-яЁё]\s*[_.…⋯]|\b_{2,}\b|\.{3,}|…)/.test(String(value || ""));
 }
 
+function hasVisibleWorkObjectText(value?: string) {
+  return String(value || "").trim().length >= 2;
+}
+
 function isFindBlankStepText(title?: string, prompt?: string) {
   const text = `${title || ""} ${prompt || ""}`.toLocaleLowerCase("ru");
   return /(?:най(?:ти|ди)|находить|определ(?:и|ить)|покаж(?:и|ить)|отыщ(?:и|ить))\s+(?:место\s+)?(?:пропуск|пропущ)/i.test(text)
@@ -794,9 +800,30 @@ function isFindBlankStepText(title?: string, prompt?: string) {
     || /место\s+пропуск/i.test(text);
 }
 
-function stripFindBlankClientSteps<T extends GuidedStep>(steps: T[]) {
+function isEmptyRitualStepText(title?: string, prompt?: string, flags: { blankVisible?: boolean; objectVisible?: boolean } = {}) {
+  const text = `${title || ""} ${prompt || ""}`.toLocaleLowerCase("ru");
+  const titleOnly = String(title || "").trim().toLocaleLowerCase("ru");
+  if (flags.blankVisible && isFindBlankStepText(title, prompt)) return true;
+  const readCondition = /(?:прочита(?:й|ть)|прочти|прочесть|перечитай|перечитать)\s+(?:ещё\s+раз\s+)?(?:условие|задани[ея]|инструкци[юяеи]|текст(?:\s+задания)?)/i.test(text)
+    || /(?:посмотри|посмотреть)\s+(?:ещё\s+раз\s+)?(?:на\s+)?(?:условие|задани[ея]|инструкци[юяеи])/i.test(text)
+    || /^(?:прочитай|прочитать|прочти|прочесть|перечитай)$/i.test(titleOnly);
+  const lookAtShownObject = /(?:посмотри|посмотреть|покажи|показать)\s+(?:ещё\s+раз\s+)?(?:на\s+)?(?:это\s+)?(?:слово|пример|выражени[ея]|фрагмент|экран)/i.test(text)
+    || /(?:найди|найти|определи|определить)\s+(?:это\s+)?(?:слово|пример)(?:\s+в\s+задании)?(?!\s+(?:провер|родствен|однокорен))/i.test(text)
+    || /какой\s+(?:это\s+)?(?:слово|пример)|что\s+написано\s+в\s+(?:задании|примере)|какое\s+слово\s+(?:видишь|перед\s+тобой)/i.test(text);
+  const emptyStart = /^(?:начать|начинаем|старт|прочитай условие|прочитай задание|посмотри на слово|посмотри на пример)$/i.test(titleOnly);
+  if (readCondition || emptyStart) return true;
+  if (flags.objectVisible && lookAtShownObject) return true;
+  return false;
+}
+
+function stripRitualClientSteps<T extends GuidedStep>(steps: T[]) {
   if (!steps?.length) return steps;
-  const cleaned = steps.filter((step) => !(hasVisibleBlankText(step.display) && isFindBlankStepText(step.title, step.prompt)));
+  const cleaned = steps.filter((step) => {
+    const objectVisible = hasVisibleWorkObjectText(step.display);
+    const blankVisible = hasVisibleBlankText(step.display);
+    if (!objectVisible && !blankVisible) return true;
+    return !isEmptyRitualStepText(step.title, step.prompt, { blankVisible, objectVisible: objectVisible || blankVisible });
+  });
   return cleaned.length ? cleaned : steps;
 }
 
