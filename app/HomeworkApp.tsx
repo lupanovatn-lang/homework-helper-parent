@@ -653,33 +653,61 @@ function CheckResultScreen({ analysis, onBack, onReset }: { analysis: Analysis |
 function normalizeTasks(analysis: Analysis | null): HomeworkTask[] {
   const fallback = fallbackTask();
   const source = analysis?.tasks?.length ? analysis.tasks : [fallback];
-  return source.map((task) => ({
-    ...fallback,
-    ...task,
-    title: String(task.title || fallback.title),
-    shortTitle: String(task.shortTitle || fallback.shortTitle),
-    instruction: String(task.instruction || fallback.instruction),
-    simplerInstruction: String(task.simplerInstruction || fallback.simplerInstruction),
-    comprehensionQuestion: String(task.comprehensionQuestion || fallback.comprehensionQuestion),
-    guidingQuestions: task.guidingQuestions?.length ? task.guidingQuestions.map(String) : fallback.guidingQuestions,
-    rule: {
-      title: String(task.rule?.title || fallback.rule.title),
-      text: String(task.rule?.text || fallback.rule.text),
-      kind: task.rule?.kind || fallback.rule.kind,
-    },
-    ruleExample: task.ruleExample?.display
-      ? {
-          display: String(task.ruleExample.display),
-          explanation: String(task.ruleExample.explanation || ""),
-          kind: task.ruleExample.kind,
-        }
-      : null,
-    methodSteps: task.methodSteps?.length ? task.methodSteps.slice(0, 4) : fallback.methodSteps,
-    guidedSteps: task.guidedSteps?.length ? task.guidedSteps : fallback.guidedSteps,
-    extraGuidedSteps: task.extraGuidedSteps?.length ? task.extraGuidedSteps : [],
-    knowledgeAid: task.knowledgeAid || null,
-    independentInstruction: String(task.independentInstruction || fallback.independentInstruction),
-  }));
+  return source.map((task) => {
+    const guidedSteps = task.guidedSteps?.length ? task.guidedSteps : fallback.guidedSteps;
+    const extraGuidedSteps = task.extraGuidedSteps?.length ? task.extraGuidedSteps : [];
+    const methodSource = task.methodSteps?.length ? task.methodSteps.slice(0, 4) : fallback.methodSteps;
+    const blankVisible = hasVisibleBlankText(task.instruction)
+      || guidedSteps.some((step) => hasVisibleBlankText(step.display))
+      || extraGuidedSteps.some((step) => hasVisibleBlankText(step.display));
+    const methodSteps = blankVisible
+      ? (methodSource.filter((step) => !isFindBlankStepText(step.title, step.text)).slice(0, 4) || methodSource)
+      : methodSource;
+    return {
+      ...fallback,
+      ...task,
+      title: String(task.title || fallback.title),
+      shortTitle: String(task.shortTitle || fallback.shortTitle),
+      instruction: String(task.instruction || fallback.instruction),
+      simplerInstruction: String(task.simplerInstruction || fallback.simplerInstruction),
+      comprehensionQuestion: String(task.comprehensionQuestion || fallback.comprehensionQuestion),
+      guidingQuestions: task.guidingQuestions?.length ? task.guidingQuestions.map(String) : fallback.guidingQuestions,
+      rule: {
+        title: String(task.rule?.title || fallback.rule.title),
+        text: String(task.rule?.text || fallback.rule.text),
+        kind: task.rule?.kind || fallback.rule.kind,
+      },
+      ruleExample: task.ruleExample?.display
+        ? {
+            display: String(task.ruleExample.display),
+            explanation: String(task.ruleExample.explanation || ""),
+            kind: task.ruleExample.kind,
+          }
+        : null,
+      methodSteps: methodSteps.length ? methodSteps : methodSource,
+      guidedSteps: stripFindBlankClientSteps(guidedSteps),
+      extraGuidedSteps: stripFindBlankClientSteps(extraGuidedSteps),
+      knowledgeAid: task.knowledgeAid || null,
+      independentInstruction: String(task.independentInstruction || fallback.independentInstruction),
+    };
+  });
+}
+
+function hasVisibleBlankText(value?: string) {
+  return /(?:[A-Za-zА-Яа-яЁё]\s*[_.…⋯]|\b_{2,}\b|\.{3,}|…)/.test(String(value || ""));
+}
+
+function isFindBlankStepText(title?: string, prompt?: string) {
+  const text = `${title || ""} ${prompt || ""}`.toLocaleLowerCase("ru");
+  return /(?:най(?:ти|ди)|находить|определ(?:и|ить)|покаж(?:и|ить)|отыщ(?:и|ить))\s+(?:место\s+)?(?:пропуск|пропущ)/i.test(text)
+    || /где\s+(?:в\s+слове\s+)?(?:стоит\s+)?пропуск/i.test(text)
+    || /место\s+пропуск/i.test(text);
+}
+
+function stripFindBlankClientSteps<T extends GuidedStep>(steps: T[]) {
+  if (!steps?.length) return steps;
+  const cleaned = steps.filter((step) => !(hasVisibleBlankText(step.display) && isFindBlankStepText(step.title, step.prompt)));
+  return cleaned.length ? cleaned : steps;
 }
 
 function fallbackTask(): HomeworkTask {

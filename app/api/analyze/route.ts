@@ -19,6 +19,7 @@ const REVIEW_PROMPT = `Ты — старший учитель начальной
 - порядок рассуждения и педагогическую терминологию;
 - орфографию, ударения, вычисления, единицы измерения и грамматику;
 - что acceptableAnswers и correctOption действительно верны;
+- что если в display или в задании уже показан пропуск внутри слова (ж_мчужина, д_ржать, ___), в methodSteps и guidedSteps НЕТ шага «Найти пропуск» / «Найди пропуск» / «Определи место пропуска» — пропуск уже дан; первый шаг должен сразу применять правило (подобрать проверочное слово, выбрать букву и т.п.);
 - что acceptableAnswers включает все распространённые корректные варианты ответа, а не только один пример. Для проверочных слов учитывай разные однокоренные формы, в которых нужная гласная находится под ударением;
 - что пример не перевёрнут местами. Для проверяемых безударных гласных направление всегда: пропуск/слово с безударной гласной → проверочное слово, где ЭТА ЖЕ гласная под ударением → итоговая запись. Правильно: «в_да → во́ды → вода́», «тр_ва → тра́вы → трава́». Неправильно: «тр_ва → трава́» или «леса́ → лес» как единственная «проверка», если в итоговом слове ударение НЕ на проверяемой гласной;
 - поле instruction — дословная формулировка требования из исходного задания с сохранением абзацев, списков и символов. Не перефразируй, не упрощай, не сокращай, не заключай весь текст в кавычки и не добавляй в неё обращения к ребёнку;
@@ -61,6 +62,7 @@ export async function POST(request: Request) {
 - Для steps дай 3–4 methodSteps. Для decision дай 1–3 последовательных вопроса в decisionGuide; ветка должна сразу говорить ребёнку, что делать или к какому следующему вопросу перейти. Не превращай развилку в линейные шаги.
 - Всегда заполняй methodSteps как короткий запасной вариант памятки, даже если выбран decision.
 - methodSteps и decisionGuide содержат только способ применения правила и не пересказывают rule.
+- Грубый запрет: если в задании или в display уже есть готовый пропуск (черта внутри слова «ж_мчужина», «д_ржать», «___» и т.п.), НЕ включай в methodSteps и guidedSteps шаги «Найти пропуск», «Найди пропуск», «Найти место пропуска», «Определи пропуск». Пропуск уже нарисован — начинай с применения правила: подобрать проверочное слово, выбрать букву, поставить ударение, записать результат.
 - Всегда оценивай, нужны ли ребёнку справочные знания, чтобы применить способ: таблица падежей, формула, единицы измерения, алфавит, признаки части речи, словарные слова. Если нужны — заполни knowledgeAid; если нет — верни null.
 - Если ruleExample уже есть, НЕ добавляй knowledgeAid.type="examples" и не предлагай «Посмотреть примеры» — это дублирует разбор. knowledgeAid оставляй только для таблиц, формул, схем и списков опор, которых нет в ruleExample.
 - knowledgeAid содержит только компактные данные, которые ребёнок мог забыть, а не пересказ rule и не ответы к самому заданию. Для соответствий используй table (до 3 колонок и 8 строк), для набора фактов — list, для образцов — examples только если ruleExample=null.
@@ -118,7 +120,7 @@ export async function POST(request: Request) {
     const reviewed = process.env.OPENROUTER_ENABLE_REVIEW === "1"
       ? await reviewPedagogicalAccuracy({ apiKey, analysis: parsed, task })
       : parsed;
-    const analysis = removeRedundantGuidedSteps(collapseFalseLineSplits(normalizeParentSpeech(reviewed)));
+    const analysis = removeRedundantBlankFinding(collapseFalseLineSplits(normalizeParentSpeech(reviewed)));
     return NextResponse.json({ analysis });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Не удалось обработать задание";
@@ -162,23 +164,59 @@ async function reviewPedagogicalAccuracy({ apiKey, analysis, task }: { apiKey: s
   }
 }
 
-function removeRedundantGuidedSteps(analysis: Record<string, unknown>) {
+function hasVisibleBlank(value: unknown) {
+  return /(?:[A-Za-zА-Яа-яЁё]\s*[_.…⋯]|\b_{2,}\b|\.{3,}|…)/.test(String(value || ""));
+}
+
+function isFindBlankStep(title: unknown, prompt: unknown = "") {
+  const text = `${String(title || "")} ${String(prompt || "")}`.toLocaleLowerCase("ru");
+  return /(?:най(?:ти|ди)|находить|определ(?:и|ить)|покаж(?:и|ить)|отыщ(?:и|ить)|ищут)\s+(?:место\s+)?(?:пропуск|пропущ)/i.test(text)
+    || /где\s+(?:в\s+слове\s+)?(?:стоит\s+)?пропуск/i.test(text)
+    || /место\s+пропуск/i.test(text);
+}
+
+function stripFindBlankGuidedSteps(steps: unknown) {
+  if (!Array.isArray(steps) || !steps.length) return steps;
+  const cleaned = steps.filter((rawStep) => {
+    if (!rawStep || typeof rawStep !== "object") return true;
+    const step = rawStep as Record<string, unknown>;
+    const display = String(step.display || "");
+    if (!hasVisibleBlank(display) && !isFindBlankStep(step.title, step.prompt)) return true;
+    if (hasVisibleBlank(display) && isFindBlankStep(step.title, step.prompt)) return false;
+    return true;
+  });
+  return cleaned.length ? cleaned : steps;
+}
+
+function removeRedundantBlankFinding(analysis: Record<string, unknown>) {
   if (!Array.isArray(analysis.tasks)) return analysis;
   return {
     ...analysis,
     tasks: analysis.tasks.map((rawTask) => {
       if (!rawTask || typeof rawTask !== "object") return rawTask;
       const task = rawTask as Record<string, unknown>;
-      if (!Array.isArray(task.guidedSteps) || task.guidedSteps.length < 2) return task;
-      const first = task.guidedSteps[0];
-      if (!first || typeof first !== "object") return task;
-      const step = first as Record<string, unknown>;
-      const display = String(step.display || "");
-      const prompt = `${String(step.title || "")} ${String(step.prompt || "")}`;
-      const hasVisibleBlank = /_|\.{3,}|…/.test(display);
-      const asksToLocateVisibleTarget = /(?:(?:найди|покажи|определи|отыщи).{0,40}(?:пропуск|пропущ|слово.{0,20}(?:после|перед)|место.{0,20}(?:артикл|ответ))|(?:где|в каком месте).{0,35}(?:пропуск|пропущ))/i.test(prompt);
-      if (!hasVisibleBlank || !asksToLocateVisibleTarget) return task;
-      return { ...task, guidedSteps: task.guidedSteps.slice(1) };
+      const guidedSteps = Array.isArray(task.guidedSteps) ? task.guidedSteps : [];
+      const extraGuidedSteps = Array.isArray(task.extraGuidedSteps) ? task.extraGuidedSteps : [];
+      const blankVisible = hasVisibleBlank(task.instruction)
+        || guidedSteps.some((step) => step && typeof step === "object" && hasVisibleBlank((step as Record<string, unknown>).display))
+        || extraGuidedSteps.some((step) => step && typeof step === "object" && hasVisibleBlank((step as Record<string, unknown>).display));
+
+      let methodSteps = task.methodSteps;
+      if (blankVisible && Array.isArray(task.methodSteps)) {
+        const filtered = task.methodSteps.filter((rawStep) => {
+          if (!rawStep || typeof rawStep !== "object") return true;
+          const step = rawStep as Record<string, unknown>;
+          return !isFindBlankStep(step.title, step.text);
+        });
+        if (filtered.length) methodSteps = filtered.slice(0, 4);
+      }
+
+      return {
+        ...task,
+        methodSteps,
+        guidedSteps: stripFindBlankGuidedSteps(task.guidedSteps),
+        extraGuidedSteps: stripFindBlankGuidedSteps(task.extraGuidedSteps),
+      };
     }),
   };
 }
