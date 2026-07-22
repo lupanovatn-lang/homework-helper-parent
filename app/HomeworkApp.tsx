@@ -472,7 +472,7 @@ function MethodTrail({ steps, active }: { steps: Array<{ title: string }>; activ
 }
 
 function Route({ stage }: { stage: number }) {
-  const labels = ["Инструкция", "Правило", "Выполним", "Проверим"];
+  const labels = ["Инструкция", "Правило", "Выполнение", "Проверим"];
   return <nav className="learning-route" aria-label="Этапы объяснения">{labels.map((label, index) => { const number = index + 1; return <div key={label} className={number === stage ? "active" : number < stage ? "done" : ""}><span>{number < stage ? <Check size={12} weight="bold" /> : number}</span><small>{label}</small></div>; })}</nav>;
 }
 
