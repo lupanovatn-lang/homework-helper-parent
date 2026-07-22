@@ -194,7 +194,6 @@ button { -webkit-tap-highlight-color:transparent; }
 .instruction-stage { position:relative; }
 .child-material.instruction-source,.rule-material,.practice-material { margin-top:14px; padding:18px; border-radius:20px; background:#eef3fa; }
 .focus-block { box-shadow:inset 0 0 0 1px #d7e3f4; }
-.rule-stage .rule-material,
 .practice-stage .practice-material { background:linear-gradient(180deg,#e8f0ff 0%,#eef4fb 100%); box-shadow:inset 0 0 0 1.5px #b9cff0; }
 .practice-quote-box { margin-top:0; padding:15px 16px; border-radius:14px; background:#fff; box-shadow:0 1px 0 rgba(10,36,90,.04); }
 .practice-material .rule-kicker { margin-bottom:10px; }
@@ -211,7 +210,7 @@ button { -webkit-tap-highlight-color:transparent; }
 .practice-stage .guided-feedback.wrong { background:#fff4f0; }
 .practice-stage .guided-feedback.wrong strong { color:#b24a2d; }
 .rule-kicker { display:block; margin:0 0 10px; color:var(--blue); font-size:11px; font-weight:800; letter-spacing:.2px; }
-.rule-text { margin:0; color:var(--navy); font-size:16px; line-height:1.5; font-weight:650; }
+.rule-text { margin:0; color:#2f3b52; font-size:14.5px; line-height:1.55; font-weight:400; }
 .rule-example-box { margin-top:14px; padding:14px 15px; border-radius:14px; background:#fff; box-shadow:0 1px 0 rgba(10,36,90,.04); }
 .rule-example-box>span { display:block; margin-bottom:6px; color:var(--blue); font-size:10px; font-weight:700; }
 .rule-example-box>strong { display:block; color:var(--navy); font-size:19px; line-height:1.35; font-weight:750; white-space:pre-wrap; }
