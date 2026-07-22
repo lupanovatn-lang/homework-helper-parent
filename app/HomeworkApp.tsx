@@ -238,12 +238,8 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
     <section className="stage-content instruction-stage">
       <div className="stage-main">
         <h1>Прочитайте инструкцию</h1>
-        <p className="stage-subtitle">Сами или вместе с ребёнком</p>
-        <div className="instruction-material focus-block">
-          <span className="rule-kicker">Что сделать</span>
-          <div className="instruction-quote-box">
-            <InstructionText text={task.instruction} />
-          </div>
+        <div className="child-material instruction-source focus-block">
+          <InstructionText text={task.instruction} />
         </div>
         {phase === "check" && (
           <Recommendation title="Рекомендация">
