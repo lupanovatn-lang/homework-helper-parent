@@ -199,6 +199,7 @@ button { -webkit-tap-highlight-color:transparent; }
 .instruction-number { width:23px; height:23px; flex:none; display:grid; place-items:center; border-radius:50%; color:#fff; background:var(--blue); font-size:10px; font-weight:800; }
 .instruction-section>div { min-width:0; flex:1; }
 .instruction-section h2 { margin:1px 0 8px; color:var(--navy); font-size:13px; line-height:1.3; }
+.instruction-section .instruction-hint { margin:-2px 0 10px; color:#71809a; font-size:10px; line-height:1.4; font-weight:500; }
 .instruction-section .parent-line { margin:0; color:var(--navy); font-size:14px; line-height:1.48; font-weight:650; }
 .instruction-section>svg { flex:none; color:var(--blue); }
 .instruction-section>div>span { display:block; margin-bottom:7px; color:#966600; font-size:8.5px; font-weight:800; text-transform:uppercase; letter-spacing:.55px; }
