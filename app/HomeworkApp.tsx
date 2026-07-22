@@ -446,6 +446,7 @@ function FlowShell({ children, onBack }: { children: ReactNode; onBack: () => vo
 function Secure() { return <div className="secure"><ShieldCheck size={19} /> Без регистрации</div>; }
 
 function LoadingStatus({ elapsed, label, progress, eta }: { elapsed: number; label: string; progress: number; eta: string }) {
+  const overEta = elapsed > (eta.includes("30") ? 35 : 25);
   return (
     <div className="loading-status" role="status" aria-live="polite">
       <div className="loading-status-head">
@@ -453,7 +454,9 @@ function LoadingStatus({ elapsed, label, progress, eta }: { elapsed: number; lab
         <span>{elapsed} сек</span>
       </div>
       <div className="loading-bar" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
-      <p>Обычно занимает {eta}. Можно подождать — приложение работает.</p>
+      <p>{overEta
+        ? "Сложная страница — обычно ещё немного. Приложение работает, можно подождать."
+        : `Обычно занимает ${eta}. Можно подождать — приложение работает.`}</p>
     </div>
   );
 }
@@ -471,9 +474,9 @@ function useLoadingProgress(active: boolean, hasPhoto: boolean) {
     return () => window.clearInterval(id);
   }, [active]);
   const label = [...LOADING_STEPS].reverse().find((step) => elapsed >= step.after)?.label || LOADING_STEPS[0].label;
-  const expected = hasPhoto ? 28 : 20;
-  const progress = Math.min(94, Math.round(10 + (elapsed / expected) * 84));
-  const eta = hasPhoto ? "15–30 секунд" : "10–20 секунд";
+  const expected = hasPhoto ? 32 : 18;
+  const progress = Math.min(94, Math.round(12 + (elapsed / expected) * 82));
+  const eta = hasPhoto ? "20–35 секунд" : "10–20 секунд";
   return { elapsed, label, progress, eta };
 }
 
@@ -505,7 +508,7 @@ function fileToCompressedDataUrl(file: File): Promise<string> {
       const source = String(reader.result);
       const image = new Image();
       image.onload = () => {
-        const maxSide = 1600;
+        const maxSide = 1280;
         const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
         const width = Math.max(1, Math.round(image.width * scale));
         const height = Math.max(1, Math.round(image.height * scale));
@@ -518,7 +521,7 @@ function fileToCompressedDataUrl(file: File): Promise<string> {
           return;
         }
         context.drawImage(image, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.82));
+        resolve(canvas.toDataURL("image/jpeg", 0.72));
       };
       image.onerror = () => resolve(source);
       image.src = source;

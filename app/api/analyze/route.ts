@@ -109,9 +109,10 @@ export async function POST(request: Request) {
     const raw = result?.choices?.[0]?.message?.content;
     if (!raw) throw new Error("Модель вернула пустой ответ");
     const parsed = (typeof raw === "string" ? JSON.parse(raw) : raw) as Record<string, unknown>;
-    // Review without re-sending the photo: the first call already transcribed the page,
-    // and a second vision pass roughly doubles latency.
-    const reviewed = await reviewPedagogicalAccuracy({ apiKey, analysis: parsed, task });
+    // Второй вызов модели удваивал ожидание (часто +20–30 сек). Включать только явно.
+    const reviewed = process.env.OPENROUTER_ENABLE_REVIEW === "1"
+      ? await reviewPedagogicalAccuracy({ apiKey, analysis: parsed, task })
+      : parsed;
     const analysis = removeRedundantGuidedSteps(collapseFalseLineSplits(normalizeParentSpeech(reviewed)));
     return NextResponse.json({ analysis });
   } catch (error) {
@@ -143,7 +144,7 @@ async function reviewPedagogicalAccuracy({ apiKey, analysis, task }: { apiKey: s
         response_format: { type: "json_object" },
         temperature: 0.1,
       }),
-      signal: AbortSignal.timeout(25_000),
+      signal: AbortSignal.timeout(12_000),
     });
 
     if (!response.ok) return analysis;
