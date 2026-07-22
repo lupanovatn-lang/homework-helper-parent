@@ -36,7 +36,7 @@ type HomeworkTask = {
   comprehensionQuestion: string;
   guidingQuestions?: string[];
   rule: { title: string; text: string };
-  ruleExample?: { display: string; explanation: string };
+  ruleExample?: { display: string; explanation: string } | null;
   methodType?: "steps" | "decision";
   methodSteps: Array<{ title: string; text?: string }>;
   decisionGuide?: {
@@ -346,8 +346,45 @@ function protectShortTokens(value: string) {
 }
 
 function StageTwo({ task, aidOpen, onAidOpenChange, onBack, onNext }: { task: HomeworkTask; aidOpen: boolean; onAidOpenChange: (open: boolean) => void; onBack: () => void; onNext: () => void }) {
-  const example = task.ruleExample || fallbackTask().ruleExample!;
-  return <section className="stage-content rule-stage"><p className="stage-label">Шаг 2 из 4 · Вспомним правило</p><div className="rule-panel"><section className="rule-section"><h2>Прочитайте правило вместе</h2><div className="rule-card"><strong>{task.rule.title}</strong><p>{task.rule.text}</p></div></section><section className="rule-section example-section"><h2>Разберите пример вместе</h2><div className="rule-example"><strong>{example.display}</strong><p>{example.explanation}</p></div></section>{task.knowledgeAid && <section className="rule-section support-section"><KnowledgeAid aid={task.knowledgeAid} open={aidOpen} onOpenChange={onAidOpenChange} /></section>}</div><button className="primary-button flow-primary" onClick={onNext}>Попробуем вместе <ArrowRight size={20} weight="bold" /></button><button className="text-link flow-back" onClick={onBack}>Вернуться к инструкции</button><p className="flow-note"><Lightbulb size={16} /> Дальше разберём один пример вместе</p></section>;
+  const example = task.ruleExample?.display?.trim() ? task.ruleExample : null;
+  const requiredAid = task.knowledgeAid?.required ? task.knowledgeAid : null;
+  const optionalAid = task.knowledgeAid && !task.knowledgeAid.required ? task.knowledgeAid : null;
+  const showNumbers = Boolean(example);
+
+  return (
+    <section className="stage-content instruction-stage">
+      <p className="stage-label">Шаг 2 из 4</p>
+      <h1>Вспомним правило</h1>
+      <div className="instruction-panel">
+        <div className={`instruction-section ${showNumbers ? "" : "solo"}`.trim()}>
+          {showNumbers && <span className="instruction-number">1</span>}
+          <div>
+            <h2>Прочитайте вместе</h2>
+            <div className="knowledge-block">
+              <strong>{task.rule.title}</strong>
+              <p>{task.rule.text}</p>
+              {requiredAid && <div className="knowledge-required"><KnowledgeAidBody aid={requiredAid} /></div>}
+            </div>
+          </div>
+        </div>
+        {example && (
+          <div className="instruction-section">
+            <span className="instruction-number">2</span>
+            <div>
+              <h2>Разберите пример вместе</h2>
+              <div className="knowledge-example">
+                <strong>{example.display}</strong>
+                {example.explanation?.trim() && <p>{example.explanation}</p>}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      {optionalAid && <KnowledgeAid aid={optionalAid} open={aidOpen} onOpenChange={onAidOpenChange} />}
+      <button className="primary-button flow-primary" onClick={onNext}>Перейти к выполнению <ArrowRight size={20} weight="bold" /></button>
+      <button className="text-link flow-back" onClick={onBack}>Вернуться к инструкции</button>
+    </section>
+  );
 }
 
 function MethodGuide({ task, compact = false }: { task: HomeworkTask; compact?: boolean }) {
@@ -356,11 +393,37 @@ function MethodGuide({ task, compact = false }: { task: HomeworkTask; compact?: 
   return <div className={`decision-guide ${compact ? "compact" : ""}`}><div className="decision-start">{guide.start}</div>{guide.questions.slice(0, 3).map((item, index) => <div className="decision-node" key={`${item.question}-${index}`}><strong>{item.question}</strong><div><span><b>Да</b>{item.yes}</span><span><b>Нет</b>{item.no}</span></div></div>)}</div>;
 }
 
-function KnowledgeAid({ aid, open, onOpenChange }: { aid?: HomeworkTask["knowledgeAid"]; open: boolean; onOpenChange: (open: boolean) => void }) {
-  if (!aid) return null;
+function KnowledgeAidBody({ aid }: { aid: NonNullable<HomeworkTask["knowledgeAid"]> }) {
   const hasTable = aid.type === "table" && Boolean(aid.columns?.length && aid.rows?.length);
   const items = aid.items?.slice(0, 8) || [];
-  return <div className="knowledge-aid"><button onClick={() => onOpenChange(!open)}><span><Lightbulb size={17} weight="fill" /> {open ? aid.title : aid.actionLabel || aid.title}</span><small>{open ? "Свернуть" : "Открыть"}</small></button>{open && <div className="knowledge-content">{hasTable ? <div className="knowledge-table"><div className="knowledge-row head">{aid.columns!.slice(0, 3).map((column) => <strong key={column}>{column}</strong>)}</div>{aid.rows!.slice(0, 8).map((row, index) => <div className="knowledge-row" key={`${row.join("-")}-${index}`}>{row.slice(0, 3).map((cell, cellIndex) => <span key={`${cell}-${cellIndex}`}>{cell}</span>)}</div>)}</div> : <ul>{items.map((item) => <li key={item}>{item}</li>)}</ul>}</div>}</div>;
+  return (
+    <div className="knowledge-content embedded">
+      <span className="knowledge-embedded-title">{aid.title}</span>
+      {hasTable ? (
+        <div className="knowledge-table">
+          <div className="knowledge-row head">{aid.columns!.slice(0, 3).map((column) => <strong key={column}>{column}</strong>)}</div>
+          {aid.rows!.slice(0, 8).map((row, index) => (
+            <div className="knowledge-row" key={`${row.join("-")}-${index}`}>{row.slice(0, 3).map((cell, cellIndex) => <span key={`${cell}-${cellIndex}`}>{cell}</span>)}</div>
+          ))}
+        </div>
+      ) : (
+        <ul>{items.map((item) => <li key={item}>{item}</li>)}</ul>
+      )}
+    </div>
+  );
+}
+
+function KnowledgeAid({ aid, open, onOpenChange }: { aid?: HomeworkTask["knowledgeAid"]; open: boolean; onOpenChange: (open: boolean) => void }) {
+  if (!aid) return null;
+  return (
+    <div className="knowledge-aid">
+      <button onClick={() => onOpenChange(!open)}>
+        <span><Lightbulb size={17} weight="fill" /> {open ? aid.title : aid.actionLabel || aid.title}</span>
+        <small>{open ? "Свернуть" : "Открыть"}</small>
+      </button>
+      {open && <KnowledgeAidBody aid={aid} />}
+    </div>
+  );
 }
 
 function MethodTrail({ steps, active }: { steps: Array<{ title: string }>; active: number }) {
