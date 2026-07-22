@@ -10,10 +10,10 @@ import {
 const SAMPLE_TASK = "Вычисли: 48 : 6 + 7 × 3. Объясни порядок действий.";
 const LOADING_STEPS = [
   { after: 0, label: "Смотрим задание" },
-  { after: 7, label: "Понимаем, что нужно сделать" },
-  { after: 16, label: "Готовим подсказки родителю" },
-  { after: 28, label: "Проверяем точность" },
-  { after: 42, label: "Ещё немного — почти готово" },
+  { after: 5, label: "Понимаем, что нужно сделать" },
+  { after: 12, label: "Готовим подсказки родителю" },
+  { after: 20, label: "Проверяем точность" },
+  { after: 30, label: "Ещё немного — почти готово" },
 ] as const;
 type Mode = "explain" | "check";
 type Screen = "start" | "tasks" | "learn" | "result";
