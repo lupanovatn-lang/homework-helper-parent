@@ -210,7 +210,9 @@ button { -webkit-tap-highlight-color:transparent; }
 .practice-stage .guided-feedback.wrong { background:#fff4f0; }
 .practice-stage .guided-feedback.wrong strong { color:#b24a2d; }
 .rule-kicker { display:block; margin:0 0 10px; color:var(--blue); font-size:11px; font-weight:800; letter-spacing:.2px; }
-.rule-text { margin:0; color:#2f3b52; font-size:14.5px; line-height:1.55; font-weight:400; }
+.rule-text { margin:0; color:#435675; font-size:14.5px; line-height:1.55; font-weight:400 !important; font-synthesis:none; }
+.rule-material>.rule-text,
+.rule-stage .rule-text { font-weight:400 !important; }
 .rule-example-box { margin-top:14px; padding:14px 15px; border-radius:14px; background:#fff; box-shadow:0 1px 0 rgba(10,36,90,.04); }
 .rule-example-box>span { display:block; margin-bottom:6px; color:var(--blue); font-size:10px; font-weight:700; }
 .rule-example-box>strong { display:block; color:var(--navy); font-size:19px; line-height:1.35; font-weight:750; white-space:pre-wrap; }
