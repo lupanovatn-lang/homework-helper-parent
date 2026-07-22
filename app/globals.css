@@ -48,6 +48,13 @@ button { -webkit-tap-highlight-color:transparent; }
 .primary-button:disabled { opacity:.8; cursor:wait; }
 .spinner { width:19px; height:19px; border-radius:50%; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; animation:spin .7s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
+.loading-status { margin-top:10px; padding:12px 14px; border:1px solid #d6e4f5; border-radius:14px; background:#f7faff; }
+.loading-status-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.loading-status-head strong { color:var(--navy); font-size:12.5px; line-height:1.3; font-weight:700; }
+.loading-status-head span { flex:none; color:var(--blue); font-size:11px; font-weight:800; font-variant-numeric:tabular-nums; }
+.loading-bar { margin-top:9px; height:6px; border-radius:999px; background:#e2ebf8; overflow:hidden; }
+.loading-bar>span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#4f8ff0,#075eea); transition:width .35s ease; }
+.loading-status p { margin:8px 0 0; color:#667795; font-size:10.5px; line-height:1.4; font-weight:500; }
 .promise { margin-top:12px; display:flex; align-items:center; justify-content:center; gap:9px; color:#5a6a87; font-size:10.5px; line-height:1.38; font-weight:600; }
 .promise span { width:34px; height:34px; border-radius:50%; background:#dcffa0; color:#70b80b; display:grid; place-items:center; }
 .error-message { margin:8px 0 -4px; text-align:center; color:#b42318; font-size:11px; line-height:1.4; }

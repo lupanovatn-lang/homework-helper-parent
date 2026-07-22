@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft, ArrowRight, BookOpen, Camera, Check, CheckCircle, FileImage,
   Image as ImageIcon, Lightbulb, MagnifyingGlass, Plant,
@@ -8,6 +8,13 @@ import {
 } from "@phosphor-icons/react";
 
 const SAMPLE_TASK = "Вычисли: 48 : 6 + 7 × 3. Объясни порядок действий.";
+const LOADING_STEPS = [
+  { after: 0, label: "Смотрим задание" },
+  { after: 7, label: "Понимаем, что нужно сделать" },
+  { after: 16, label: "Готовим подсказки родителю" },
+  { after: 28, label: "Проверяем точность" },
+  { after: 42, label: "Ещё немного — почти готово" },
+] as const;
 type Mode = "explain" | "check";
 type Screen = "start" | "tasks" | "learn" | "result";
 type GuidedStep = {
@@ -117,6 +124,7 @@ export function HomeworkApp() {
   }
 
   const tasks = normalizeTasks(analysis);
+  const loadingProgress = useLoadingProgress(loading, Boolean(file));
 
   if (screen === "tasks") return <TaskPicker tasks={tasks} preview={preview} completed={completedTasks} onBack={() => setScreen("start")} onChoose={(index) => { setCurrentTask(index); setScreen("learn"); }} onRemove={removeRecognizedTask} />;
   if (screen === "learn") return <LearningFlow task={tasks[currentTask]} taskIndex={currentTask} taskCount={tasks.length} preview={preview} onBack={() => setScreen("tasks")} onComplete={() => { setCompletedTasks((items) => items.includes(currentTask) ? items : [...items, currentTask]); setScreen("tasks"); }} />;
@@ -127,15 +135,16 @@ export function HomeworkApp() {
       <header className="topbar"><div className="brand-placeholder"><Sparkle size={26} weight="fill" /></div><Secure /></header>
       <section className="intro"><h1>Поможем с домашним заданием</h1><p>Сфотографируйте задание. Подскажем, как объяснить его ребёнку, или проверим уже выполненную работу.</p></section>
       <input ref={inputRef} className="visually-hidden" type="file" accept="image/*" onChange={chooseFile} />
-      {file ? <div className="file-state"><div className="file-icon"><FileImage size={30} /></div><div><strong>Фото добавлено</strong><span>{file.name}</span></div><button onClick={() => { setFile(null); setPreview(""); }} aria-label="Удалить фото"><X size={20} weight="bold" /></button></div>
-      : showText ? <div className="text-state"><label htmlFor="task">Введите условие задания</label><textarea id="task" autoFocus value={task} onChange={(e) => setTask(e.target.value)} placeholder="Например: реши задачу № 5…" /><button className="text-link small" onClick={() => { setShowText(false); setTask(""); }}><Camera size={18} /> Добавить фото</button></div>
-      : <button className="upload-zone" onClick={() => inputRef.current?.click()}><span className="camera-circle"><Camera size={46} /></span><strong>Сфотографировать задание</strong><small>Поддерживаются фото, сканы и скриншоты</small></button>}
-      {!showText && !file && <button className="text-link" onClick={() => setShowText(true)}>Ввести текстом</button>}
+      {file ? <div className="file-state"><div className="file-icon"><FileImage size={30} /></div><div><strong>Фото добавлено</strong><span>{file.name}</span></div><button onClick={() => { setFile(null); setPreview(""); }} aria-label="Удалить фото" disabled={loading}><X size={20} weight="bold" /></button></div>
+      : showText ? <div className="text-state"><label htmlFor="task">Введите условие задания</label><textarea id="task" autoFocus value={task} onChange={(e) => setTask(e.target.value)} placeholder="Например: реши задачу № 5…" disabled={loading} /><button className="text-link small" onClick={() => { setShowText(false); setTask(""); }} disabled={loading}><Camera size={18} /> Добавить фото</button></div>
+      : <button className="upload-zone" onClick={() => inputRef.current?.click()} disabled={loading}><span className="camera-circle"><Camera size={46} /></span><strong>Сфотографировать задание</strong><small>Поддерживаются фото, сканы и скриншоты</small></button>}
+      {!showText && !file && <button className="text-link" onClick={() => setShowText(true)} disabled={loading}>Ввести текстом</button>}
       <section className="mode-section"><h2>Чем помочь?</h2><div className="mode-grid" role="radiogroup">
-        <ModeCard selected={mode === "explain"} onClick={() => setMode("explain")} icon={<Lightbulb size={31} />} title="Помочь разобраться" text="Поймём задание, вспомним правило и начнём вместе" />
-        <ModeCard selected={mode === "check"} onClick={() => setMode("check")} icon={<MagnifyingGlass size={31} />} title="Проверить работу" text="Найдём ошибки и подскажем, как их исправить" />
+        <ModeCard selected={mode === "explain"} onClick={() => !loading && setMode("explain")} icon={<Lightbulb size={31} />} title="Помочь разобраться" text="Поймём задание, вспомним правило и начнём вместе" />
+        <ModeCard selected={mode === "check"} onClick={() => !loading && setMode("check")} icon={<MagnifyingGlass size={31} />} title="Проверить работу" text="Найдём ошибки и подскажем, как их исправить" />
       </div>{mode === "check" && <p className="context-note"><Camera size={16} /> Добавьте фото задания вместе с решением ребёнка</p>}</section>
       <button className="primary-button" onClick={begin} disabled={loading}><span>{loading ? "Разбираем…" : "Начать"}</span>{loading ? <span className="spinner" /> : <ArrowRight size={25} weight="bold" />}</button>
+      {loading && <LoadingStatus elapsed={loadingProgress.elapsed} label={loadingProgress.label} progress={loadingProgress.progress} eta={loadingProgress.eta} />}
       {error && <p className="error-message" role="alert">{error}</p>}
       <div className="promise"><span><Plant size={23} weight="fill" /></span>Без готовых ответов —<br /> помогаем ребёнку понять</div>
     </section></main>
@@ -372,6 +381,38 @@ function FlowShell({ children, onBack }: { children: ReactNode; onBack: () => vo
 }
 
 function Secure() { return <div className="secure"><ShieldCheck size={19} /> Без регистрации</div>; }
+
+function LoadingStatus({ elapsed, label, progress, eta }: { elapsed: number; label: string; progress: number; eta: string }) {
+  return (
+    <div className="loading-status" role="status" aria-live="polite">
+      <div className="loading-status-head">
+        <strong>{label}</strong>
+        <span>{elapsed} сек</span>
+      </div>
+      <div className="loading-bar" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
+      <p>Обычно занимает {eta}. Можно подождать — приложение работает.</p>
+    </div>
+  );
+}
+
+function useLoadingProgress(active: boolean, hasPhoto: boolean) {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!active) {
+      setElapsed(0);
+      return;
+    }
+    setElapsed(0);
+    const started = Date.now();
+    const id = window.setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 250);
+    return () => window.clearInterval(id);
+  }, [active]);
+  const label = [...LOADING_STEPS].reverse().find((step) => elapsed >= step.after)?.label || LOADING_STEPS[0].label;
+  const expected = hasPhoto ? 40 : 28;
+  const progress = Math.min(94, Math.round(10 + (elapsed / expected) * 84));
+  const eta = hasPhoto ? "25–45 секунд" : "15–30 секунд";
+  return { elapsed, label, progress, eta };
+}
 
 function normalizeAnswer(value: string) { return value.toLocaleLowerCase("ru").replace(/[«»"'.,;:!?\s-]/g, ""); }
 
