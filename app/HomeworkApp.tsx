@@ -286,7 +286,7 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
 }
 
 function InstructionText({ text }: { text: string }) {
-  const blocks = splitInstructionBlocks(text);
+  const blocks = splitInstructionBlocks(repairLineBreakHyphenation(text));
   return (
     <div className="instruction-text">
       {blocks.map((block, index) => (
@@ -296,6 +296,13 @@ function InstructionText({ text }: { text: string }) {
       ))}
     </div>
   );
+}
+
+function repairLineBreakHyphenation(value: string) {
+  return value
+    .replace(/\u00AD/g, "")
+    .replace(/([A-Za-zА-Яа-яЁё])-\r?\n+([A-Za-zА-Яа-яЁё])/g, "$1$2")
+    .replace(/([A-Za-zА-Яа-яЁё])-[ \t]+([A-Za-zА-Яа-яЁё])/g, "$1$2");
 }
 
 function splitInstructionBlocks(value: string) {
