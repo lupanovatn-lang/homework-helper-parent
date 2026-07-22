@@ -491,11 +491,12 @@ function StageTogether({
   onBack: () => void;
   onNext: () => void;
 }) {
+  const [typeOpen, setTypeOpen] = useState(false);
   const example = task.ruleExample?.display?.trim() ? task.ruleExample : null;
   const requiredAid = task.knowledgeAid?.required ? task.knowledgeAid : null;
   const hasOptions = Boolean(guided.options?.length);
   const isText = guided.answerType === "text" && Boolean(guided.acceptableAnswers?.length);
-  const isSpokenOnly = !hasOptions && !isText;
+  const showMethod = Boolean(task.methodSteps?.length);
 
   function evaluate(option?: string, typed?: string) {
     const correct = hasOptions
@@ -508,6 +509,10 @@ function StageTogether({
   function askHint() {
     onUnlockSupports();
     onFeedback("hint");
+  }
+
+  function markSpokenDone() {
+    onFeedback("correct");
   }
 
   function chooseOption(option: string) {
@@ -523,88 +528,107 @@ function StageTogether({
   return (
     <section className="stage-content together-stage">
       <div className="stage-main">
-        <h1>{practiceRound === 2 ? "Сделаем ещё один пункт вместе" : "Сделаем первый пункт вместе"}</h1>
-        <p className="stage-subtitle">Сначала пусть ребёнок попробует сам — правило появится, если понадобится подсказка</p>
+        <h1>{practiceRound === 2 ? "Ещё один пункт вместе" : "Первый пункт вместе"}</h1>
+        <p className="stage-subtitle">Пусть ребёнок попробует. Подсказка откроет правило и порядок действий.</p>
 
-        <GuidedProgress index={guidedIndex} count={guidedCount} title={guided.title} />
-        <div className="practice-material focus-block">
-          <span className="rule-kicker">{guided.title || "Первый пункт"}</span>
-          <div className="practice-quote-box">
-            {guided.display && <strong className="guided-display">{guided.display}</strong>}
-            <p className="practice-prompt">{guided.prompt}</p>
-            {hasOptions ? (
-              <div className="answer-grid">
-                {guided.options!.map((option) => (
-                  <button
-                    key={option}
-                    className={selected === option ? `selected ${feedback === "correct" ? "is-correct" : feedback === "wrong" ? "is-wrong" : ""}` : ""}
-                    onClick={() => chooseOption(option)}
-                    disabled={feedback === "correct"}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            ) : isText ? (
-              <label className="answer-input">
-                <span>Ответ ребёнка</span>
-                <input
-                  value={typedAnswer}
-                  onChange={(event) => { onTypedAnswer(event.target.value); if (feedback) onFeedback(""); }}
-                  onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); submitTyped(); } }}
-                  placeholder="Введите ответ и нажмите Enter"
-                  autoComplete="off"
+        <div className="together-card">
+          {guided.display && <p className="together-display">{guided.display}</p>}
+          <div className="together-ask">
+            <ChatCircleDots size={22} weight="regular" />
+            <p>{guided.prompt}</p>
+          </div>
+
+          {hasOptions && (
+            <div className="answer-grid together-options">
+              {guided.options!.map((option) => (
+                <button
+                  key={option}
+                  className={selected === option ? `selected ${feedback === "correct" ? "is-correct" : feedback === "wrong" ? "is-wrong" : ""}` : ""}
+                  onClick={() => chooseOption(option)}
                   disabled={feedback === "correct"}
-                />
-              </label>
-            ) : null}
-            {feedback && (
-              <div className={`guided-feedback ${feedback}`}>
-                <strong>{feedback === "hint" ? "Подсказка" : feedback === "correct" ? "Верно" : "Разберём ошибку"}</strong>
-                <p>{feedback === "correct" ? guided.success : guided.hint}</p>
-              </div>
-            )}
-          </div>
-        </div>
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          )}
 
-        {supportsUnlocked && (
-          <div className="applied-rule focus-block">
-            <span className="rule-kicker">Нужное правило</span>
-            <p className="rule-text">{task.rule.text}</p>
-            {example && (
-              <div className="rule-example-box">
-                <span>Как применить здесь:</span>
-                <strong>{example.display}</strong>
-                {example.explanation?.trim() && <p>{example.explanation}</p>}
-              </div>
-            )}
-            {requiredAid && <div className="knowledge-required"><KnowledgeAidBody aid={requiredAid} /></div>}
-          </div>
-        )}
+          {feedback === "hint" && (
+            <div className="together-feedback hint">
+              <strong>Подсказка</strong>
+              <p>{guided.hint}</p>
+            </div>
+          )}
+          {feedback === "wrong" && (
+            <div className="together-feedback wrong">
+              <strong>Не торопимся</strong>
+              <p>{guided.hint}</p>
+            </div>
+          )}
+          {feedback === "correct" && (
+            <div className="together-feedback correct">
+              <strong>Отлично</strong>
+              <p>{guided.success}</p>
+            </div>
+          )}
+
+          {supportsUnlocked && (
+            <div className="together-support">
+              <span className="rule-kicker">Правило</span>
+              <p className="rule-text">{task.rule.text}</p>
+              {example && (
+                <div className="rule-example-box">
+                  <span>Пример</span>
+                  <strong>{example.display}</strong>
+                  {example.explanation?.trim() && <p>{example.explanation}</p>}
+                </div>
+              )}
+              {showMethod && (
+                <>
+                  <span className="rule-kicker support-method-kicker">Порядок</span>
+                  <MethodTrail steps={task.methodSteps} active={-1} />
+                </>
+              )}
+              {requiredAid && <div className="knowledge-required"><KnowledgeAidBody aid={requiredAid} /></div>}
+            </div>
+          )}
+
+          {isText && typeOpen && feedback !== "correct" && (
+            <label className="answer-input">
+              <span>Короткий ответ</span>
+              <input
+                value={typedAnswer}
+                onChange={(event) => { onTypedAnswer(event.target.value); if (feedback && feedback !== "hint") onFeedback(""); }}
+                onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); submitTyped(); } }}
+                placeholder="Например: о или сторож"
+                autoComplete="off"
+              />
+            </label>
+          )}
+        </div>
       </div>
       <div className="stage-actions">
         {feedback === "correct" ? (
           <button className="primary-button flow-primary" onClick={onNext}>
-            {guidedIndex < guidedCount - 1 ? "Дальше" : "Теперь попробуй сам"} <ArrowRight size={20} weight="bold" />
+            {guidedIndex < guidedCount - 1 ? "Дальше" : "Теперь сам"} <ArrowRight size={20} weight="bold" />
           </button>
         ) : (
           <>
-            {isText && (
-              <button className="primary-button flow-primary" disabled={!typedAnswer.trim()} onClick={submitTyped}>Проверить ответ</button>
-            )}
-            {isSpokenOnly && feedback !== "hint" && (
-              <button className="primary-button flow-primary" onClick={() => onFeedback("correct")}>Ребёнок ответил вслух</button>
-            )}
+            <button className="primary-button flow-primary" onClick={markSpokenDone}>Ребёнок ответил вслух</button>
             <button className="secondary-button flow-secondary" onClick={askHint}><Lightbulb size={18} /> Нужна подсказка</button>
-            <button className="text-link flow-skip" onClick={onNext}>Пропустить этот шаг</button>
+            {isText && (
+              typeOpen
+                ? <button className="secondary-button flow-secondary" disabled={!typedAnswer.trim()} onClick={submitTyped}>Проверить написанное</button>
+                : <button className="text-link flow-skip" onClick={() => setTypeOpen(true)}>Ввести короткий ответ</button>
+            )}
+            {feedback === "wrong" && (
+              <button className="text-link parent-override" onClick={() => onFeedback("correct")}>
+                Ответ всё же верный
+              </button>
+            )}
           </>
         )}
-        {feedback === "wrong" && (
-          <button className="text-link parent-override" onClick={() => onFeedback("correct")}>
-            <CheckCircle size={18} weight="fill" /> Я проверил(а): ответ верный
-          </button>
-        )}
-        <button className="text-link flow-back" onClick={onBack}>Вернуться к заданию</button>
+        <button className="text-link flow-back" onClick={onBack}>К заданию</button>
       </div>
     </section>
   );
@@ -639,8 +663,8 @@ function StageAlone({
   return (
     <section className="stage-content independent-stage">
       <div className="stage-main">
-        <h1>Теперь попробуй сам</h1>
-        <p className="stage-subtitle">Родитель может отойти — рядом короткая памятка</p>
+        <h1>Теперь сам</h1>
+        <p className="stage-subtitle">Памятка рядом — родитель может отойти</p>
         <div className="independent-material focus-block">
           <span className="rule-kicker">Скажите ребёнку</span>
           <div className="practice-quote-box">
@@ -837,9 +861,13 @@ function normalizeTasks(analysis: Analysis | null): HomeworkTask[] {
             kind: task.ruleExample.kind,
           }
         : null,
-      methodSteps: methodFiltered.length ? methodFiltered : methodSource,
-      guidedSteps: stripRitualClientSteps(guidedSteps),
-      extraGuidedSteps: stripRitualClientSteps(extraGuidedSteps),
+      methodSteps: repairMethodStepsClient(methodFiltered.length ? methodFiltered : methodSource, {
+        instruction: String(task.instruction || ""),
+        guidedSteps,
+        ruleText: String(task.rule?.text || ""),
+      }),
+      guidedSteps: repairGuidedStepsClient(stripRitualClientSteps(guidedSteps)),
+      extraGuidedSteps: repairGuidedStepsClient(stripRitualClientSteps(extraGuidedSteps)),
       knowledgeAid: task.knowledgeAid || null,
       independentInstruction: String(task.independentInstruction || fallback.independentInstruction),
     };
@@ -886,6 +914,80 @@ function stripRitualClientSteps<T extends GuidedStep>(steps: T[]) {
     return !isEmptyRitualStepText(step.title, step.prompt, { blankVisible, objectVisible: objectVisible || blankVisible });
   });
   return cleaned.length ? cleaned : steps;
+}
+
+function guidedBlob(step: GuidedStep) {
+  return `${step.title || ""} ${step.prompt || ""} ${step.display || ""}`.toLocaleLowerCase("ru");
+}
+
+function isLetterInsertGuided(step: GuidedStep) {
+  return /(?:встав|вставь|букв|гласн|в\s+пропуск)/i.test(guidedBlob(step)) && !/проверочн/i.test(guidedBlob(step));
+}
+
+function isCheckWordGuided(step: GuidedStep) {
+  return /проверочн|ударен/i.test(guidedBlob(step));
+}
+
+function repairGuidedStepsClient(steps: GuidedStep[]) {
+  if (!steps?.length) return steps;
+  if (steps.length === 1) {
+    const step = steps[0];
+    if (isLetterInsertGuided(step) && hasVisibleBlankText(step.display)) {
+      return [{
+        ...step,
+        title: "Первый пункт",
+        prompt: "Какое проверочное слово подойдёт и какую букву вставим?",
+        answerType: "spoken" as const,
+        options: undefined,
+        correctOption: undefined,
+      }];
+    }
+    return steps;
+  }
+
+  const hasCheckChain = steps.some(isLetterInsertGuided) && steps.some(isCheckWordGuided);
+  const blankDisplay = steps.find((step) => hasVisibleBlankText(step.display))?.display
+    || steps.find((step) => step.display?.trim())?.display
+    || "";
+  const letter = steps.find(isLetterInsertGuided);
+  const check = steps.find(isCheckWordGuided) || steps[steps.length - 1];
+
+  if (hasCheckChain || steps.length > 1) {
+    return [{
+      title: "Первый пункт",
+      display: blankDisplay,
+      prompt: hasCheckChain
+        ? "Какое проверочное слово подойдёт и какую букву вставим?"
+        : String(steps[0].prompt || "Что ответим в этом пункте?"),
+      answerType: "spoken" as const,
+      hint: check?.hint || letter?.hint || "Сначала подбери проверочное слово, где нужная гласная под ударением.",
+      success: check?.success || letter?.success || "Верно: сначала проверка, потом буква.",
+    }];
+  }
+  return steps;
+}
+
+function repairMethodStepsClient(
+  methodSteps: Array<{ title: string; text?: string }>,
+  context: { instruction: string; guidedSteps: GuidedStep[]; ruleText: string },
+) {
+  const blankVisible = hasVisibleBlankText(context.instruction)
+    || context.guidedSteps.some((step) => hasVisibleBlankText(step.display));
+  const blob = `${methodSteps.map((step) => `${step.title} ${step.text || ""}`).join(" ")} ${context.ruleText}`.toLocaleLowerCase("ru");
+  if (!blankVisible || !/провероч|ударен|безудар|букв/.test(blob)) return methodSteps;
+
+  const titles = methodSteps.map((step) => step.title.toLocaleLowerCase("ru"));
+  const letterIndex = titles.findIndex((title) => /букв|встав/.test(title) && !/провероч/.test(title));
+  const checkIndex = titles.findIndex((title) => /провероч|ударен/.test(title));
+  const broken = (letterIndex >= 0 && checkIndex >= 0 && letterIndex < checkIndex)
+    || (letterIndex === 0 && checkIndex < 0)
+    || !methodSteps.length;
+  if (!broken) return methodSteps;
+  return [
+    { title: "Подбери проверочное слово" },
+    { title: "Поставь ударение" },
+    { title: "Вставь букву" },
+  ];
 }
 
 function fallbackTask(): HomeworkTask {

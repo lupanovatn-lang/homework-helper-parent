@@ -21,33 +21,35 @@ const REVIEW_PROMPT = `Ты — учитель и редактор. Провер
 
 const EXPLAIN_SCHEMA = `{"tasks":[{"title":"короткое название","shortTitle":"2–6 слов","instruction":"дословная инструкция с фото/текста","simplerInstruction":"короткая понятная версия для ребёнка","comprehensionQuestion":"один открытый вопрос: понял ли инструкцию","guidingQuestions":["2–3 коротких уточняющих вопроса по действиям инструкции"],"rule":{"title":"название знания","kind":"rule|formula|table|scheme|list|definition|principle","text":"1–3 предложения: суть знания для ребёнка, без алгоритма"},"ruleExample":{"display":"близкий другой пример","explanation":"одно пояснение","kind":"demo|example|compare|scheme"},"methodType":"steps|decision","methodSteps":[{"title":"короткое действие"}],"decisionGuide":{"start":"с чего начать","questions":[{"question":"да/нет","yes":"...","no":"..."}]},"knowledgeAid":{"title":"название опоры","type":"table|list|examples","required":false,"actionLabel":"открыть опору","columns":["..."],"rows":[["..."]],"items":["..."]},"guidedTitle":"первый пункт задания","guidedSteps":[{"title":"...","prompt":"вопрос ребёнку","display":"первый объект работы","answerType":"choice|text|spoken","options":["..."],"correctOption":"...","acceptableAnswers":["..."],"hint":"мягкая подсказка без полного ответа","success":"коротко почему верно"}],"extraGuidedSteps":[],"independentInstruction":"короткая фраза ребёнку: сделай остальные так же"}]}`;
 
-const EXPLAIN_RULES = `Сценарий для интерфейса: 1) понять задание, 2) сделать первый пункт, 3) остальные сам с памяткой.
+const EXPLAIN_RULES = `Сценарий: 1) понять задание, 2) один первый пункт вместе, 3) остальные сам.
 
 Задания:
-- Новое task только при отдельной инструкции или метке «Задание/Упражнение/№» со своим требованием.
-- Строки таблицы, слова и пункты под одной инструкцией — одно задание.
-- Если однотипных элементов несколько: guidedSteps = первый по порядку, extraGuidedSteps = второй. Не выбирай «удобный» поздний пункт.
+- Новое task только при отдельной инструкции («Задание/Упражнение/№» со своим требованием).
+- Строки/слова под одной инструкцией — одно задание.
+- guidedSteps = первый элемент по порядку; extraGuidedSteps = второй. Не выбирай поздний «удобный» пункт.
 
 Инструкция:
-- instruction — дословная транскрипция требования. Сохрани абзацы, списки, символы. Не упрощай и не добавляй «тебе нужно». Примеры под инструкцией не включай. Дефис переноса строки склеивай («запи-»+«ши» → «запиши»).
-- simplerInstruction — короткая помощь, если ребёнок не понял.
-- guidingQuestions — только про понимание инструкции, не про правило решения.
+- instruction — дословно с фото. Сохрани абзацы и списки. Не упрощай. Примеры под инструкцией не включай.
+- guidingQuestions — только про понимание инструкции.
 
 Знание и памятка:
-- rule.text — живое объяснение знания ребёнку. Не начинай с «посчитай/найди/запиши».
-- ruleExample — только если реально помогает; иначе null. Не раскрывай ответы текущего задания.
-- Для безударной гласной в корне пример: «пропуск → проверочное слово с ударением на этой гласной → итог» (в_да → во́ды → вода́).
-- methodType=steps для линейного порядка; decision — если есть развилка да/нет. methodSteps всегда заполни как короткую памятку (3–4 шага).
-- knowledgeAid — только если нужна таблица/список/формула, которой нет в ruleExample; иначе null. required=true лишь когда без опоры нельзя.
+- rule.text — коротко и живо, без алгоритма.
+- ruleExample — только если помогает; иначе null. Для безударной гласной: «в_да → во́ды → вода́».
+- methodSteps — 3 коротких действия в правильном порядке. Для проверяемой безударной гласной строго:
+  1) Подбери проверочное слово 2) Поставь ударение 3) Вставь букву.
+  Запрещено начинать с «Вставь букву» до проверочного слова.
+- knowledgeAid — только нужная таблица/список; иначе null.
 
 Первый пункт (guidedSteps):
-- Разбери один реальный первый элемент задания. Обычно 1–2 шага, редко 3.
-- Сразу применяй правило к объекту в display. Не создавай шаги «прочитай условие», «посмотри на слово», «найди пропуск», если пропуск/слово уже показаны.
-- answerType=text для букв, чисел, слов; перечисли все нормальные правильные варианты в acceptableAnswers. choice — только если варианты естественны. spoken — только для открытого объяснения.
-- hint — одна тёплая подсказка, которая намекает на правило, но не сдаёт ответ.
-- independentInstruction — коротко и по-человечески: сделай остальные пункты так же.
+- РОВНО ОДИН шаг на весь первый пункт. Не дроби «буква» и «проверочное слово» на два шага.
+- display — слово/фрагмент с пропуска как в задании (Ст_рожить).
+- prompt — один вопрос родителю ребёнку. Для безударной гласной спрашивай сначала про проверочное слово, затем про букву в том же вопросе: «Какое проверочное слово подойдёт и какую букву вставим?»
+- answerType предпочтительно spoken (ребёнок отвечает вслух). text — только для короткого однозначного ответа без ударения в поле ввода.
+- Не проси вводить ударение с клавиатуры.
+- hint — намёк на способ проверки, не готовый ответ.
+- Не создавай шаги «прочитай условие / найди пропуск / посмотри на слово».
 
-Тон: коротко, конкретно, без канцелярита и запугивания. Не выдавай ответы ко всему ДЗ.`;
+Тон: тепло, коротко, без канцелярита. Не выдавай ответы ко всему ДЗ.`;
 
 export async function POST(request: Request) {
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -101,7 +103,7 @@ ${EXPLAIN_RULES}`;
     const reviewed = process.env.OPENROUTER_ENABLE_REVIEW === "1"
       ? await reviewPedagogicalAccuracy({ apiKey, analysis: parsed, task })
       : parsed;
-    const analysis = removeRedundantRitualSteps(collapseFalseLineSplits(normalizeParentSpeech(reviewed)));
+    const analysis = repairPracticeFlow(removeRedundantRitualSteps(collapseFalseLineSplits(normalizeParentSpeech(reviewed))));
     return NextResponse.json({ analysis });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Не удалось обработать задание";
@@ -193,6 +195,125 @@ function stripRitualGuidedSteps(steps: unknown) {
     return !isEmptyRitualStep(step.title, step.prompt, { blankVisible, objectVisible: objectVisible || blankVisible });
   });
   return cleaned.length ? cleaned : steps;
+}
+
+function stepText(step: Record<string, unknown>) {
+  return `${String(step.title || "")} ${String(step.prompt || "")} ${String(step.display || "")}`.toLocaleLowerCase("ru");
+}
+
+function isLetterInsertStep(step: Record<string, unknown>) {
+  return /(?:встав|вставь|букв|гласн|в\s+пропуск)/i.test(stepText(step)) && !/(?:проверочн)/i.test(stepText(step));
+}
+
+function isCheckWordStep(step: Record<string, unknown>) {
+  return /проверочн|ударен/i.test(stepText(step));
+}
+
+function normalizeDisplayKey(value: unknown) {
+  return String(value || "")
+    .toLocaleLowerCase("ru")
+    .replace(/[́̀]/g, "")
+    .replace(/[^a-zа-яё0-9]/gi, "");
+}
+
+function repairSinglePracticeStep(step: Record<string, unknown>) {
+  if (isLetterInsertStep(step) && hasVisibleBlank(step.display)) {
+    return {
+      ...step,
+      title: "Первый пункт",
+      prompt: "Какое проверочное слово подойдёт и какую букву вставим?",
+      answerType: "spoken",
+      options: undefined,
+      correctOption: undefined,
+    };
+  }
+  return step;
+}
+
+function collapseGuidedSteps(steps: unknown): unknown {
+  if (!Array.isArray(steps) || !steps.length) return steps;
+  const items = steps.filter((step): step is Record<string, unknown> => Boolean(step && typeof step === "object"));
+  if (!items.length) return steps;
+  if (items.length === 1) return [repairSinglePracticeStep(items[0])];
+
+  const hasCheckChain = items.some(isLetterInsertStep) && items.some(isCheckWordStep);
+  const keys = items.map((step) => normalizeDisplayKey(step.display)).filter(Boolean);
+  const sameItem = keys.length >= 2 && keys.every((key) => key === keys[0] || key.includes(keys[0].slice(0, 4)) || keys[0].includes(key.slice(0, 4)));
+
+  if (!hasCheckChain && !sameItem && items.length > 1) {
+    // Keep at most one practice beat for the together screen.
+    return [items[0]];
+  }
+
+  const blankDisplay = items.find((step) => hasVisibleBlank(step.display))?.display
+    || items.find((step) => String(step.display || "").trim())?.display
+    || "";
+  const letter = items.find(isLetterInsertStep);
+  const check = items.find(isCheckWordStep) || items[items.length - 1];
+  const hint = String(check?.hint || letter?.hint || "Сначала подбери проверочное слово, где нужная гласная под ударением.");
+  const success = String(check?.success || letter?.success || "Верно: сначала проверка, потом буква.");
+
+  return [{
+    title: "Первый пункт",
+    display: blankDisplay,
+    prompt: hasCheckChain
+      ? "Какое проверочное слово подойдёт и какую букву вставим?"
+      : String(items[0].prompt || "Что ответим в этом пункте?"),
+    answerType: "spoken",
+    hint,
+    success,
+  }];
+}
+
+function repairMethodSteps(task: Record<string, unknown>) {
+  const guided = Array.isArray(task.guidedSteps) ? task.guidedSteps : [];
+  const blankVisible = hasVisibleBlank(task.instruction)
+    || guided.some((step) => step && typeof step === "object" && hasVisibleBlank((step as Record<string, unknown>).display));
+  const method = Array.isArray(task.methodSteps) ? task.methodSteps : [];
+  const methodBlob = method.map((step) => {
+    if (!step || typeof step !== "object") return "";
+    const item = step as Record<string, unknown>;
+    return `${item.title || ""} ${item.text || ""}`;
+  }).join(" ").toLocaleLowerCase("ru");
+
+  const ruleBlob = JSON.stringify(task.rule || {});
+  const looksLikeVowelCheck = blankVisible && /провероч|ударен|безудар|вставь букв|вставить букв/i.test(`${methodBlob} ${ruleBlob}`);
+  if (!looksLikeVowelCheck) return task.methodSteps;
+
+  const titles = method.map((step) => {
+    if (!step || typeof step !== "object") return "";
+    return String((step as Record<string, unknown>).title || "").toLocaleLowerCase("ru");
+  });
+  const letterIndex = titles.findIndex((title) => /букв|встав/.test(title) && !/провероч/.test(title));
+  const checkIndex = titles.findIndex((title) => /провероч|ударен/.test(title));
+  const brokenOrder = (letterIndex >= 0 && checkIndex >= 0 && letterIndex < checkIndex)
+    || (letterIndex === 0 && checkIndex < 0)
+    || !method.length;
+  if (brokenOrder) {
+    return [
+      { title: "Подбери проверочное слово" },
+      { title: "Поставь ударение" },
+      { title: "Вставь букву" },
+    ];
+  }
+  return task.methodSteps;
+}
+
+function repairPracticeFlow(analysis: Record<string, unknown>) {
+  if (!Array.isArray(analysis.tasks)) return analysis;
+  return {
+    ...analysis,
+    tasks: analysis.tasks.map((rawTask) => {
+      if (!rawTask || typeof rawTask !== "object") return rawTask;
+      const task = rawTask as Record<string, unknown>;
+      return {
+        ...task,
+        methodSteps: repairMethodSteps(task),
+        guidedSteps: collapseGuidedSteps(task.guidedSteps),
+        extraGuidedSteps: collapseGuidedSteps(task.extraGuidedSteps),
+      };
+    }),
+  };
 }
 
 function removeRedundantRitualSteps(analysis: Record<string, unknown>) {
