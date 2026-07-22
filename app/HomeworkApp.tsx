@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft, ArrowRight, BookOpen, Camera, Check, CheckCircle, FileImage,
-  Image as ImageIcon, Info, Lightbulb, MagnifyingGlass, Plant,
+  Image as ImageIcon, Lightbulb, MagnifyingGlass, Plant,
   ShieldCheck, Sparkle, X,
 } from "@phosphor-icons/react";
 
@@ -105,7 +105,11 @@ export function HomeworkApp() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Не удалось разобрать задание");
       setAnalysis(data.analysis); setCurrentTask(0); setCompletedTasks([]);
-      setScreen(mode === "explain" ? "tasks" : "result");
+      if (mode === "check") setScreen("result");
+      else {
+        const nextTasks = normalizeTasks(data.analysis);
+        setScreen(nextTasks.length === 1 ? "learn" : "tasks");
+      }
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Не удалось разобрать задание");
     } finally { setLoading(false); }
@@ -129,7 +133,11 @@ export function HomeworkApp() {
   const loadingProgress = useLoadingProgress(loading, Boolean(file));
 
   if (screen === "tasks") return <TaskPicker tasks={tasks} preview={preview} completed={completedTasks} onBack={() => setScreen("start")} onChoose={(index) => { setCurrentTask(index); setScreen("learn"); }} onRemove={removeRecognizedTask} />;
-  if (screen === "learn") return <LearningFlow task={tasks[currentTask]} taskIndex={currentTask} taskCount={tasks.length} preview={preview} onBack={() => setScreen("tasks")} onComplete={() => { setCompletedTasks((items) => items.includes(currentTask) ? items : [...items, currentTask]); setScreen("tasks"); }} />;
+  if (screen === "learn") {
+    const task = tasks[currentTask] || tasks[0];
+    if (!task) return <main className="page-shell"><section className="mobile-prototype"><p className="error-message" role="alert">Не удалось открыть задание. Попробуйте ещё раз.</p><button className="primary-button" onClick={() => setScreen("start")}>На главную</button></section></main>;
+    return <LearningFlow task={task} taskIndex={currentTask} taskCount={tasks.length} preview={preview} onBack={() => setScreen(tasks.length > 1 ? "tasks" : "start")} onComplete={() => { setCompletedTasks((items) => items.includes(currentTask) ? items : [...items, currentTask]); setScreen(tasks.length > 1 ? "tasks" : "start"); }} />;
+  }
   if (screen === "result") return <CheckResultScreen analysis={analysis} onBack={() => setScreen("start")} onReset={reset} />;
 
   return (
@@ -221,7 +229,7 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
             aria-expanded={tipOpen}
             onClick={() => setTipOpen((open) => !open)}
           >
-            <Info size={16} weight="bold" />
+            <span aria-hidden="true">i</span>
           </button>
           {tipOpen && <span className="heading-tip-bubble" role="tooltip">Самостоятельно или попросите ребёнка</span>}
         </span>
@@ -277,6 +285,19 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
   );
 }
 
+function Recommendation({ title, children, note }: { title: string; children: ReactNode; note?: string }) {
+  return (
+    <div className="recommendation-card">
+      <div className="recommendation-head">
+        <Lightbulb size={20} weight="regular" />
+        <strong>{title}</strong>
+      </div>
+      <p>{children}</p>
+      {note && <small>{note}</small>}
+    </div>
+  );
+}
+
 function InstructionText({ text }: { text: string }) {
   const blocks = splitInstructionBlocks(repairLineBreakHyphenation(text));
   return (
@@ -291,6 +312,7 @@ function InstructionText({ text }: { text: string }) {
 }
 
 function repairLineBreakHyphenation(value: string) {
+  if (typeof value !== "string" || !value) return "";
   return value
     .replace(/\u00AD/g, "")
     .replace(/([A-Za-zА-Яа-яЁё])-\r?\n+([A-Za-zА-Яа-яЁё])/g, "$1$2")
@@ -513,12 +535,39 @@ function CheckResultScreen({ analysis, onBack, onReset }: { analysis: Analysis |
 }
 
 function normalizeTasks(analysis: Analysis | null): HomeworkTask[] {
-  if (analysis?.tasks?.length) return analysis.tasks.map((task) => ({ ...task, methodSteps: task.methodSteps?.slice(0, 4) || [], guidedSteps: task.guidedSteps?.length ? task.guidedSteps : fallbackTask().guidedSteps }));
-  return [fallbackTask()];
+  const fallback = fallbackTask();
+  const source = analysis?.tasks?.length ? analysis.tasks : [fallback];
+  return source.map((task) => ({
+    ...fallback,
+    ...task,
+    title: String(task.title || fallback.title),
+    shortTitle: String(task.shortTitle || fallback.shortTitle),
+    instruction: String(task.instruction || fallback.instruction),
+    simplerInstruction: String(task.simplerInstruction || fallback.simplerInstruction),
+    comprehensionQuestion: String(task.comprehensionQuestion || fallback.comprehensionQuestion),
+    guidingQuestions: task.guidingQuestions?.length ? task.guidingQuestions.map(String) : fallback.guidingQuestions,
+    rule: {
+      title: String(task.rule?.title || fallback.rule.title),
+      text: String(task.rule?.text || fallback.rule.text),
+      kind: task.rule?.kind || fallback.rule.kind,
+    },
+    ruleExample: task.ruleExample?.display
+      ? {
+          display: String(task.ruleExample.display),
+          explanation: String(task.ruleExample.explanation || ""),
+          kind: task.ruleExample.kind,
+        }
+      : null,
+    methodSteps: task.methodSteps?.length ? task.methodSteps.slice(0, 4) : fallback.methodSteps,
+    guidedSteps: task.guidedSteps?.length ? task.guidedSteps : fallback.guidedSteps,
+    extraGuidedSteps: task.extraGuidedSteps?.length ? task.extraGuidedSteps : [],
+    knowledgeAid: task.knowledgeAid || null,
+    independentInstruction: String(task.independentInstruction || fallback.independentInstruction),
+  }));
 }
 
 function fallbackTask(): HomeworkTask {
-  return { title: "Разбираем задание", shortTitle: "Выполняем по шагам", instruction: "Прочитай условие и определи, что нужно сделать.", simplerInstruction: "Сначала поймём вопрос задания, затем выполним его по шагам.", comprehensionQuestion: "Что нужно получить в результате?", rule: { title: "Сначала пойми условие", kind: "rule", text: "В условии важно отделить известные данные от того, что требуется узнать." }, ruleExample: { display: "Что известно? → Что нужно узнать?", explanation: "Так мы связываем данные задания с его вопросом.", kind: "demo" }, methodSteps: [{ title: "Прочитать" }, { title: "Выбрать способ" }, { title: "Выполнить" }, { title: "Проверить" }], guidedTitle: "Первый шаг", guidedSteps: [{ title: "Начинаем вместе", prompt: "С чего нужно начать?", options: ["Прочитать условие", "Угадать ответ"], correctOption: "Прочитать условие", hint: "Посмотри, что именно спрашивается в задании.", success: "Верно: сначала внимательно читаем условие." }], independentInstruction: "Теперь сделай так же с остальными пунктами. Если забудешь шаг — посмотри в памятку." };
+  return { title: "Разбираем задание", shortTitle: "Выполняем по шагам", instruction: "Прочитай условие и определи, что нужно сделать.", simplerInstruction: "Сначала поймём вопрос задания, затем выполним его по шагам.", comprehensionQuestion: "Что нужно получить в результате?", guidingQuestions: ["Что нужно сделать сначала?", "Что должно получиться в итоге?"], rule: { title: "Сначала пойми условие", kind: "rule", text: "В условии важно отделить известные данные от того, что требуется узнать." }, ruleExample: { display: "Что известно? → Что нужно узнать?", explanation: "Так мы связываем данные задания с его вопросом.", kind: "demo" }, methodSteps: [{ title: "Прочитать" }, { title: "Выбрать способ" }, { title: "Выполнить" }, { title: "Проверить" }], guidedTitle: "Первый шаг", guidedSteps: [{ title: "Начинаем вместе", prompt: "С чего нужно начать?", options: ["Прочитать условие", "Угадать ответ"], correctOption: "Прочитать условие", hint: "Посмотри, что именно спрашивается в задании.", success: "Верно: сначала внимательно читаем условие." }], independentInstruction: "Теперь сделай так же с остальными пунктами. Если забудешь шаг — посмотри в памятку." };
 }
 
 function fileToCompressedDataUrl(file: File): Promise<string> {
