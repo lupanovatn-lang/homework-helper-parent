@@ -39,6 +39,9 @@ export async function POST(request: Request) {
 - Всегда оценивай, нужны ли ребёнку справочные знания, чтобы применить способ: таблица падежей, формула, единицы измерения, алфавит, признаки части речи, словарные слова или короткие примеры. Если нужны — заполни knowledgeAid; если нет — верни null.
 - knowledgeAid содержит только компактные данные, которые ребёнок мог забыть, а не пересказ rule и не ответы к самому заданию. Для соответствий используй table (до 3 колонок и 8 строк), для набора фактов — list, для образцов — examples.
 - guidedSteps должны провести через полный способ на ОДНОМ минимальном элементе настоящего задания. Обычно 2–4 смысловых шага.
+- Каждый guidedStep обязан продвигать решение. Не создавай пустые шаги «прочитай условие», «найди пропуск», «найди слово после пропуска», «посмотри на пример», если этот объект уже явно виден в display.
+- Для заданий с готовыми пропусками не спрашивай, где может стоять ответ и перед каким словом он ставится. Сразу применяй критерий к слову после конкретного пропуска. Например: display="___ sun is warm", первый вопрос — «Перед sun стоит my/his?», следующий — «Sun — единственный предмет?», финальный — «Что впишем в пропуск?» с text-автопроверкой.
+- Перед выдачей JSON мысленно пройди guidedSteps глазами ребёнка: убери любой шаг, ответ на который уже нарисован в display или прямо содержится в prompt.
 - Для списка однотипных пунктов выбери один простой показательный пункт из самого задания. Для одной большой задачи вместе пройди только первые смысловые этапы, не решая всё. Для творческой работы помоги с замыслом и планом, но не пиши готовую работу.
 - Для каждого guidedStep выбирай способ ответа. answerType="text" для любого короткого объективно проверяемого ответа: буквы, числа, слова, знака или короткой фразы; заполни acceptableAnswers всеми корректными вариантами. Например, для вопроса «Какая гласная в слове лист?» используй text и acceptableAnswers=["и"].
 - answerType="choice" используй только когда варианты педагогически естественны; заполни options и correctOption. answerType="spoken" — только для открытого объяснения, которое невозможно проверить точным сравнением. Никогда не используй spoken для букв, чисел или однозначных словесных ответов.
@@ -78,12 +81,33 @@ export async function POST(request: Request) {
     const raw = result?.choices?.[0]?.message?.content;
     if (!raw) throw new Error("Модель вернула пустой ответ");
     const parsed = (typeof raw === "string" ? JSON.parse(raw) : raw) as Record<string, unknown>;
-    const analysis = collapseFalseLineSplits(normalizeParentSpeech(parsed));
+    const analysis = removeRedundantGuidedSteps(collapseFalseLineSplits(normalizeParentSpeech(parsed)));
     return NextResponse.json({ analysis });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Не удалось обработать задание";
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+function removeRedundantGuidedSteps(analysis: Record<string, unknown>) {
+  if (!Array.isArray(analysis.tasks)) return analysis;
+  return {
+    ...analysis,
+    tasks: analysis.tasks.map((rawTask) => {
+      if (!rawTask || typeof rawTask !== "object") return rawTask;
+      const task = rawTask as Record<string, unknown>;
+      if (!Array.isArray(task.guidedSteps) || task.guidedSteps.length < 2) return task;
+      const first = task.guidedSteps[0];
+      if (!first || typeof first !== "object") return task;
+      const step = first as Record<string, unknown>;
+      const display = String(step.display || "");
+      const prompt = String(step.prompt || "");
+      const hasVisibleBlank = /_{2,}|\.{3,}|…/.test(display);
+      const asksToLocateVisibleTarget = /(?:найди|покажи|определи|отыщи).{0,35}(?:пропуск|слово.{0,20}(?:после|перед)|место.{0,20}(?:артикл|ответ))/i.test(prompt);
+      if (!hasVisibleBlank || !asksToLocateVisibleTarget) return task;
+      return { ...task, guidedSteps: task.guidedSteps.slice(1) };
+    }),
+  };
 }
 
 function collapseFalseLineSplits(analysis: Record<string, unknown>) {
