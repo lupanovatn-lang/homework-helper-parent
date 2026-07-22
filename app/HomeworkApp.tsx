@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  ArrowLeft, ArrowRight, BookOpen, Camera, Check, CheckCircle, FileImage,
+  ArrowLeft, ArrowRight, BookOpen, Camera, ChatCircleDots, Check, CheckCircle, FileImage,
   Image as ImageIcon, Lightbulb, MagnifyingGlass, Plant,
   ShieldCheck, Sparkle, X,
 } from "@phosphor-icons/react";
@@ -256,36 +256,53 @@ function StageOne({ task, onNext }: { task: HomeworkTask; onNext: () => void }) 
   return (
     <section className="stage-content instruction-stage">
       <div className="stage-main">
-        <h1>Прочитайте инструкцию</h1>
-        <div className="child-material instruction-source focus-block">
-          <InstructionText text={task.instruction} />
-        </div>
-        {phase === "check" && (
-          <Recommendation title="Рекомендация">
-            Попросите ребёнка рассказать своими словами, что нужно сделать.
-          </Recommendation>
-        )}
-        {phase === "guide" && (
-          <Recommendation title="Спросите ребёнка" note="Задайте вопрос, только если ребёнок не назвал это действие.">
-            {currentQuestion}
-          </Recommendation>
-        )}
-        {phase === "retell" && (
-          <Recommendation title="Попросите пересказать ещё раз">
-            Теперь ещё раз расскажи своими словами, что нужно сделать во всём задании.
-          </Recommendation>
-        )}
-        {phase === "fallback" && (
-          <Recommendation title="Объясните ещё проще">
-            {task.simplerInstruction}
-          </Recommendation>
+        {phase === "check" ? (
+          <div className="parent-actions">
+            <div className="parent-action">
+              <div className="parent-action-head">
+                <BookOpen size={22} weight="regular" />
+                <p>Попросите ребёнка прочитать инструкцию.</p>
+              </div>
+              <div className="instruction-quote focus-block">
+                <InstructionText text={task.instruction} />
+              </div>
+            </div>
+            <div className="parent-action">
+              <div className="parent-action-head">
+                <ChatCircleDots size={22} weight="regular" />
+                <p>Попросите рассказать своими словами, что нужно сделать.</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <h1>Поможем разобраться</h1>
+            <div className="instruction-quote focus-block compact">
+              <InstructionText text={task.instruction} />
+            </div>
+            {phase === "guide" && (
+              <Recommendation title="Спросите ребёнка" note="Задайте вопрос, только если ребёнок не назвал это действие.">
+                {currentQuestion}
+              </Recommendation>
+            )}
+            {phase === "retell" && (
+              <Recommendation title="Попросите пересказать ещё раз">
+                Теперь ещё раз расскажи своими словами, что нужно сделать во всём задании.
+              </Recommendation>
+            )}
+            {phase === "fallback" && (
+              <Recommendation title="Объясните ещё проще">
+                {task.simplerInstruction}
+              </Recommendation>
+            )}
+          </>
         )}
       </div>
       <div className="stage-actions">
         {phase === "check" && (
           <>
             <button className="primary-button flow-primary" onClick={onNext}>Понятно, что делать <ArrowRight size={20} weight="bold" /></button>
-            <button className="secondary-button flow-secondary" onClick={() => setPhase("guide")}>Объяснить задание</button>
+            <button className="secondary-button flow-secondary" onClick={() => setPhase("guide")}>Помочь разобраться</button>
           </>
         )}
         {phase === "guide" && (
