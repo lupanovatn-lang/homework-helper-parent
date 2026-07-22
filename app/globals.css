@@ -227,6 +227,10 @@ button { -webkit-tap-highlight-color:transparent; }
 .answer-grid button { min-height:45px; border:1px solid #cbdcf1; border-radius:12px; background:#fff; color:var(--navy); font-size:12px; font-weight:700; cursor:pointer; }
 .answer-grid button.selected { border:2px solid var(--blue); color:var(--blue); background:#edf4ff; }
 .answer-spoken { margin-top:13px; }
+.answer-input { display:block; margin-top:13px; }
+.answer-input span { display:block; margin-bottom:6px; color:#6b7891; font-size:8.5px; font-weight:750; text-transform:uppercase; letter-spacing:.5px; }
+.answer-input input { width:100%; min-height:46px; padding:0 13px; border:1px solid #cbdcf1; border-radius:12px; background:#fff; color:var(--navy); font:inherit; font-size:14px; font-weight:700; outline:none; }
+.answer-input input:focus { border:2px solid var(--blue); background:#f7faff; }
 .guided-feedback { margin-top:12px; padding:11px; border-radius:12px; background:#fff7e5; border:1px solid #f2d89b; }
 .guided-feedback.correct { background:#f0f8ec; border-color:#cfe7c3; }
 .guided-feedback strong { font-size:9px; text-transform:uppercase; letter-spacing:.5px; color:#9d6b0b; }

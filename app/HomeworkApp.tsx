@@ -14,8 +14,10 @@ type GuidedStep = {
   title: string;
   prompt: string;
   display?: string;
+  answerType?: "choice" | "text" | "spoken";
   options?: string[];
   correctOption?: string;
+  acceptableAnswers?: string[];
   hint: string;
   success: string;
 };
@@ -150,12 +152,13 @@ function LearningFlow({ task, taskIndex, taskCount, preview, onBack, onComplete 
   const [simple, setSimple] = useState(false);
   const [guidedIndex, setGuidedIndex] = useState(0);
   const [selected, setSelected] = useState("");
+  const [typedAnswer, setTypedAnswer] = useState("");
   const [feedback, setFeedback] = useState<"" | "hint" | "correct" | "wrong">("");
   const [memoryOpen, setMemoryOpen] = useState(false);
   const guided = task.guidedSteps[guidedIndex] || task.guidedSteps[0];
 
   function nextGuided() {
-    if (guidedIndex < task.guidedSteps.length - 1) { setGuidedIndex((v) => v + 1); setSelected(""); setFeedback(""); }
+    if (guidedIndex < task.guidedSteps.length - 1) { setGuidedIndex((v) => v + 1); setSelected(""); setTypedAnswer(""); setFeedback(""); }
     else setStage(4);
   }
 
@@ -164,10 +167,10 @@ function LearningFlow({ task, taskIndex, taskCount, preview, onBack, onComplete 
     <Route stage={stage} />
     {stage === 1 && <StageOne task={task} simple={simple} onSimple={() => setSimple(true)} onNext={() => setStage(2)} />}
     {stage === 2 && <StageTwo task={task} onBack={() => setStage(1)} onNext={() => setStage(3)} />}
-    {stage === 3 && <section className="stage-content"><p className="stage-label">Шаг 3 из 4</p><h1>Выполняем один пункт вместе</h1><p className="stage-subtitle">Применяем способ к настоящему заданию.</p><div className="guided-card">{task.methodType !== "decision" && <MethodTrail steps={task.methodSteps} active={Math.min(guidedIndex, task.methodSteps.length - 1)} />}<div className="guided-body"><span className="guided-step-title">{guided.title}</span>{guided.display && <strong className="guided-display">{guided.display}</strong>}<p>{guided.prompt}</p>{guided.options?.length ? <div className="answer-grid">{guided.options.map((option) => <button key={option} className={selected === option ? "selected" : ""} onClick={() => { setSelected(option); setFeedback(""); }}>{option}</button>)}</div> : <button className="secondary-button answer-spoken" onClick={() => setFeedback("correct")}>Ребёнок ответил</button>}{feedback && <div className={`guided-feedback ${feedback}`}><strong>{feedback === "hint" ? "Подсказка" : feedback === "correct" ? "Верно" : "Попробуйте ещё раз"}</strong><p>{feedback === "correct" ? guided.success : guided.hint}</p></div>}</div></div>
-      {feedback === "correct" ? <button className="primary-button flow-primary" onClick={nextGuided}>{guidedIndex < task.guidedSteps.length - 1 ? "Следующий шаг" : "Теперь самостоятельно"} <ArrowRight size={20} weight="bold" /></button> : <><button className="primary-button flow-primary" disabled={!selected && Boolean(guided.options?.length)} onClick={() => setFeedback(selected === guided.correctOption ? "correct" : "wrong")}>Проверить ответ</button><button className="secondary-button flow-secondary" onClick={() => setFeedback("hint")}><Lightbulb size={18} /> Нужна подсказка</button></>}
+    {stage === 3 && <section className="stage-content"><p className="stage-label">Шаг 3 из 4</p><h1>Выполняем один пункт вместе</h1><p className="stage-subtitle">Применяем способ к настоящему заданию.</p><div className="guided-card">{task.methodType !== "decision" && <MethodTrail steps={task.methodSteps} active={Math.min(guidedIndex, task.methodSteps.length - 1)} />}<div className="guided-body"><span className="guided-step-title">{guided.title}</span>{guided.display && <strong className="guided-display">{guided.display}</strong>}<p>{guided.prompt}</p>{guided.options?.length ? <div className="answer-grid">{guided.options.map((option) => <button key={option} className={selected === option ? "selected" : ""} onClick={() => { setSelected(option); setFeedback(""); }}>{option}</button>)}</div> : guided.answerType === "text" && guided.acceptableAnswers?.length ? <label className="answer-input"><span>Ответ ребёнка</span><input value={typedAnswer} onChange={(event) => { setTypedAnswer(event.target.value); setFeedback(""); }} placeholder="Введите ответ" autoComplete="off" /></label> : <button className="secondary-button answer-spoken" onClick={() => setFeedback("correct")}>Ребёнок объяснил ответ</button>}{feedback && <div className={`guided-feedback ${feedback}`}><strong>{feedback === "hint" ? "Подсказка" : feedback === "correct" ? "Верно" : "Попробуйте ещё раз"}</strong><p>{feedback === "correct" ? guided.success : guided.hint}</p></div>}</div></div>
+      {feedback === "correct" ? <button className="primary-button flow-primary" onClick={nextGuided}>{guidedIndex < task.guidedSteps.length - 1 ? "Следующий шаг" : "Теперь самостоятельно"} <ArrowRight size={20} weight="bold" /></button> : <><button className="primary-button flow-primary" disabled={Boolean(guided.options?.length) ? !selected : guided.answerType === "text" ? !typedAnswer.trim() : true} onClick={() => { const correct = guided.options?.length ? selected === guided.correctOption : guided.acceptableAnswers?.some((answer) => normalizeAnswer(answer) === normalizeAnswer(typedAnswer)); setFeedback(correct ? "correct" : "wrong"); }}>Проверить ответ</button><button className="secondary-button flow-secondary" onClick={() => setFeedback("hint")}><Lightbulb size={18} /> Нужна подсказка</button></>}
       <button className="text-link flow-back" onClick={() => setStage(2)}>Вернуться к правилу</button></section>}
-    {stage === 4 && <section className="stage-content independent"><p className="stage-label">Шаг 4 из 4</p><h1>Теперь остальные — самостоятельно</h1><div className="child-prompt independent-prompt"><span>Скажите ребёнку</span><p>«{task.independentInstruction}»</p></div><div className="memory-card"><button className="memory-head" onClick={() => setMemoryOpen((v) => !v)}><span><BookOpen size={19} /> Памятка, если нужна</span><small>{memoryOpen ? "Свернуть" : "Показать"}</small></button>{memoryOpen && <div className="memory-content"><span className="memory-section-label">Как действовать</span><MethodGuide task={task} compact /><KnowledgeAid aid={task.knowledgeAid} /></div>}</div><button className="primary-button flow-primary" onClick={onComplete}>Ребёнок закончил <ArrowRight size={20} weight="bold" /></button><button className="secondary-button flow-secondary" onClick={() => { setStage(3); setGuidedIndex(0); setSelected(""); setFeedback(""); }}>Сделать ещё один пункт вместе</button></section>}
+    {stage === 4 && <section className="stage-content independent"><p className="stage-label">Шаг 4 из 4</p><h1>Теперь остальные — самостоятельно</h1><div className="child-prompt independent-prompt"><span>Скажите ребёнку</span><p>«{task.independentInstruction}»</p></div><div className="memory-card"><button className="memory-head" onClick={() => setMemoryOpen((v) => !v)}><span><BookOpen size={19} /> Памятка, если нужна</span><small>{memoryOpen ? "Свернуть" : "Показать"}</small></button>{memoryOpen && <div className="memory-content"><span className="memory-section-label">Как действовать</span><MethodGuide task={task} compact /><KnowledgeAid aid={task.knowledgeAid} /></div>}</div><button className="primary-button flow-primary" onClick={onComplete}>Ребёнок закончил <ArrowRight size={20} weight="bold" /></button><button className="secondary-button flow-secondary" onClick={() => { setStage(3); setGuidedIndex(0); setSelected(""); setTypedAnswer(""); setFeedback(""); }}>Сделать ещё один пункт вместе</button></section>}
   </FlowShell>;
 }
 
@@ -211,6 +214,8 @@ function FlowShell({ children, onBack }: { children: ReactNode; onBack: () => vo
 }
 
 function Secure() { return <div className="secure"><ShieldCheck size={19} /> Без регистрации</div>; }
+
+function normalizeAnswer(value: string) { return value.toLocaleLowerCase("ru").replace(/[«»"'.,;:!?\s-]/g, ""); }
 
 function ModeCard({ selected, onClick, icon, title, text }: { selected: boolean; onClick: () => void; icon: ReactNode; title: string; text: string }) {
   return <button className={`mode-card ${selected ? "selected" : ""}`} onClick={onClick} role="radio" aria-checked={selected}>{selected && <span className="selected-check"><Check size={13} weight="bold" /></span>}<span className="mode-icon">{icon}</span><strong>{title}</strong><small>{text}</small></button>;
