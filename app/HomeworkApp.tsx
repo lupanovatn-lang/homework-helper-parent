@@ -705,23 +705,6 @@ function StageAlone({
   );
 }
 
-function GuidedProgress({ index, count, title }: { index: number; count: number; title: string }) {
-  if (count <= 1) return null;
-  return (
-    <div className="guided-progress">
-      <div className="guided-progress-head">
-        <span>Шаг {index + 1} из {count}</span>
-        <small>{title}</small>
-      </div>
-      <div className="guided-progress-bar" aria-hidden="true">
-        {Array.from({ length: count }, (_, step) => (
-          <span key={step} className={step === index ? "active" : step < index ? "done" : ""} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function MethodGuide({ task, compact = false }: { task: HomeworkTask; compact?: boolean }) {
   const guide = task.decisionGuide;
   if (task.methodType !== "decision" || !guide?.questions?.length) return <MethodTrail steps={task.methodSteps} active={-1} />;
