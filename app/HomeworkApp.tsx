@@ -393,7 +393,6 @@ function StageTwo({ task, aidOpen, onAidOpenChange, onBack, onNext }: { task: Ho
       <div className="stage-main">
         <h1>{heading}</h1>
         <div className="rule-material focus-block">
-          {task.rule.title?.trim() && <span className="rule-kicker">{task.rule.title}</span>}
           <p className="rule-text">{task.rule.text}</p>
           {example && (
             <div className="rule-example-box">
