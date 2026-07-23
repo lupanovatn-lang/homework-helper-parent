@@ -1,6 +1,6 @@
 # Рядом — помощник с домашним заданием
 
-Интерактивный прототип **v41** (shared screen).
+Интерактивный мок-прототип **v41** (shared screen): один `index.html` + фото заданий в `examples/`.
 
 ## Локально
 
@@ -14,4 +14,6 @@ npm run dev
 
 Автодеплой с ветки `main`: https://homework-helper-parent.onrender.com/
 
-Старый код: `archive/v0-before-v41/`
+```bash
+npm run build && npm start
+```
