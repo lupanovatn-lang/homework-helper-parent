@@ -494,6 +494,15 @@
     width:40px;height:40px;border:0;border-radius:12px;
     background:var(--primary);color:#fff;font-size:18px;font-weight:650;
   }
+  .send:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+  }
+  .composer input:disabled{
+    opacity:.7;
+    cursor:not-allowed;
+    color:var(--muted);
+  }
   .right-shell{
     min-width:0;
     height:100vh;
@@ -1516,9 +1525,9 @@
     </div>
 
     <div class="composer">
-      <div class="composer-inner">
-        <input id="chatInput" placeholder="Напишите, где ребёнок затруднился…" onkeydown="if(event.key==='Enter') sendCustom()">
-        <button class="send" onclick="sendCustom()">↑</button>
+      <div class="composer-inner" title="В демо чат пока недоступен">
+        <input id="chatInput" placeholder="Напишите, где ребёнок затруднился…" disabled aria-disabled="true">
+        <button class="send" type="button" disabled aria-disabled="true" title="В демо чат пока недоступен">↑</button>
       </div>
     </div>
   </main>
@@ -2773,26 +2782,8 @@ function toggleCheckAnswer(btn, answer){
 }
 
 function sendCustom(){
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if(!text) return;
-  addUser(text);
-  input.value = '';
-
-  const question = currentSubject === 'math'
-    ? 'В каких единицах нужен ответ и какое соотношение единиц понадобится?'
-    : currentSubject === 'english'
-      ? 'Предмет называется впервые, уже известен или здесь артикль не нужен?'
-      : 'Какой шаг ты сейчас выполняешь и что именно не получается?';
-
-  addAssistant(`
-    <p>Начните с уточняющего вопроса:</p>
-    <div class="say">
-      <div class="say-label">Спросите ребёнка</div>
-      <q>${question}</q>
-    </div>
-    <p class="note">Дальше сервис предложит подсказку подходящего уровня, не раскрывая решение сразу.</p>
-  `);
+  // Mock: free-text chat is disabled for now.
+  return;
 }
 </script>
 </body>
