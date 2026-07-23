@@ -5,6 +5,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Рядом — помощник с домашним заданием</title>
+<link rel="preload" as="image" href="/examples/russian.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="/examples/math.jpg">
+<link rel="preload" as="image" href="/examples/english.jpg">
 <style>
   :root{
     --bg:#f5f6f8;
@@ -1429,7 +1432,7 @@
       <article class="example-card selected" data-example="russian" onclick="selectExample(this)">
         <div class="example-checkmark">✓</div>
         <div class="example-preview">
-          <img src="/examples/russian.jpg" alt="Задание по русскому языку" loading="lazy" decoding="async">
+          <img src="/examples/russian.jpg" alt="Задание по русскому языку" fetchpriority="high" decoding="async">
         </div>
         <div class="example-meta">
           <span class="example-subject">Русский язык</span>
@@ -1441,7 +1444,7 @@
       <article class="example-card" data-example="math" onclick="selectExample(this)">
         <div class="example-checkmark">✓</div>
         <div class="example-preview">
-          <img src="/examples/math.jpg" alt="Задание по математике на единицы измерения" loading="lazy" decoding="async">
+          <img src="/examples/math.jpg" alt="Задание по математике на единицы измерения" decoding="async">
         </div>
         <div class="example-meta">
           <span class="example-subject">Математика</span>
@@ -1453,7 +1456,7 @@
       <article class="example-card" data-example="english" onclick="selectExample(this)">
         <div class="example-checkmark">✓</div>
         <div class="example-preview">
-          <img src="/examples/english.jpg" alt="Задание по английскому языку на артикли" loading="lazy" decoding="async">
+          <img src="/examples/english.jpg" alt="Задание по английскому языку на артикли" decoding="async">
         </div>
         <div class="example-meta">
           <span class="example-subject">Английский язык</span>
