@@ -453,17 +453,32 @@
   }
   .help-panel .note{margin-bottom:10px}
   .chips{
-    display:flex;
-    flex-wrap:wrap;
+    display:grid;
+    grid-template-columns:1fr;
     gap:7px;
     margin-top:10px
   }
   .chip{
-    padding:9px 11px;border-radius:999px;
-    background:#f4f6fa;border:1px solid var(--line);
-    font-weight:700;font-size:14px;color:#3b4352;
+    width:100%;
+    min-height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    padding:10px 13px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:#f7f8fb;
+    color:#3b4352;
+    font-size:14px;
+    font-weight:650;
+    line-height:1.35;
+    text-align:left;
   }
-  .chip:hover,.chip.active{border-color:#aebeff;background:var(--primary-soft);color:var(--primary)}
+  .chip:hover,.chip.active{
+    border-color:#aebeff;
+    background:var(--primary-soft);
+    color:var(--primary);
+  }
   .divider{height:1px;background:var(--line);margin:15px 0}
   .upload-box{
     border:1.5px dashed #bdc5d5;
