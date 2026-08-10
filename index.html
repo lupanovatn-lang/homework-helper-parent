@@ -4,10 +4,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Рядом — помощник с домашним заданием</title>
+<title>Домашкинс — помощник с домашним заданием</title>
 <link rel="preload" as="image" href="/examples/intent-explain.png">
 <link rel="preload" as="image" href="/examples/intent-check.png">
 <link rel="preload" as="image" href="/examples/russian.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="/examples/russian-completed.png">
 <link rel="preload" as="image" href="/examples/math.jpg">
 <link rel="preload" as="image" href="/examples/english.jpg">
 <style>
@@ -973,11 +974,15 @@
   }
   .example-card{
     position:relative;
+    width:100%;
     min-width:0;
     padding:12px;
     border:2px solid transparent;
     border-radius:20px;
     background:#fff;
+    color:var(--text);
+    font:inherit;
+    text-align:left;
     box-shadow:0 10px 32px rgba(34,45,72,.07);
     cursor:pointer;
     transition:.18s ease;
@@ -1083,6 +1088,7 @@
   }
   .example-card.pending{
     cursor:default;
+    opacity:.58;
   }
   .example-card.pending:hover{
     transform:none;
@@ -1747,6 +1753,268 @@
     }
   }
 
+  /* Домашкинс: тёплая визуальная система из лендинга */
+  :root{
+    --bg:#f7f6f4;
+    --panel:#ffffff;
+    --text:#29272a;
+    --muted:#706c72;
+    --line:#e6e3e6;
+    --primary:#716678;
+    --primary-soft:#f2eff4;
+    --action:#716678;
+    --action-hover:#62586a;
+    --success:#52765f;
+    --success-soft:#edf3ec;
+    --warning:#9a6a24;
+    --warning-soft:#fbf1dc;
+    --shadow:0 14px 38px rgba(43,38,47,.065);
+  }
+  body{
+    background:var(--bg);
+    color:var(--text);
+  }
+  h1,h2,h3,.brand,.service-brand,.intent-meta strong,.example-meta strong{
+    font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  button:focus-visible,input:focus-visible,[tabindex]:focus-visible{
+    outline:3px solid rgba(113,102,120,.24);
+    outline-offset:3px;
+  }
+  .header{
+    background:rgba(255,255,255,.96);
+  }
+  .brand,.service-brand{
+    font-weight:700;
+  }
+  .logo,.service-icon{
+    border-radius:11px;
+    box-shadow:0 6px 16px rgba(74,63,82,.14);
+  }
+  .status-dot{background:#6f997c}
+  .chat-shell{background:var(--panel)}
+  .chat{background:#fff}
+  .avatar{
+    border-radius:11px;
+    box-shadow:0 6px 14px rgba(74,63,82,.11);
+  }
+  .bubble{
+    border-color:var(--line);
+    background:#fff;
+    border-radius:18px;
+    box-shadow:0 8px 24px rgba(43,38,47,.04);
+  }
+  .user .bubble{
+    background:#f0eeec;
+    color:var(--text);
+    border-color:#e4e0dd;
+    border-radius:18px;
+    box-shadow:none;
+  }
+  .assistant .bubble{border-radius:18px}
+  .bubble h2{
+    font-weight:700;
+    letter-spacing:-.02em;
+  }
+  .eyebrow{
+    color:#7b7480;
+    font-size:11px;
+    font-weight:750;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+  }
+  .summary-card,.task-side,.example-result{
+    background:#faf9f8;
+  }
+  .task-step{
+    background:#f8f7f5;
+    border-color:#e6e2df;
+    color:#565156;
+  }
+  .task-step-arrow{color:#9a929d}
+  .skill-row{
+    border-left-color:#8cac95;
+    background:#f4f6f0;
+  }
+  .skill-copy,.task-side-section p,.task-side-skill p{color:#544f48}
+  .say{
+    background:#f4f1f5;
+    border-color:#e4dee7;
+    border-radius:14px;
+  }
+  .say-label{color:#695d71}
+  .btn{border-radius:11px}
+  .btn-primary{
+    background:var(--action);
+    box-shadow:0 7px 16px rgba(74,63,82,.14);
+  }
+  .btn-secondary{
+    background:#f5f4f3;
+    border-color:#e3e0e2;
+  }
+  .btn-success{background:#52765f}
+  .btn:hover{filter:brightness(.98)}
+  .btn-primary:hover,.send:hover{
+    background:var(--action-hover);
+    filter:none;
+  }
+  .stepdot{background:#ded9e1}
+  .word,.write-task{
+    border-color:#ded7e2;
+    background:#f8f6f8;
+  }
+  .result,.example-check{
+    border-color:#d5e2d5;
+    background:var(--success-soft);
+  }
+  .hint,.check-word-card{
+    border-color:#ead8ad;
+    background:#fff9ed;
+  }
+  .method-trigger{
+    border-color:#dcd5e0;
+    color:var(--primary);
+  }
+  .method-trigger:hover{background:var(--primary-soft)}
+  .method-reminder{
+    border-left-color:#aaa0b0;
+    background:#f6f3f7;
+    color:#565158;
+  }
+  .chip{
+    border-color:#e1dde2;
+    background:#f7f6f6;
+    color:#504c52;
+  }
+  .chip:hover,.chip.active{
+    border-color:#a69bab;
+    background:var(--primary-soft);
+    color:#655a6c;
+  }
+  .upload-box{
+    border-color:#ddd8de;
+    background:#faf9fa;
+  }
+  .composer{
+    background:linear-gradient(to top,#fff 75%,rgba(255,255,255,0));
+  }
+  .composer-inner{
+    background:#fff;
+    box-shadow:0 12px 35px rgba(43,38,47,.09);
+  }
+  .send{background:var(--action)}
+  .demo-chat-note{
+    border-color:#e8e5e7;
+    background:#f5f4f3;
+    box-shadow:none;
+  }
+  .right-shell{
+    background:#f5f4f3;
+    border-left-color:#e5e2e4;
+  }
+  .photo{
+    border-color:#dfdbdf;
+    background:#fff;
+    box-shadow:0 14px 36px rgba(43,38,47,.09);
+  }
+  .pill{background:#e7efe7}
+  .photo-modal{background:rgba(35,31,38,.82)}
+  .picker-screen,.intent-screen{background:var(--bg)}
+  .picker-heading h1,.intent-heading h1{
+    color:#29272a;
+    font-weight:720;
+    letter-spacing:-.035em;
+  }
+  .demo-notice{
+    border-color:transparent;
+    border:1px solid #e8e5e7;
+    background:#f1f0ef;
+    color:#69646a;
+  }
+  .example-card,.intent-card{
+    border-width:1px;
+    border-color:#e4e1e4;
+    background:#fff;
+    box-shadow:0 8px 24px rgba(43,38,47,.045);
+  }
+  .example-card:hover,.intent-card:hover{
+    box-shadow:0 12px 28px rgba(43,38,47,.075);
+  }
+  .example-card.selected,.intent-card.selected{
+    border-width:1px;
+    border-color:#8f8595;
+    background:#fdfcfd;
+    box-shadow:0 0 0 1px rgba(113,102,120,.34),0 12px 28px rgba(43,38,47,.07);
+  }
+  .example-preview,.intent-art{
+    border-color:#e2dee2;
+    background:#f2f0ee;
+  }
+  .example-badge{
+    background:#efedef;
+    color:#736e75;
+  }
+  @media (max-width:900px){
+    .intent-screen,.picker-screen{background:#f7f6f4}
+    .intent-card,.example-card{box-shadow:0 6px 20px rgba(43,38,47,.04)}
+    .intent-grid,.example-grid{gap:12px}
+    .intent-card{
+      display:grid;
+      grid-template-columns:minmax(180px,42%) minmax(0,1fr);
+      align-items:center;
+      padding:10px;
+      border-radius:18px;
+    }
+    .intent-art{height:150px;border-radius:13px}
+    .intent-art img{width:100%;height:100%;object-fit:contain}
+    .intent-meta{padding:8px 34px 8px 18px}
+    .intent-meta strong{font-size:19px}
+    .example-card{
+      display:grid;
+      grid-template-columns:220px minmax(0,1fr);
+      align-items:center;
+      padding:9px;
+      border-radius:17px;
+    }
+    .example-preview{height:140px;border-radius:12px}
+    .example-preview img{object-fit:contain;background:#fff}
+    .example-meta{padding:6px 34px 6px 16px}
+  }
+  @media (max-width:880px){
+    .chat{padding-left:18px;padding-right:18px}
+    .message.assistant{gap:0}
+    .assistant .avatar{display:none}
+    .assistant .bubble{
+      max-width:680px;
+      border-radius:20px;
+    }
+    .mobile-photo{
+      width:min(560px,100%);
+      margin:0 auto 18px;
+    }
+    .mobile-photo-card{
+      padding:0;
+      border:0;
+      background:transparent;
+      box-shadow:none;
+    }
+    .mobile-photo-label{
+      margin:0 2px 7px;
+      font-size:11px;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+    }
+    .mobile-photo img{
+      max-height:220px;
+      border-color:#e3e0e3;
+      border-radius:15px;
+      background:#fff;
+    }
+    .mobile-photo.is-check img{
+      max-height:520px;
+    }
+    .mobile-photo-open{margin-top:7px}
+  }
 </style>
 </head>
 <body>
@@ -1762,7 +2030,7 @@
             <path d="m9 14 1.7 1.7L14.5 12"/>
           </svg>
         </div>
-        <span>Помощник с домашним заданием</span>
+        <span>Домашкинс</span>
       </div>
     </div>
 
@@ -1777,7 +2045,7 @@
     </div>
 
     <div class="intent-grid" role="radiogroup" aria-label="Выберите сценарий">
-      <button type="button" class="intent-card selected" data-intent="explain" onclick="selectIntent(this)">
+      <button type="button" class="intent-card selected" data-intent="explain" role="radio" aria-checked="true" onclick="selectIntent(this)">
         <div class="example-checkmark">✓</div>
         <div class="intent-art">
           <img src="/examples/intent-explain.png" alt="" decoding="async">
@@ -1788,7 +2056,7 @@
         </div>
       </button>
 
-      <button type="button" class="intent-card" data-intent="check" onclick="selectIntent(this)">
+      <button type="button" class="intent-card" data-intent="check" role="radio" aria-checked="false" onclick="selectIntent(this)">
         <div class="example-checkmark">✓</div>
         <div class="intent-art">
           <img src="/examples/intent-check.png" alt="" decoding="async">
@@ -1817,7 +2085,7 @@
             <path d="m9 14 1.7 1.7L14.5 12"/>
           </svg>
         </div>
-        <span>Помощник с домашним заданием</span>
+        <span>Домашкинс</span>
       </div>
     </div>
 
@@ -1838,8 +2106,8 @@
       <span id="pickerDemoText">Свои фотографии пока загрузить нельзя.</span>
     </div>
 
-    <div class="example-grid">
-      <article class="example-card selected" data-example="russian" onclick="selectExample(this)">
+    <div class="example-grid" role="radiogroup" aria-label="Выберите задание">
+      <button type="button" class="example-card selected" data-example="russian" role="radio" aria-checked="true" onclick="selectExample(this)">
         <div class="example-checkmark">✓</div>
         <div class="example-preview">
           <img src="/examples/russian.jpg" alt="Задание по русскому языку" fetchpriority="high" decoding="async">
@@ -1849,9 +2117,9 @@
           <strong>Безударные гласные</strong>
           <span>Вставить буквы и подобрать проверочные слова</span>
         </div>
-      </article>
+      </button>
 
-      <article class="example-card" data-example="math" onclick="selectExample(this)">
+      <button type="button" class="example-card" data-example="math" role="radio" aria-checked="false" onclick="selectExample(this)">
         <div class="example-checkmark">✓</div>
         <div class="example-preview">
           <img src="/examples/math.jpg" alt="Задание по математике на единицы измерения" decoding="async">
@@ -1860,10 +2128,11 @@
           <span class="example-subject">Математика</span>
           <strong>Единицы измерения</strong>
           <span>Перевести величины в указанные единицы</span>
+          <span class="example-badge mode-badge hidden">В проверке скоро</span>
         </div>
-      </article>
+      </button>
 
-      <article class="example-card" data-example="english" onclick="selectExample(this)">
+      <button type="button" class="example-card" data-example="english" role="radio" aria-checked="false" onclick="selectExample(this)">
         <div class="example-checkmark">✓</div>
         <div class="example-preview">
           <img src="/examples/english.jpg" alt="Задание по английскому языку на артикли" decoding="async">
@@ -1872,8 +2141,9 @@
           <span class="example-subject">Английский язык</span>
           <strong>Артикли a / an / the</strong>
           <span>Вставить подходящие артикли в предложения</span>
+          <span class="example-badge mode-badge hidden">В проверке скоро</span>
         </div>
-      </article>
+      </button>
     </div>
 
     <div class="picker-actions">
@@ -1899,7 +2169,7 @@
               <path d="m9 14 1.7 1.7L14.5 12"/>
             </svg>
           </div>
-          <span>Помощник с домашним заданием</span>
+          <span>Домашкинс</span>
         </div>
       </div>
       <div class="status"><span class="status-dot"></span> можно смотреть вместе</div>
@@ -1950,8 +2220,8 @@
       <div class="photo-column">
       <div class="side-head">
       <div class="side-title">
-        <h3>Фото задания</h3>
-        <span>Можно открыть крупнее</span>
+        <h3 id="taskPhotoTitle">Фото задания</h3>
+        <span id="taskPhotoHint">Можно открыть крупнее</span>
       </div>
       <span class="pill">распознано</span>
     </div>
@@ -1991,8 +2261,12 @@ let currentMode = 'explain';
 let photoZoom = 1;
 
 function selectIntent(card){
-  document.querySelectorAll('.intent-card').forEach(item => item.classList.remove('selected'));
+  document.querySelectorAll('.intent-card').forEach(item => {
+    item.classList.remove('selected');
+    item.setAttribute('aria-checked', 'false');
+  });
   card.classList.add('selected');
+  card.setAttribute('aria-checked', 'true');
   selectedIntent = card.dataset.intent;
 }
 
@@ -2006,17 +2280,43 @@ function continueIntent(){
 function updatePickerCopy(){
   const isCheck = currentMode === 'check';
   document.getElementById('pickerTitle').textContent = isCheck
-    ? 'Как выглядит проверка работы?'
+    ? 'Какую работу проверить?'
     : 'Какое задание разобрать?';
   document.getElementById('pickerSubtitle').textContent = isCheck
-    ? 'Выберите готовый пример, чтобы посмотреть сценарий проверки.'
+    ? 'Выберите фото выполненной работы, чтобы посмотреть результат проверки.'
     : 'Выберите готовый пример, чтобы посмотреть, как помощник разбирает задание.';
   document.getElementById('pickerDemoText').textContent = isCheck
-    ? 'Это пример результата: выбранная работа не анализируется.'
+    ? 'Доступен один готовый пример. Фото не анализируется — результат подготовлен заранее.'
     : 'Свои фотографии пока загрузить нельзя.';
   document.getElementById('pickerAction').textContent = isCheck
-    ? 'Показать демо проверки'
+    ? 'Проверить эту работу'
     : 'Показать разбор';
+
+  const russianPreview = document.querySelector('.example-card[data-example="russian"] img');
+  if(russianPreview){
+    russianPreview.src = isCheck ? '/examples/russian-completed.png' : '/examples/russian.jpg';
+    russianPreview.alt = isCheck
+      ? 'Выполненная работа по русскому языку'
+      : 'Задание по русскому языку';
+  }
+
+  document.querySelectorAll('.example-card').forEach(card => {
+    const checkUnavailable = isCheck && card.dataset.example !== 'russian';
+    card.classList.toggle('pending', checkUnavailable);
+    card.disabled = checkUnavailable;
+    card.setAttribute('aria-disabled', checkUnavailable ? 'true' : 'false');
+    const badge = card.querySelector('.mode-badge');
+    if(badge) badge.classList.toggle('hidden', !checkUnavailable);
+  });
+
+  if(isCheck){
+    selectedExample = 'russian';
+    document.querySelectorAll('.example-card').forEach(card => {
+      const selected = card.dataset.example === 'russian';
+      card.classList.toggle('selected', selected);
+      card.setAttribute('aria-checked', selected ? 'true' : 'false');
+    });
+  }
 }
 
 function backToIntent(){
@@ -2027,8 +2327,12 @@ function backToIntent(){
 
 function selectExample(card){
   if(card.classList.contains('pending')) return;
-  document.querySelectorAll('.example-card').forEach(item => item.classList.remove('selected'));
+  document.querySelectorAll('.example-card').forEach(item => {
+    item.classList.remove('selected');
+    item.setAttribute('aria-checked', 'false');
+  });
   card.classList.add('selected');
+  card.setAttribute('aria-checked', 'true');
   selectedExample = card.dataset.example;
 }
 
@@ -2049,18 +2353,52 @@ function backToPicker(){
   document.getElementById('intentScreen').classList.add('is-hidden');
 }
 
+function getTaskPhotoMeta(subject, mode = currentMode){
+  const photos = {
+    russian: {
+      src: '/examples/russian.jpg',
+      alt: 'Задание по русскому языку',
+    },
+    math: {
+      src: '/examples/math.jpg',
+      alt: 'Задание по математике на единицы измерения',
+    },
+    english: {
+      src: '/examples/english.jpg',
+      alt: 'Задание по английскому языку на артикли',
+    },
+  };
+
+  if(mode === 'check' && subject === 'russian'){
+    return {
+      src: '/examples/russian-completed.png',
+      alt: 'Выполненная работа по русскому языку',
+    };
+  }
+
+  return photos[subject] || photos.russian;
+}
+
 function setTaskPhoto(subject){
-  const cardImage = document.querySelector(`.example-card[data-example="${subject}"] img`);
+  const photo = getTaskPhotoMeta(subject);
   const taskPhoto = document.getElementById('taskPhoto');
   const modalPhoto = document.getElementById('photoModalImage');
+  const photoTitle = document.getElementById('taskPhotoTitle');
+  const photoHint = document.getElementById('taskPhotoHint');
 
-  if(cardImage && taskPhoto){
-    taskPhoto.src = cardImage.src;
-    taskPhoto.alt = cardImage.alt;
+  if(taskPhoto){
+    taskPhoto.src = photo.src;
+    taskPhoto.alt = photo.alt;
   }
-  if(cardImage && modalPhoto){
-    modalPhoto.src = cardImage.src;
-    modalPhoto.alt = cardImage.alt;
+  if(modalPhoto){
+    modalPhoto.src = photo.src;
+    modalPhoto.alt = photo.alt;
+  }
+  if(photoTitle){
+    photoTitle.textContent = currentMode === 'check' ? 'Фото выполненной работы' : 'Фото задания';
+  }
+  if(photoHint){
+    photoHint.textContent = 'Можно открыть крупнее';
   }
 }
 
@@ -2108,8 +2446,9 @@ function getCheckDemoStart(subject){
   const variant = variants[subject] || variants.russian;
   return `
     <div class="message user">
-      <div class="bubble">Покажи пример проверки этой работы</div>
+      <div class="bubble">Проверь эту работу</div>
     </div>
+    ${getMobileTaskPhoto(subject, 'check')}
     <div class="message assistant">
       <div class="avatar">ИИ</div>
       <div class="bubble">
@@ -2140,26 +2479,13 @@ function loadExample(subject){
   chat.scrollTop = 0;
 }
 
-function getMobileTaskPhoto(subject){
-  const photos = {
-    russian: {
-      src: '/examples/russian.jpg',
-      alt: 'Задание по русскому языку',
-    },
-    math: {
-      src: '/examples/math.jpg',
-      alt: 'Задание по математике на единицы измерения',
-    },
-    english: {
-      src: '/examples/english.jpg',
-      alt: 'Задание по английскому языку на артикли',
-    },
-  };
-  const photo = photos[subject] || photos.russian;
+function getMobileTaskPhoto(subject, mode = 'explain'){
+  const photo = getTaskPhotoMeta(subject, mode);
+  const isCheck = mode === 'check';
   return `
-    <div class="mobile-photo">
-      <button class="mobile-photo-card" type="button" onclick="openPhotoModal()" aria-label="Открыть фото задания крупнее">
-        <span class="mobile-photo-label">Фото задания</span>
+    <div class="mobile-photo${isCheck ? ' is-check' : ''}">
+      <button class="mobile-photo-card" type="button" onclick="openPhotoModal()" aria-label="Открыть ${isCheck ? 'фото выполненной работы' : 'фото задания'} крупнее">
+        <span class="mobile-photo-label">${isCheck ? 'Фото выполненной работы' : 'Фото задания'}</span>
         <img src="${photo.src}" alt="${photo.alt}" decoding="async">
         <span class="mobile-photo-open">Открыть крупнее</span>
       </button>
@@ -2667,14 +2993,17 @@ function russianFinishWork(btn){
       <strong>Демо проверки готовой работы</strong>
       <p class="note">Собственная фотография не загружается и не анализируется.</p>
       <div class="actions" style="justify-content:center">
-        <button class="btn btn-primary" onclick="simulateRussianCheck()">Показать демо проверки</button>
+        <button class="btn btn-primary" onclick="simulateRussianCheck()">Проверить эту работу</button>
       </div>
     </div>
   `);
 }
 
 function simulateRussianCheck(){
-  addUser('Покажи пример результата проверки');
+  currentMode = 'check';
+  setTaskPhoto('russian');
+  addUser('Проверь эту работу');
+  document.getElementById('thread').insertAdjacentHTML('beforeend', getMobileTaskPhoto('russian', 'check'));
   addAssistant(`
     <div class="eyebrow">Демо результата проверки</div>
     <h2>Вот как помощник предложит перепроверить два слова</h2>
@@ -2940,14 +3269,14 @@ function mathFinishWork(btn){
       <strong>Демо проверки готовой работы</strong>
       <p class="note">Собственная фотография не загружается и не анализируется.</p>
       <div class="actions" style="justify-content:center">
-        <button class="btn btn-primary" onclick="simulateMathCheck()">Показать демо проверки</button>
+        <button class="btn btn-primary" onclick="simulateMathCheck()">Проверить эту работу</button>
       </div>
     </div>
   `);
 }
 
 function simulateMathCheck(){
-  addUser('Покажи пример результата проверки');
+  addUser('Проверь эту работу');
   addAssistant(`
     <div class="eyebrow">Демо результата проверки</div>
     <h2>Вот как помощник предложит перепроверить два примера</h2>
@@ -3244,14 +3573,14 @@ function englishFinishWork(btn){
       <strong>Демо проверки готовой работы</strong>
       <p class="note">Собственная фотография не загружается и не анализируется.</p>
       <div class="actions" style="justify-content:center">
-        <button class="btn btn-primary" onclick="simulateEnglishCheck()">Показать демо проверки</button>
+        <button class="btn btn-primary" onclick="simulateEnglishCheck()">Проверить эту работу</button>
       </div>
     </div>
   `);
 }
 
 function simulateEnglishCheck(){
-  addUser('Покажи пример результата проверки');
+  addUser('Проверь эту работу');
   addAssistant(`
     <div class="eyebrow">Демо результата проверки</div>
     <h2>Вот как помощник предложит перепроверить два предложения</h2>
