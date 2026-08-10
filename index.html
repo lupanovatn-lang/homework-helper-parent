@@ -508,6 +508,24 @@
     cursor:not-allowed;
     color:var(--muted);
   }
+  .demo-chat-note{
+    max-width:760px;
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:11px 14px;
+    border:1px solid #dce4ff;
+    border-radius:14px;
+    background:#f7f9ff;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.4;
+    text-align:center;
+    box-shadow:0 10px 28px rgba(35,45,70,.07);
+  }
+  .demo-chat-note strong{color:var(--primary);font-weight:650}
   .right-shell{
     min-width:0;
     height:100vh;
@@ -877,6 +895,25 @@
     font-size:17px;
     line-height:1.5;
   }
+  .demo-notice{
+    max-width:780px;
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    margin:-10px 0 24px;
+    padding:12px 14px;
+    border:1px solid #dce4ff;
+    border-radius:13px;
+    background:#f1f4ff;
+    color:#536079;
+    font-size:13px;
+    line-height:1.45;
+  }
+  .demo-notice strong{
+    flex:none;
+    color:var(--primary);
+    font-weight:650;
+  }
   .example-grid{
     display:grid;
     grid-template-columns:repeat(3,minmax(0,1fr));
@@ -1064,6 +1101,8 @@
     .picker-heading h1{font-size:32px}
     .example-grid{grid-template-columns:1fr}
     .example-preview{height:220px}
+    .demo-notice{display:block;margin-top:-12px}
+    .demo-notice strong{display:block;margin-bottom:3px}
   }
 
 
@@ -1544,6 +1583,11 @@
       <p>Выберите, что нужно сделать с домашним заданием.</p>
     </div>
 
+    <div class="demo-notice">
+      <strong>Демо-версия</strong>
+      <span>Выберите готовый пример. Загрузка своих фото и свободный чат пока недоступны.</span>
+    </div>
+
     <div class="intent-grid" role="radiogroup" aria-label="Выберите сценарий">
       <button type="button" class="intent-card selected" data-intent="explain" onclick="selectIntent(this)">
         <div class="example-checkmark">✓</div>
@@ -1598,7 +1642,12 @@
 
     <div class="picker-heading">
       <h1 id="pickerTitle">Какое задание разобрать?</h1>
-      <p id="pickerSubtitle">Выберите фото, которое хотите отправить в чат.</p>
+      <p id="pickerSubtitle">Выберите готовый пример, чтобы посмотреть, как помощник разбирает задание.</p>
+    </div>
+
+    <div class="demo-notice">
+      <strong>Демо-версия</strong>
+      <span id="pickerDemoText">Свои фотографии пока загрузить нельзя.</span>
     </div>
 
     <div class="example-grid">
@@ -1640,7 +1689,7 @@
     </div>
 
     <div class="picker-actions">
-      <button class="btn btn-primary" onclick="sendSelectedExample()">Отправить фото в чат</button>
+      <button class="btn btn-primary" id="pickerAction" onclick="sendSelectedExample()">Показать разбор</button>
     </div>
   </div>
 </div>
@@ -1692,7 +1741,7 @@
               В ответе должны прозвучать три действия: вставить пропущенную букву, подобрать и записать проверочное слово, поставить в нём ударение.
             </p>
             <div class="actions">
-              <button class="btn btn-primary" onclick="understood(this)">Инструкция ясна</button>
+              <button class="btn btn-primary" onclick="understood(this)">Ребёнок понял</button>
               <button class="btn btn-secondary" onclick="notUnderstood(this)">Не может объяснить</button>
             </div>
           </div>
@@ -1701,9 +1750,9 @@
     </div>
 
     <div class="composer">
-      <div class="composer-inner" title="В демо чат пока недоступен">
-        <input id="chatInput" placeholder="Напишите, где ребёнок затруднился…" disabled aria-disabled="true">
-        <button class="send" type="button" disabled aria-disabled="true" title="В демо чат пока недоступен">↑</button>
+      <div class="demo-chat-note">
+        <strong>Демо-сценарий</strong>
+        <span>Свободный чат появится в следующей версии.</span>
       </div>
     </div>
   </main>
@@ -1769,11 +1818,17 @@ function continueIntent(){
 function updatePickerCopy(){
   const isCheck = currentMode === 'check';
   document.getElementById('pickerTitle').textContent = isCheck
-    ? 'Какую работу проверить?'
+    ? 'Как выглядит проверка работы?'
     : 'Какое задание разобрать?';
   document.getElementById('pickerSubtitle').textContent = isCheck
-    ? 'Выберите фото выполненного задания, которое хотите проверить.'
-    : 'Выберите фото, которое хотите отправить в чат.';
+    ? 'Выберите готовый пример, чтобы посмотреть сценарий проверки.'
+    : 'Выберите готовый пример, чтобы посмотреть, как помощник разбирает задание.';
+  document.getElementById('pickerDemoText').textContent = isCheck
+    ? 'Это пример результата: выбранная работа не анализируется.'
+    : 'Свои фотографии пока загрузить нельзя.';
+  document.getElementById('pickerAction').textContent = isCheck
+    ? 'Показать демо проверки'
+    : 'Показать разбор';
 }
 
 function backToIntent(){
@@ -1841,24 +1896,21 @@ function startCheckDemo(subject){
 function getCheckDemoStart(subject){
   const variants = {
     russian: {
-      title: 'Проверьте ещё два слова',
-      note: 'Остальные 13 слов выполнены без замечаний.',
+      title: 'Вот как помощник предложит перепроверить два слова',
       items: [
         ['ж_мчужина', '«Как называется материал, из которого делают жемчужины?»', 'жемчужина — же́мчуг'],
         ['д_лёкий', '«Как одним словом назвать большое расстояние?»', 'далёкий — да́ль'],
       ],
     },
     math: {
-      title: 'Проверьте ещё два примера',
-      note: 'Остальные 6 примеров выполнены без замечаний.',
+      title: 'Вот как помощник предложит перепроверить два примера',
       items: [
         ['7 т 9 ц = ___ кг', '«Ты перевёл в килограммы обе части: и тонны, и центнеры?»', '7 т 9 ц = 7 900 кг'],
         ['2 ц = ___ г', '«Ответ нужен в граммах. Через какую промежуточную единицу можно выполнить перевод?»', '2 ц = 200 000 г'],
       ],
     },
     english: {
-      title: 'Проверьте ещё два предложения',
-      note: 'Остальные предложения выполнены без замечаний.',
+      title: 'Вот как помощник предложит перепроверить два предложения',
       items: [
         ['I drink ___ water.', '«Здесь говорится о воде вообще или о какой-то конкретной воде? Нужен ли артикль?»', 'I drink water. Артикль не нужен.'],
         ['It has got ___ tail. ___ tail is long.', '«В каком предложении хвост называется впервые, а в каком речь идёт уже о том же самом хвосте?»', 'It has got a tail. The tail is long.'],
@@ -1868,14 +1920,14 @@ function getCheckDemoStart(subject){
   const variant = variants[subject] || variants.russian;
   return `
     <div class="message user">
-      <div class="bubble">Проверь выполненную работу ребёнка</div>
+      <div class="bubble">Покажи пример проверки этой работы</div>
     </div>
     <div class="message assistant">
       <div class="avatar">ИИ</div>
       <div class="bubble">
-        <div class="eyebrow">Проверка завершена</div>
+        <div class="eyebrow">Демо результата проверки</div>
         <h2>${variant.title}</h2>
-        <p class="note">${variant.note}</p>
+        <p class="note">Это демонстрационный результат для выбранного примера. Фотография здесь не анализируется.</p>
         ${variant.items.map(item => checkCard(...item)).join('')}
         <div class="actions">
           <button class="btn btn-primary" onclick="backToPicker()">Выбрать другое задание</button>
@@ -1921,7 +1973,7 @@ function getRussianStart(){
         </div>
         <p class="note">В ответе должны прозвучать три действия: вставить пропущенную букву, подобрать и записать проверочное слово, поставить в нём ударение.</p>
         <div class="actions">
-          <button class="btn btn-primary" onclick="russianUnderstood(this)">Инструкция ясна</button>
+          <button class="btn btn-primary" onclick="russianUnderstood(this)">Ребёнок понял</button>
           <button class="btn btn-secondary" onclick="russianNotUnderstood(this)">Не может объяснить</button>
         </div>
       </div>
@@ -1949,7 +2001,7 @@ function getMathStart(){
         </div>
         <p class="note">В ответе должно прозвучать: перевести величину в нужную единицу измерения и записать ответ.</p>
         <div class="actions">
-          <button class="btn btn-primary" onclick="mathUnderstood(this)">Инструкция ясна</button>
+          <button class="btn btn-primary" onclick="mathUnderstood(this)">Ребёнок понял</button>
           <button class="btn btn-secondary" onclick="mathNotUnderstood(this)">Не может объяснить</button>
         </div>
       </div>
@@ -1978,7 +2030,7 @@ function getEnglishStart(){
         </div>
         <p class="note">В ответе должны прозвучать: прочитать предложение и выбрать для пропуска a, an или the.</p>
         <div class="actions">
-          <button class="btn btn-primary" onclick="englishUnderstood(this)">Инструкция ясна</button>
+          <button class="btn btn-primary" onclick="englishUnderstood(this)">Ребёнок понял</button>
           <button class="btn btn-secondary" onclick="englishNotUnderstood(this)">Не может объяснить</button>
         </div>
       </div>
@@ -2254,7 +2306,7 @@ function russianNotUnderstood(btn){
 }
 
 function russianUnderstood(btn){
-  addUser('Инструкция ясна');
+  addUser('Ребёнок понял задание');
   disableButtons(btn.closest('.bubble'));
   addAssistant(`
     <div class="stepbar"><span class="stepdot done"></span><span class="stepdot active"></span><span class="stepdot"></span></div>
@@ -2391,27 +2443,25 @@ function russianFinishWork(btn){
   disableButtons(btn.closest('.bubble'));
   addAssistant(`
     <div class="eyebrow">Последний шаг</div>
-    <h2>Проверьте выполненную работу</h2>
-    <p>Сфотографируйте страницу ещё раз. Я отмечу места, которые стоит проверить, и подскажу вопрос ребёнку — без автоматического исправления за него.</p>
+    <h2>Посмотрите пример проверки</h2>
+    <p>В полной версии здесь можно будет добавить фотографию готовой работы. Сейчас покажем демонстрационный результат.</p>
     <div class="upload-box">
       <div class="upload-icon">＋</div>
-      <strong>Добавить фото готовой работы</strong>
-      <p class="note">В прототипе проверка запускается в демонстрационном режиме.</p>
-      <input id="russianFinishUpload" type="file" accept="image/*" class="hidden" onchange="simulateRussianCheck()">
+      <strong>Демо проверки готовой работы</strong>
+      <p class="note">Собственная фотография не загружается и не анализируется.</p>
       <div class="actions" style="justify-content:center">
-        <button class="btn btn-primary" onclick="document.getElementById('russianFinishUpload').click()">Выбрать фото</button>
-        <button class="btn btn-secondary" onclick="simulateRussianCheck()">Показать демо проверки</button>
+        <button class="btn btn-primary" onclick="simulateRussianCheck()">Показать демо проверки</button>
       </div>
     </div>
   `);
 }
 
 function simulateRussianCheck(){
-  addUser('Отправлено фото выполненной работы');
+  addUser('Покажи пример результата проверки');
   addAssistant(`
-    <div class="eyebrow">Проверка завершена</div>
-    <h2>Проверьте ещё два слова</h2>
-    <p class="note">Остальные 13 слов выполнены без замечаний.</p>
+    <div class="eyebrow">Демо результата проверки</div>
+    <h2>Вот как помощник предложит перепроверить два слова</h2>
+    <p class="note">Это демонстрационный результат. Фотография здесь не анализируется.</p>
     ${checkCard('ж_мчужина', '«Как называется материал, из которого делают жемчужины?»', 'жемчужина — же́мчуг')}
     ${checkCard('д_лёкий', '«Как одним словом назвать большое расстояние?»', 'далёкий — да́ль')}
     <div class="actions">
@@ -2432,7 +2482,7 @@ function mathNotUnderstood(btn){
 }
 
 function mathUnderstood(btn){
-  addUser('Инструкция ясна');
+  addUser('Ребёнок понял задание');
   disableButtons(btn.closest('.bubble'));
   addAssistant(`
     <div class="stepbar"><span class="stepdot done"></span><span class="stepdot active"></span><span class="stepdot"></span></div>
@@ -2666,27 +2716,25 @@ function mathFinishWork(btn){
   disableButtons(btn.closest('.bubble'));
   addAssistant(`
     <div class="eyebrow">Последний шаг</div>
-    <h2>Проверьте выполненную работу</h2>
-    <p>Сфотографируйте страницу с ответами. Я отмечу примеры, которые стоит проверить.</p>
+    <h2>Посмотрите пример проверки</h2>
+    <p>В полной версии здесь можно будет добавить фотографию готовой работы. Сейчас покажем демонстрационный результат.</p>
     <div class="upload-box">
       <div class="upload-icon">＋</div>
-      <strong>Добавить фото готовой работы</strong>
-      <p class="note">В прототипе проверка запускается в демонстрационном режиме.</p>
-      <input id="mathFinishUpload" type="file" accept="image/*" class="hidden" onchange="simulateMathCheck()">
+      <strong>Демо проверки готовой работы</strong>
+      <p class="note">Собственная фотография не загружается и не анализируется.</p>
       <div class="actions" style="justify-content:center">
-        <button class="btn btn-primary" onclick="document.getElementById('mathFinishUpload').click()">Добавить фото</button>
-        <button class="btn btn-secondary" onclick="simulateMathCheck()">Показать демо проверки</button>
+        <button class="btn btn-primary" onclick="simulateMathCheck()">Показать демо проверки</button>
       </div>
     </div>
   `);
 }
 
 function simulateMathCheck(){
-  addUser('Отправлено фото выполненной работы');
+  addUser('Покажи пример результата проверки');
   addAssistant(`
-    <div class="eyebrow">Проверка завершена</div>
-    <h2>Проверьте ещё два примера</h2>
-    <p class="note">Остальные 6 примеров выполнены без замечаний.</p>
+    <div class="eyebrow">Демо результата проверки</div>
+    <h2>Вот как помощник предложит перепроверить два примера</h2>
+    <p class="note">Это демонстрационный результат. Фотография здесь не анализируется.</p>
     ${checkCard('7 т 9 ц = ___ кг', '«Ты перевёл в килограммы обе части: и тонны, и центнеры?»', '7 т 9 ц = 7 900 кг')}
     ${checkCard('2 ц = ___ г', '«Ответ нужен в граммах. Через какую промежуточную единицу можно выполнить перевод?»', '2 ц = 200 000 г')}
     <div class="actions">
@@ -2708,7 +2756,7 @@ function englishNotUnderstood(btn){
 }
 
 function englishUnderstood(btn){
-  addUser('Инструкция ясна');
+  addUser('Ребёнок понял задание');
   disableButtons(btn.closest('.bubble'));
   addAssistant(`
     <div class="stepbar"><span class="stepdot done"></span><span class="stepdot active"></span><span class="stepdot"></span></div>
@@ -2972,27 +3020,25 @@ function englishFinishWork(btn){
   disableButtons(btn.closest('.bubble'));
   addAssistant(`
     <div class="eyebrow">Последний шаг</div>
-    <h2>Проверьте выполненную работу</h2>
-    <p>Сфотографируйте страницу с ответами. Я отмечу предложения, которые стоит проверить, и предложу вопросы ребёнку.</p>
+    <h2>Посмотрите пример проверки</h2>
+    <p>В полной версии здесь можно будет добавить фотографию готовой работы. Сейчас покажем демонстрационный результат.</p>
     <div class="upload-box">
       <div class="upload-icon">＋</div>
-      <strong>Добавить фото готовой работы</strong>
-      <p class="note">В прототипе проверка запускается в демонстрационном режиме.</p>
-      <input id="englishFinishUpload" type="file" accept="image/*" class="hidden" onchange="simulateEnglishCheck()">
+      <strong>Демо проверки готовой работы</strong>
+      <p class="note">Собственная фотография не загружается и не анализируется.</p>
       <div class="actions" style="justify-content:center">
-        <button class="btn btn-primary" onclick="document.getElementById('englishFinishUpload').click()">Добавить фото</button>
-        <button class="btn btn-secondary" onclick="simulateEnglishCheck()">Показать демо проверки</button>
+        <button class="btn btn-primary" onclick="simulateEnglishCheck()">Показать демо проверки</button>
       </div>
     </div>
   `);
 }
 
 function simulateEnglishCheck(){
-  addUser('Отправлено фото выполненной работы');
+  addUser('Покажи пример результата проверки');
   addAssistant(`
-    <div class="eyebrow">Проверка завершена</div>
-    <h2>Проверьте ещё два предложения</h2>
-    <p class="note">Остальные предложения выполнены без замечаний.</p>
+    <div class="eyebrow">Демо результата проверки</div>
+    <h2>Вот как помощник предложит перепроверить два предложения</h2>
+    <p class="note">Это демонстрационный результат. Фотография здесь не анализируется.</p>
     ${checkCard('I drink ___ water.', '«Здесь говорится о воде вообще или о какой-то конкретной воде? Нужен ли артикль?»', 'I drink water. Артикль не нужен.')}
     ${checkCard('It has got ___ tail. ___ tail is long.', '«В каком предложении хвост называется впервые, а в каком речь идёт уже о том же самом хвосте?»', 'It has got a tail. The tail is long.')}
     <div class="actions">
