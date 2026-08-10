@@ -1597,8 +1597,8 @@
     </div>
 
     <div class="picker-heading">
-      <h1>Какое задание разобрать?</h1>
-      <p>Выберите фото, которое хотите отправить в чат.</p>
+      <h1 id="pickerTitle">Какое задание разобрать?</h1>
+      <p id="pickerSubtitle">Выберите фото, которое хотите отправить в чат.</p>
     </div>
 
     <div class="example-grid">
@@ -1761,12 +1761,19 @@ function selectIntent(card){
 
 function continueIntent(){
   currentMode = selectedIntent;
-  if(selectedIntent === 'check'){
-    startCheckDemo();
-    return;
-  }
+  updatePickerCopy();
   document.getElementById('intentScreen').classList.add('is-hidden');
   document.getElementById('pickerScreen').classList.remove('is-hidden');
+}
+
+function updatePickerCopy(){
+  const isCheck = currentMode === 'check';
+  document.getElementById('pickerTitle').textContent = isCheck
+    ? 'Какую работу проверить?'
+    : 'Какое задание разобрать?';
+  document.getElementById('pickerSubtitle').textContent = isCheck
+    ? 'Выберите фото выполненного задания, которое хотите проверить.'
+    : 'Выберите фото, которое хотите отправить в чат.';
 }
 
 function backToIntent(){
@@ -1783,17 +1790,17 @@ function selectExample(card){
 }
 
 function sendSelectedExample(){
-  currentMode = 'explain';
-  loadExample(selectedExample);
+  if(currentMode === 'check'){
+    startCheckDemo(selectedExample);
+  }else{
+    loadExample(selectedExample);
+  }
   document.getElementById('pickerScreen').classList.add('is-hidden');
   document.getElementById('appShell').classList.remove('is-hidden');
 }
 
 function backToPicker(){
-  if(currentMode === 'check'){
-    backToIntent();
-    return;
-  }
+  updatePickerCopy();
   document.getElementById('appShell').classList.add('is-hidden');
   document.getElementById('pickerScreen').classList.remove('is-hidden');
   document.getElementById('intentScreen').classList.add('is-hidden');
@@ -1814,14 +1821,14 @@ function setTaskPhoto(subject){
   }
 }
 
-function startCheckDemo(){
+function startCheckDemo(subject){
   currentMode = 'check';
-  currentSubject = 'russian';
-  selectedExample = 'russian';
-  setTaskPhoto('russian');
+  currentSubject = subject;
+  selectedExample = subject;
+  setTaskPhoto(subject);
 
   const thread = document.getElementById('thread');
-  thread.innerHTML = getRussianCheckDemoStart();
+  thread.innerHTML = getCheckDemoStart(subject);
 
   document.getElementById('intentScreen').classList.add('is-hidden');
   document.getElementById('pickerScreen').classList.add('is-hidden');
@@ -1831,7 +1838,34 @@ function startCheckDemo(){
   chat.scrollTop = 0;
 }
 
-function getRussianCheckDemoStart(){
+function getCheckDemoStart(subject){
+  const variants = {
+    russian: {
+      title: 'Проверьте ещё два слова',
+      note: 'Остальные 13 слов выполнены без замечаний.',
+      items: [
+        ['ж_мчужина', '«Как называется материал, из которого делают жемчужины?»', 'жемчужина — же́мчуг'],
+        ['д_лёкий', '«Как одним словом назвать большое расстояние?»', 'далёкий — да́ль'],
+      ],
+    },
+    math: {
+      title: 'Проверьте ещё два примера',
+      note: 'Остальные 6 примеров выполнены без замечаний.',
+      items: [
+        ['7 т 9 ц = ___ кг', '«Ты перевёл в килограммы обе части: и тонны, и центнеры?»', '7 т 9 ц = 7 900 кг'],
+        ['2 ц = ___ г', '«Ответ нужен в граммах. Через какую промежуточную единицу можно выполнить перевод?»', '2 ц = 200 000 г'],
+      ],
+    },
+    english: {
+      title: 'Проверьте ещё два предложения',
+      note: 'Остальные предложения выполнены без замечаний.',
+      items: [
+        ['I drink ___ water.', '«Здесь говорится о воде вообще или о какой-то конкретной воде? Нужен ли артикль?»', 'I drink water. Артикль не нужен.'],
+        ['It has got ___ tail. ___ tail is long.', '«В каком предложении хвост называется впервые, а в каком речь идёт уже о том же самом хвосте?»', 'It has got a tail. The tail is long.'],
+      ],
+    },
+  };
+  const variant = variants[subject] || variants.russian;
   return `
     <div class="message user">
       <div class="bubble">Проверь выполненную работу ребёнка</div>
@@ -1840,12 +1874,11 @@ function getRussianCheckDemoStart(){
       <div class="avatar">ИИ</div>
       <div class="bubble">
         <div class="eyebrow">Проверка завершена</div>
-        <h2>Проверьте ещё два слова</h2>
-        <p class="note">Остальные 13 слов выполнены без замечаний.</p>
-        ${checkCard('ж_мчужина', '«Как называется материал, из которого делают жемчужины?»', 'жемчужина — же́мчуг')}
-        ${checkCard('д_лёкий', '«Как одним словом назвать большое расстояние?»', 'далёкий — да́ль')}
+        <h2>${variant.title}</h2>
+        <p class="note">${variant.note}</p>
+        ${variant.items.map(item => checkCard(...item)).join('')}
         <div class="actions">
-          <button class="btn btn-primary" onclick="backToIntent()">К выбору сценария</button>
+          <button class="btn btn-primary" onclick="backToPicker()">Выбрать другое задание</button>
         </div>
       </div>
     </div>`;
