@@ -815,6 +815,31 @@
     color:var(--muted);
   }
   .mobile-photo{display:none}
+  .mobile-photo-card{
+    width:100%;
+    display:block;
+    padding:10px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:#fff;
+    color:var(--text);
+    text-align:left;
+    box-shadow:0 8px 24px rgba(30,40,70,.055);
+  }
+  .mobile-photo-label{
+    display:block;
+    margin:1px 2px 8px;
+    color:var(--muted);
+    font-size:12px;
+    font-weight:650;
+  }
+  .mobile-photo-open{
+    display:block;
+    margin:8px 2px 1px;
+    color:var(--primary);
+    font-size:12px;
+    font-weight:600;
+  }
   .hidden{display:none !important}
   .fade-in{animation:fade .28s ease both}
   @keyframes fade{
@@ -833,8 +858,20 @@
     .app{display:block;height:auto;min-height:100vh;overflow:visible}
     .right-shell{display:none}
     .composer{right:0}
-    .mobile-photo{display:block;margin:12px 0}
-    .mobile-photo img{width:100%;max-height:240px;object-fit:contain;border-radius:12px;border:1px solid var(--line)}
+    .mobile-photo{
+      width:calc(100% - 40px);
+      display:block;
+      margin:0 0 20px 40px;
+    }
+    .mobile-photo img{
+      width:100%;
+      max-height:280px;
+      display:block;
+      object-fit:contain;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+    }
     .header{padding:0 16px}
     .chat{padding:22px 14px 110px}
     .summary{grid-template-columns:1fr}
@@ -2103,11 +2140,38 @@ function loadExample(subject){
   chat.scrollTop = 0;
 }
 
+function getMobileTaskPhoto(subject){
+  const photos = {
+    russian: {
+      src: '/examples/russian.jpg',
+      alt: 'Задание по русскому языку',
+    },
+    math: {
+      src: '/examples/math.jpg',
+      alt: 'Задание по математике на единицы измерения',
+    },
+    english: {
+      src: '/examples/english.jpg',
+      alt: 'Задание по английскому языку на артикли',
+    },
+  };
+  const photo = photos[subject] || photos.russian;
+  return `
+    <div class="mobile-photo">
+      <button class="mobile-photo-card" type="button" onclick="openPhotoModal()" aria-label="Открыть фото задания крупнее">
+        <span class="mobile-photo-label">Фото задания</span>
+        <img src="${photo.src}" alt="${photo.alt}" decoding="async">
+        <span class="mobile-photo-open">Открыть крупнее</span>
+      </button>
+    </div>`;
+}
+
 function getRussianStart(){
   return `
     <div class="message user">
       <div class="bubble">Помоги мне объяснить ребёнку это задание</div>
     </div>
+    ${getMobileTaskPhoto('russian')}
     <div class="message assistant">
       <div class="avatar">ИИ</div>
       <div class="bubble">
@@ -2136,6 +2200,7 @@ function getMathStart(){
     <div class="message user">
       <div class="bubble">Помоги мне объяснить ребёнку это задание</div>
     </div>
+    ${getMobileTaskPhoto('math')}
     <div class="message assistant">
       <div class="avatar">ИИ</div>
       <div class="bubble">
@@ -2165,6 +2230,7 @@ function getEnglishStart(){
     <div class="message user">
       <div class="bubble">Помоги мне объяснить ребёнку это задание</div>
     </div>
+    ${getMobileTaskPhoto('english')}
     <div class="message assistant">
       <div class="avatar">ИИ</div>
       <div class="bubble">
