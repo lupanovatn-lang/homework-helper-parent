@@ -5,6 +5,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Рядом — помощник с домашним заданием</title>
+<link rel="preload" as="image" href="/examples/intent-explain.png">
+<link rel="preload" as="image" href="/examples/intent-check.png">
 <link rel="preload" as="image" href="/examples/russian.jpg" fetchpriority="high">
 <link rel="preload" as="image" href="/examples/math.jpg">
 <link rel="preload" as="image" href="/examples/english.jpg">
@@ -1053,7 +1055,8 @@
     .service-brand{font-size:14px}
   }
   .app.is-hidden,
-  .picker-screen.is-hidden{
+  .picker-screen.is-hidden,
+  .intent-screen.is-hidden{
     display:none;
   }
   @media (max-width:900px){
@@ -1404,11 +1407,177 @@
     margin-top:10px;
   }
 
+  .intent-screen{
+    min-height:100vh;
+    background:var(--bg);
+    padding:28px 32px 48px;
+  }
+  .intent-shell{
+    width:min(920px,100%);
+    margin:0 auto;
+  }
+  .intent-top{
+    display:flex;
+    justify-content:flex-start;
+    margin-bottom:48px;
+  }
+  .intent-heading{
+    text-align:center;
+    max-width:640px;
+    margin:0 auto 34px;
+  }
+  .intent-heading h1{
+    margin:0 0 10px;
+    color:var(--text);
+    font-size:40px;
+    line-height:1.12;
+    letter-spacing:-.035em;
+  }
+  .intent-heading p{
+    margin:0;
+    color:var(--muted);
+    font-size:17px;
+    line-height:1.5;
+  }
+  .intent-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:20px;
+  }
+  .intent-card{
+    position:relative;
+    min-width:0;
+    width:100%;
+    padding:14px;
+    border:2px solid transparent;
+    border-radius:24px;
+    background:#fff;
+    box-shadow:0 12px 34px rgba(34,45,72,.08);
+    cursor:pointer;
+    transition:.18s ease;
+    text-align:left;
+    font:inherit;
+    color:inherit;
+  }
+  .intent-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 16px 38px rgba(34,45,72,.11);
+  }
+  .intent-card.selected{
+    border-color:var(--primary);
+    box-shadow:0 14px 36px rgba(49,94,233,.14);
+  }
+  .intent-card .example-checkmark{
+    top:22px;
+    right:22px;
+  }
+  .intent-card.selected .example-checkmark{
+    display:grid;
+  }
+  .intent-art{
+    height:200px;
+    overflow:hidden;
+    border-radius:16px;
+    background:#eef3ff;
+  }
+  .intent-art img{
+    width:100%;
+    height:100%;
+    display:block;
+    object-fit:cover;
+    object-position:center;
+  }
+  .intent-meta{
+    padding:18px 8px 10px;
+  }
+  .intent-meta strong{
+    display:block;
+    margin-bottom:6px;
+    font-size:22px;
+    line-height:1.25;
+    letter-spacing:-.02em;
+  }
+  .intent-meta span{
+    display:block;
+    color:var(--muted);
+    font-size:15px;
+    line-height:1.45;
+  }
+  .intent-actions{
+    display:flex;
+    justify-content:center;
+    margin-top:30px;
+  }
+  .intent-cta{
+    min-width:220px;
+    padding:13px 28px;
+    font-size:16px;
+  }
+  .picker-back{
+    margin-bottom:18px;
+  }
+  @media (max-width:900px){
+    .intent-screen{padding:20px 18px 34px}
+    .intent-heading h1{font-size:32px}
+    .intent-grid{grid-template-columns:1fr}
+    .intent-art{height:180px}
+  }
+
 </style>
 </head>
 <body>
 
-<div class="picker-screen" id="pickerScreen">
+<div class="intent-screen" id="intentScreen">
+  <div class="intent-shell">
+    <div class="intent-top">
+      <div class="service-brand">
+        <div class="service-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M7 4.5h7l3 3V19a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 6 19V6A1.5 1.5 0 0 1 7.5 4.5Z"/>
+            <path d="M14 4.5V8h3"/>
+            <path d="m9 14 1.7 1.7L14.5 12"/>
+          </svg>
+        </div>
+        <span>Помощник с домашним заданием</span>
+      </div>
+    </div>
+
+    <div class="intent-heading">
+      <h1>Чем помочь сейчас?</h1>
+      <p>Выберите, что нужно сделать с домашним заданием.</p>
+    </div>
+
+    <div class="intent-grid" role="radiogroup" aria-label="Выберите сценарий">
+      <button type="button" class="intent-card selected" data-intent="explain" onclick="selectIntent(this)">
+        <div class="example-checkmark">✓</div>
+        <div class="intent-art">
+          <img src="/examples/intent-explain.png" alt="" decoding="async">
+        </div>
+        <div class="intent-meta">
+          <strong>Разобрать задание</strong>
+          <span>Помочь ребёнку понять задание и выполнить его самостоятельно</span>
+        </div>
+      </button>
+
+      <button type="button" class="intent-card" data-intent="check" onclick="selectIntent(this)">
+        <div class="example-checkmark">✓</div>
+        <div class="intent-art">
+          <img src="/examples/intent-check.png" alt="" decoding="async">
+        </div>
+        <div class="intent-meta">
+          <strong>Проверить работу</strong>
+          <span>Проверить выполненное задание и помочь исправить ошибки</span>
+        </div>
+      </button>
+    </div>
+
+    <div class="intent-actions">
+      <button class="btn btn-primary intent-cta" onclick="continueIntent()">Продолжить</button>
+    </div>
+  </div>
+</div>
+
+<div class="picker-screen is-hidden" id="pickerScreen">
   <div class="picker-shell">
     <div class="picker-top">
       <div class="service-brand">
@@ -1421,6 +1590,13 @@
         </div>
         <span>Помощник с домашним заданием</span>
       </div>
+    </div>
+
+    <div class="picker-back">
+      <button class="back-to-picker" onclick="backToIntent()" aria-label="Назад к выбору сценария">
+        <span class="back-arrow">←</span>
+        <span>Назад</span>
+      </button>
     </div>
 
     <div class="picker-heading">
@@ -1476,9 +1652,9 @@
   <main class="chat-shell">
     <header class="header">
       <div class="header-left">
-        <button class="back-to-picker" onclick="backToPicker()" aria-label="Вернуться к выбору задания">
+        <button class="back-to-picker" onclick="backToPicker()" aria-label="Назад">
           <span class="back-arrow">←</span>
-          <span>К заданиям</span>
+          <span>Назад</span>
         </button>
         <span class="header-divider" aria-hidden="true"></span>
         <div class="service-brand">
@@ -1576,7 +1752,31 @@
 <script>
 let selectedExample = 'russian';
 let currentSubject = 'russian';
+let selectedIntent = 'explain';
+let currentMode = 'explain';
 let photoZoom = 1;
+
+function selectIntent(card){
+  document.querySelectorAll('.intent-card').forEach(item => item.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedIntent = card.dataset.intent;
+}
+
+function continueIntent(){
+  currentMode = selectedIntent;
+  if(selectedIntent === 'check'){
+    startCheckDemo();
+    return;
+  }
+  document.getElementById('intentScreen').classList.add('is-hidden');
+  document.getElementById('pickerScreen').classList.remove('is-hidden');
+}
+
+function backToIntent(){
+  document.getElementById('appShell').classList.add('is-hidden');
+  document.getElementById('pickerScreen').classList.add('is-hidden');
+  document.getElementById('intentScreen').classList.remove('is-hidden');
+}
 
 function selectExample(card){
   if(card.classList.contains('pending')) return;
@@ -1586,19 +1786,23 @@ function selectExample(card){
 }
 
 function sendSelectedExample(){
+  currentMode = 'explain';
   loadExample(selectedExample);
   document.getElementById('pickerScreen').classList.add('is-hidden');
   document.getElementById('appShell').classList.remove('is-hidden');
 }
 
 function backToPicker(){
+  if(currentMode === 'check'){
+    backToIntent();
+    return;
+  }
   document.getElementById('appShell').classList.add('is-hidden');
   document.getElementById('pickerScreen').classList.remove('is-hidden');
+  document.getElementById('intentScreen').classList.add('is-hidden');
 }
 
-function loadExample(subject){
-  currentSubject = subject;
-
+function setTaskPhoto(subject){
   const cardImage = document.querySelector(`.example-card[data-example="${subject}"] img`);
   const taskPhoto = document.getElementById('taskPhoto');
   const modalPhoto = document.getElementById('photoModalImage');
@@ -1611,6 +1815,49 @@ function loadExample(subject){
     modalPhoto.src = cardImage.src;
     modalPhoto.alt = cardImage.alt;
   }
+}
+
+function startCheckDemo(){
+  currentMode = 'check';
+  currentSubject = 'russian';
+  selectedExample = 'russian';
+  setTaskPhoto('russian');
+
+  const thread = document.getElementById('thread');
+  thread.innerHTML = getRussianCheckDemoStart();
+
+  document.getElementById('intentScreen').classList.add('is-hidden');
+  document.getElementById('pickerScreen').classList.add('is-hidden');
+  document.getElementById('appShell').classList.remove('is-hidden');
+
+  const chat = document.getElementById('chat');
+  chat.scrollTop = 0;
+}
+
+function getRussianCheckDemoStart(){
+  return `
+    <div class="message user">
+      <div class="bubble">Проверь выполненную работу ребёнка</div>
+    </div>
+    <div class="message assistant">
+      <div class="avatar">ИИ</div>
+      <div class="bubble">
+        <div class="eyebrow">Проверка завершена</div>
+        <h2>Проверьте ещё два слова</h2>
+        <p class="note">Остальные 13 слов выполнены без замечаний.</p>
+        ${checkCard('ж_мчужина', '«Как называется материал, из которого делают жемчужины?»', 'жемчужина — же́мчуг')}
+        ${checkCard('д_лёкий', '«Как одним словом назвать большое расстояние?»', 'далёкий — да́ль')}
+        <div class="actions">
+          <button class="btn btn-primary" onclick="backToIntent()">К выбору сценария</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function loadExample(subject){
+  currentSubject = subject;
+  currentMode = 'explain';
+  setTaskPhoto(subject);
 
   const thread = document.getElementById('thread');
   thread.innerHTML = subject === 'math'
@@ -2138,7 +2385,7 @@ function simulateRussianCheck(){
     ${checkCard('ж_мчужина', '«Как называется материал, из которого делают жемчужины?»', 'жемчужина — же́мчуг')}
     ${checkCard('д_лёкий', '«Как одним словом назвать большое расстояние?»', 'далёкий — да́ль')}
     <div class="actions">
-      <button class="btn btn-primary" onclick="backToPicker()">Выбрать другое задание</button>
+      <button class="btn btn-primary" onclick="backToIntent()">К выбору сценария</button>
     </div>
   `);
 }

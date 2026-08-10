@@ -3,7 +3,7 @@
   "version": "0.41.0",
   "private": true,
   "scripts": {
-    "build": "mkdir -p dist/examples && cp index.html dist/index.html && cp examples/*.jpg dist/examples/",
+    "build": "mkdir -p dist/examples && cp index.html dist/index.html && cp examples/* dist/examples/",
     "start": "npx --yes serve dist -l tcp://0.0.0.0:$PORT",
     "dev": "npx --yes serve . -l 3000"
   },
