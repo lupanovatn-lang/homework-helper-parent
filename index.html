@@ -1475,16 +1475,18 @@
     display:grid;
   }
   .intent-art{
-    height:200px;
+    height:220px;
     overflow:hidden;
     border-radius:16px;
     background:#eef3ff;
+    display:grid;
+    place-items:center;
   }
   .intent-art img{
     width:100%;
     height:100%;
     display:block;
-    object-fit:cover;
+    object-fit:contain;
     object-position:center;
   }
   .intent-meta{
@@ -1520,7 +1522,7 @@
     .intent-screen{padding:20px 18px 34px}
     .intent-heading h1{font-size:32px}
     .intent-grid{grid-template-columns:1fr}
-    .intent-art{height:180px}
+    .intent-art{height:200px}
   }
 
 </style>
