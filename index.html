@@ -4,29 +4,34 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Рядом — помощник с домашним заданием</title>
+<title>Домашкинс — помощник для вечерних домашек</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="/examples/russian.jpg" fetchpriority="high">
 <link rel="preload" as="image" href="/examples/math.jpg">
 <link rel="preload" as="image" href="/examples/english.jpg">
 <style>
   :root{
-    --bg:#f5f6f8;
+    --bg:#fbf7f1;
     --panel:#ffffff;
-    --text:#1d2433;
-    --muted:#6f7787;
-    --line:#e6e8ee;
-    --primary:#315fe8;
-    --primary-soft:#eef2ff;
-    --success:#147a57;
-    --success-soft:#eaf8f2;
+    --text:#2e2a26;
+    --muted:#8c867e;
+    --line:#e8e2d8;
+    --primary:#c2603f;
+    --primary-soft:#f7e8e0;
+    --cream:#f3ede4;
+    --secondary:#ede7dc;
+    --success:#3d7a5f;
+    --success-soft:#e8f3ec;
     --warning:#9a6400;
     --warning-soft:#fff6df;
-    --shadow:0 18px 50px rgba(39,48,75,.10);
+    --shadow:0 18px 50px rgba(80,50,30,.10);
   }
   *{box-sizing:border-box}
   body{
     margin:0;
-    font-family:Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family:"Manrope", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color:var(--text);
     background:var(--bg);
   }
@@ -45,7 +50,7 @@
     display:flex;
     flex-direction:column;
     height:100vh;
-    background:var(--panel);
+    background:var(--bg);
   }
   .header{
     height:68px;
@@ -55,7 +60,7 @@
     justify-content:space-between;
     padding:0 28px;
     border-bottom:1px solid var(--line);
-    background:rgba(255,255,255,.96);
+    background:rgba(251,247,241,.92);
     backdrop-filter:blur(10px);
   }
   .brand{
@@ -69,7 +74,7 @@
     width:34px;height:34px;border-radius:11px;
     display:grid;place-items:center;
     color:#fff;background:var(--primary);
-    box-shadow:0 8px 20px rgba(49,95,232,.24);
+    box-shadow:0 8px 20px rgba(194,96,63,.24);
     font-size:17px;font-weight:650;
   }
   .header small{display:block;color:var(--muted);font-weight:500;margin-top:2px}
@@ -99,7 +104,7 @@
     flex:none;
     width:30px;height:30px;border-radius:10px;
     display:grid;place-items:center;
-    font-size:12px;font-weight:650;
+    font-size:13px;font-weight:800;
     color:#fff;background:var(--primary);
     margin-top:3px;
   }
@@ -107,9 +112,9 @@
     max-width:590px;
     border:1px solid var(--line);
     background:#fff;
-    border-radius:18px;
+    border-radius:22px;
     padding:17px;
-    box-shadow:0 8px 24px rgba(30,40,70,.055);
+    box-shadow:0 10px 28px rgba(80,50,30,.06);
   }
   .user .bubble{
     background:var(--primary);
@@ -185,7 +190,7 @@
     border-radius:999px;
     padding:7px 10px;
     background:#fff;
-    border:1px solid #d8e0ff;
+    border:1px solid #f0d5c8;
     color:#303a53;
     font-size:12px;
     font-weight:650;
@@ -225,7 +230,7 @@
   }
   .say{
     background:var(--primary-soft);
-    border:1px solid #dce4ff;
+    border:1px solid #f0d5c8;
     border-radius:14px;
     padding:14px 15px;
     margin:12px 0;
@@ -250,14 +255,14 @@
   }
   .btn{
     border:0;
-    border-radius:12px;
-    padding:11px 15px;
-    font-weight:550;
+    border-radius:999px;
+    padding:12px 18px;
+    font-weight:650;
     transition:.18s ease;
   }
   .btn:hover{transform:translateY(-1px)}
-  .btn-primary{background:var(--primary);color:#fff;box-shadow:0 8px 18px rgba(49,95,232,.18)}
-  .btn-secondary{background:#f2f4f8;color:var(--text);border:1px solid var(--line)}
+  .btn-primary{background:var(--primary);color:#fff;box-shadow:0 8px 18px rgba(194,96,63,.22)}
+  .btn-secondary{background:var(--secondary);color:var(--text);border:1px solid transparent}
   .btn-ghost{background:transparent;color:var(--primary);padding-left:4px;padding-right:4px}
   .btn-success{background:var(--success);color:#fff}
   .stepbar{
@@ -265,7 +270,7 @@
     gap:6px;
     margin-bottom:15px;
   }
-  .stepdot{height:5px;flex:1;border-radius:999px;background:#e7eaf1}
+  .stepdot{height:5px;flex:1;border-radius:999px;background:#e8e2d8}
   .stepdot.active,.stepdot.done{background:var(--primary)}
   .word{
     font-size:29px;
@@ -274,8 +279,8 @@
     text-align:center;
     padding:13px 12px;
     margin:10px 0 12px;
-    border:1px dashed #b8c5f4;
-    background:#fafbff;
+    border:1px dashed #e0b39a;
+    background:#fffaf6;
     border-radius:14px;
   }
   .result{
@@ -320,9 +325,9 @@
   .write-task{
     margin-top:10px;
     padding:13px 14px;
-    border:1px solid #dce4ff;
+    border:1px solid #f0d5c8;
     border-radius:14px;
-    background:#fafbff;
+    background:#fffaf6;
   }
   .write-task-label{
     display:flex;
@@ -371,9 +376,9 @@
   .method-reminder{
     margin-top:10px;
     padding:10px 11px;
-    border-left:3px solid #9aacec;
+    border-left:3px solid #d4a088;
     border-radius:0 9px 9px 0;
-    background:#f7f9ff;
+    background:#faf4ef;
     color:#3c4658;
     font-size:13px;
     line-height:1.45;
@@ -390,7 +395,7 @@
     margin:13px 0;
   }
   .alg-item{
-    background:#f4f6fa;border:1px solid var(--line);
+    background:#f3ede4;border:1px solid var(--line);
     border-radius:999px;padding:7px 10px;font-size:12px;font-weight:700;
   }
   .alg-arrow{color:#a1a7b3}
@@ -398,8 +403,8 @@
     margin:12px 0 14px;
     padding:14px 15px;
     border-radius:14px;
-    background:#f7f9ff;
-    border:1px solid #e1e7fb;
+    background:#faf4ef;
+    border:1px solid #edd9ce;
   }
   .step3-intro-label{
     margin-bottom:5px;
@@ -418,8 +423,8 @@
     gap:10px;
     margin:0 0 16px;
     padding:10px 12px;
-    border-left:3px solid #9babe8;
-    background:#fafbff;
+    border-left:3px solid #d4a088;
+    background:#fffaf6;
     border-radius:0 10px 10px 0;
   }
   .step3-format-label{
@@ -458,17 +463,17 @@
   }
   .chip{
     padding:9px 11px;border-radius:999px;
-    background:#f4f6fa;border:1px solid var(--line);
+    background:#f3ede4;border:1px solid var(--line);
     font-weight:700;font-size:14px;color:#3b4352;
   }
-  .chip:hover,.chip.active{border-color:#aebeff;background:var(--primary-soft);color:var(--primary)}
+  .chip:hover,.chip.active{border-color:#e8b8a0;background:var(--primary-soft);color:var(--primary)}
   .divider{height:1px;background:var(--line);margin:15px 0}
   .upload-box{
-    border:1.5px dashed #bdc5d5;
+    border:1.5px dashed #d4c8ba;
     border-radius:16px;
     padding:20px;
     text-align:center;
-    background:#fafbfc;
+    background:#fbf7f1;
   }
   .upload-icon{
     width:42px;height:42px;border-radius:13px;
@@ -481,14 +486,14 @@
     right:0;
     bottom:0;
     padding:13px 24px 18px;
-    background:linear-gradient(to top,#fff 75%,rgba(255,255,255,0));
+    background:linear-gradient(to top,var(--bg) 75%,rgba(251,247,241,0));
   }
   .composer-inner{
     max-width:760px;margin:0 auto;
     display:flex;gap:10px;
     padding:8px;
     background:#fff;border:1px solid var(--line);
-    border-radius:16px;box-shadow:0 12px 35px rgba(35,45,70,.1);
+    border-radius:16px;box-shadow:0 12px 35px rgba(80,50,30,.10);
   }
   .composer input{
     min-width:0;flex:1;border:0;outline:0;padding:8px 10px;color:var(--text)
@@ -510,7 +515,7 @@
     min-width:0;
     height:100vh;
     display:block;
-    background:#f7f8fa;
+    background:#f3ede4;
     border-left:1px solid var(--line);
     overflow:hidden;
   }
@@ -564,7 +569,7 @@
     border:1px solid var(--line);
     border-radius:18px;
     padding:8px;
-    box-shadow:0 12px 34px rgba(39,48,75,.09);
+    box-shadow:0 12px 34px rgba(80,50,30,.09);
     cursor:zoom-in;
   }
   .photo img{
@@ -808,7 +813,7 @@
 
   .picker-screen{
     min-height:100vh;
-    background:#f7f8fb;
+    background:#fbf7f1;
     padding:28px 32px 40px;
   }
   .picker-shell{
@@ -830,23 +835,19 @@
     letter-spacing:-.01em;
   }
   .service-icon{
-    width:30px;
-    height:30px;
+    width:34px;
+    height:34px;
     display:grid;
     place-items:center;
-    border-radius:9px;
+    border-radius:11px;
     background:var(--primary);
-    box-shadow:0 6px 16px rgba(49,94,233,.18);
+    color:#fff;
+    font-size:17px;
+    font-weight:800;
+    letter-spacing:-.02em;
+    box-shadow:0 8px 18px rgba(194,96,63,.22);
   }
-  .service-icon svg{
-    width:18px;
-    height:18px;
-    fill:none;
-    stroke:#fff;
-    stroke-width:1.8;
-    stroke-linecap:round;
-    stroke-linejoin:round;
-  }
+  .service-icon svg{display:none}
   .picker-brand{
     display:flex;
     align-items:center;
@@ -885,19 +886,19 @@
     min-width:0;
     padding:12px;
     border:2px solid transparent;
-    border-radius:20px;
+    border-radius:24px;
     background:#fff;
-    box-shadow:0 10px 32px rgba(34,45,72,.07);
+    box-shadow:0 10px 32px rgba(80,50,30,.07);
     cursor:pointer;
     transition:.18s ease;
   }
   .example-card:hover{
     transform:translateY(-2px);
-    box-shadow:0 14px 34px rgba(34,45,72,.1);
+    box-shadow:0 14px 34px rgba(80,50,30,.10);
   }
   .example-card.selected{
     border-color:var(--primary);
-    box-shadow:0 12px 34px rgba(49,94,233,.14);
+    box-shadow:0 12px 34px rgba(194,96,63,.14);
   }
   .example-checkmark{
     position:absolute;
@@ -922,7 +923,7 @@
     overflow:hidden;
     border:1px solid var(--line);
     border-radius:14px;
-    background:#f3f5f9;
+    background:#f3ede4;
   }
   .example-preview img{
     width:100%;
@@ -963,8 +964,8 @@
     margin:8px 8px 8px 0;
     padding:7px 10px;
     border-radius:9px;
-    background:#eef3ff;
-    color:#3862d8;
+    background:#f7e8e0;
+    color:#c2603f;
     font-size:13px;
     font-weight:600;
   }
@@ -1011,6 +1012,12 @@
     justify-content:center;
     margin-top:28px;
   }
+  .picker-cta{
+    min-width:240px;
+    padding:14px 28px;
+    font-size:16px;
+    box-shadow:0 12px 28px rgba(194,96,63,.28);
+  }
   .header-left{
     min-width:0;
     display:flex;
@@ -1036,7 +1043,7 @@
     font-weight:600;
   }
   .back-to-picker:hover{
-    background:#f3f5f9;
+    background:#f3ede4;
     color:var(--text);
   }
   .back-arrow{
@@ -1072,9 +1079,9 @@
   .math-example{
     margin:10px 0 14px;
     padding:15px 14px;
-    border:1px dashed #b8c5f4;
+    border:1px dashed #e0b39a;
     border-radius:14px;
-    background:#fafbff;
+    background:#fffaf6;
     text-align:center;
     font-size:25px;
     font-weight:650;
@@ -1105,9 +1112,9 @@
     display:none;
     margin:0 0 15px;
     padding:14px;
-    border:1px solid #dce4ff;
+    border:1px solid #f0d5c8;
     border-radius:14px;
-    background:#fafbff;
+    background:#fffaf6;
   }
   .units-panel.open{display:block}
   .units-panel h3{
@@ -1145,9 +1152,9 @@
   .english-example{
     margin:10px 0 14px;
     padding:16px 14px;
-    border:1px dashed #b8c5f4;
+    border:1px dashed #e0b39a;
     border-radius:14px;
-    background:#fafbff;
+    background:#fffaf6;
     text-align:center;
     font-size:22px;
     font-weight:650;
@@ -1173,9 +1180,9 @@
     display:none;
     margin:0 0 15px;
     padding:14px;
-    border:1px solid #dce4ff;
+    border:1px solid #f0d5c8;
     border-radius:14px;
-    background:#fafbff;
+    background:#fffaf6;
   }
   .article-panel.open{display:block}
   .article-panel h3{
@@ -1412,14 +1419,8 @@
   <div class="picker-shell">
     <div class="picker-top">
       <div class="service-brand">
-        <div class="service-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24">
-            <path d="M7 4.5h7l3 3V19a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 6 19V6A1.5 1.5 0 0 1 7.5 4.5Z"/>
-            <path d="M14 4.5V8h3"/>
-            <path d="m9 14 1.7 1.7L14.5 12"/>
-          </svg>
-        </div>
-        <span>Помощник с домашним заданием</span>
+        <div class="service-icon" aria-hidden="true">Д</div>
+        <span>Домашкинс</span>
       </div>
     </div>
 
@@ -1467,7 +1468,7 @@
     </div>
 
     <div class="picker-actions">
-      <button class="btn btn-primary" onclick="sendSelectedExample()">Отправить фото в чат</button>
+      <button class="btn btn-primary picker-cta" onclick="sendSelectedExample()">Отправить фото в чат</button>
     </div>
   </div>
 </div>
@@ -1482,14 +1483,8 @@
         </button>
         <span class="header-divider" aria-hidden="true"></span>
         <div class="service-brand">
-          <div class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path d="M7 4.5h7l3 3V19a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 6 19V6A1.5 1.5 0 0 1 7.5 4.5Z"/>
-              <path d="M14 4.5V8h3"/>
-              <path d="m9 14 1.7 1.7L14.5 12"/>
-            </svg>
-          </div>
-          <span>Помощник с домашним заданием</span>
+          <div class="service-icon" aria-hidden="true">Д</div>
+          <span>Домашкинс</span>
         </div>
       </div>
       <div class="status"><span class="status-dot"></span> можно смотреть вместе</div>
@@ -1502,7 +1497,7 @@
         </div>
 
         <div class="message assistant">
-          <div class="avatar">ИИ</div>
+          <div class="avatar">Д</div>
           <div class="bubble">
             <div class="stepbar">
               <span class="stepdot active"></span>
@@ -1629,7 +1624,7 @@ function getRussianStart(){
       <div class="bubble">Помоги мне объяснить ребёнку это задание</div>
     </div>
     <div class="message assistant">
-      <div class="avatar">ИИ</div>
+      <div class="avatar">Д</div>
       <div class="bubble">
         <div class="stepbar">
           <span class="stepdot active"></span>
@@ -1657,7 +1652,7 @@ function getMathStart(){
       <div class="bubble">Помоги мне объяснить ребёнку это задание</div>
     </div>
     <div class="message assistant">
-      <div class="avatar">ИИ</div>
+      <div class="avatar">Д</div>
       <div class="bubble">
         <div class="stepbar">
           <span class="stepdot active"></span>
@@ -1686,7 +1681,7 @@ function getEnglishStart(){
       <div class="bubble">Помоги мне объяснить ребёнку это задание</div>
     </div>
     <div class="message assistant">
-      <div class="avatar">ИИ</div>
+      <div class="avatar">Д</div>
       <div class="bubble">
         <div class="stepbar">
           <span class="stepdot active"></span>
@@ -1872,7 +1867,7 @@ function scrollBottom(){
 function addAssistant(content){
   const wrap = document.createElement('div');
   wrap.className = 'message assistant fade-in';
-  wrap.innerHTML = '<div class="avatar">ИИ</div><div class="bubble">' + content + '</div>';
+  wrap.innerHTML = '<div class="avatar">Д</div><div class="bubble">' + content + '</div>';
   document.getElementById('thread').appendChild(wrap);
   scrollBottom();
   return wrap;
