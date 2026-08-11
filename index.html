@@ -965,11 +965,16 @@
     line-height:1.12;
     letter-spacing:-.035em;
   }
-  .picker-heading p{
+  .picker-heading p,
+  .intent-heading p{
     margin:0;
     color:var(--muted);
     font-size:17px;
     line-height:1.5;
+  }
+  .picker-heading p + p,
+  .intent-heading p + p{
+    margin-top:6px;
   }
   .demo-notice{
     max-width:780px;
@@ -1599,6 +1604,9 @@
     font-size:17px;
     line-height:1.5;
   }
+  .intent-heading p + p{
+    margin-top:6px;
+  }
   .intent-grid{
     display:grid;
     grid-template-columns:repeat(2,minmax(0,1fr));
@@ -2020,9 +2028,11 @@
     box-shadow:0 0 0 1px rgba(113,102,120,.34),0 12px 28px rgba(43,38,47,.07);
   }
   .example-preview{
-    border:0;
-    background:#f4f2f0;
-    box-shadow:none;
+    border:1px solid #e6e3e6;
+    background:#fff;
+    box-shadow:
+      0 1px 2px rgba(43,38,47,.04),
+      0 6px 16px rgba(43,38,47,.05);
   }
   .intent-art{
     border-color:#e2dee2;
@@ -2126,11 +2136,7 @@
     <div class="intent-heading">
       <h1>Какое задание разобрать?</h1>
       <p>Выберите один из готовых примеров.</p>
-    </div>
-
-    <div class="demo-notice">
-      <strong>Демо-версия</strong>
-      <span>Свои фотографии пока загрузить нельзя.</span>
+      <p>Загрузка своих фотографий пока недоступна</p>
     </div>
 
     <div class="intent-grid" role="radiogroup" aria-label="Выберите сценарий">
@@ -2187,12 +2193,8 @@
 
     <div class="picker-heading">
       <h1 id="pickerTitle">Какое задание разобрать?</h1>
-      <p id="pickerSubtitle">Выберите готовый пример, чтобы посмотреть, как помощник разбирает задание.</p>
-    </div>
-
-    <div class="demo-notice">
-      <strong>Демо-версия</strong>
-      <span id="pickerDemoText">Свои фотографии пока загрузить нельзя.</span>
+      <p id="pickerSubtitle">Выберите один из готовых примеров.</p>
+      <p id="pickerNote">Загрузка своих фотографий пока недоступна</p>
     </div>
 
     <div class="example-grid" role="radiogroup" aria-label="Выберите задание">
@@ -2404,12 +2406,8 @@ function updatePickerCopy(){
   document.getElementById('pickerTitle').textContent = isCheck
     ? 'Какую работу проверить?'
     : 'Какое задание разобрать?';
-  document.getElementById('pickerSubtitle').textContent = isCheck
-    ? 'Выберите фото выполненной работы, чтобы посмотреть результат проверки.'
-    : 'Выберите готовый пример, чтобы посмотреть, как помощник разбирает задание.';
-  document.getElementById('pickerDemoText').textContent = isCheck
-    ? 'Выберите пример выполненной работы — дальше разберём спорные места вместе с ребёнком.'
-    : 'Свои фотографии пока загрузить нельзя.';
+  document.getElementById('pickerSubtitle').textContent = 'Выберите один из готовых примеров.';
+  document.getElementById('pickerNote').textContent = 'Загрузка своих фотографий пока недоступна';
   document.getElementById('pickerAction').textContent = isCheck
     ? 'Проверить эту работу'
     : 'Показать разбор';
