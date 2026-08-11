@@ -7,10 +7,7 @@
 <title>Домашкинс — помощник с домашним заданием</title>
 <link rel="preload" as="image" href="/examples/intent-explain.png">
 <link rel="preload" as="image" href="/examples/intent-check.png">
-<link rel="preload" as="image" href="/examples/thumbs/russian.jpg" fetchpriority="high">
-<link rel="preload" as="image" href="/examples/thumbs/russian-completed.jpg">
-<link rel="preload" as="image" href="/examples/thumbs/math.jpg">
-<link rel="preload" as="image" href="/examples/thumbs/english.jpg">
+<link rel="preload" as="image" href="/examples/rooster.png">
 <link rel="preload" as="image" href="/examples/russian.jpg">
 <link rel="preload" as="image" href="/examples/russian-completed.png">
 <link rel="preload" as="image" href="/examples/math.jpg">
@@ -1047,68 +1044,99 @@
   }
   .example-preview{
     position:relative;
-    height:220px;
+    height:212px;
     overflow:hidden;
-    border:1px solid #ddd6ce;
+    border:0;
     border-radius:14px;
-    background:#ebe6e0;
-  }
-  .example-preview::after{display:none}
-  .example-sheet{
-    height:100%;
-    overflow:hidden;
-    border-radius:0;
-    background:transparent;
-    box-shadow:none;
-  }
-  .example-preview img{
-    width:100%;
-    height:100%;
-    display:block;
-    object-fit:cover;
-    object-position:center center;
-    background:#ebe6e0;
-    filter:none;
-  }
-  .mock-sheet{
-    height:100%;
-    padding:28px 24px;
     background:#fff;
-    color:#333c4d;
+    box-shadow:
+      0 1px 2px rgba(43,38,47,.04),
+      0 10px 22px rgba(43,38,47,.07);
   }
-  .mock-sheet .mock-title{
-    margin-bottom:22px;
-    font-size:13px;
-    font-weight:650;
-    color:#6e788a;
+  .task-snippet{
+    height:100%;
+    padding:16px 16px 14px;
+    color:#2a2e36;
+    text-align:left;
   }
-  .math-expression{
-    margin:18px 0;
-    font-size:25px;
-    font-weight:650;
-    letter-spacing:.02em;
-  }
-  .math-line,
-  .english-line{
-    height:9px;
-    margin:14px 0;
-    border-radius:8px;
-    background:#e8ecf4;
-  }
-  .math-line.short{width:58%}
-  .math-line.mid{width:78%}
-  .english-word{
-    display:inline-block;
-    margin:8px 8px 8px 0;
-    padding:7px 10px;
-    border-radius:9px;
-    background:#eef3ff;
-    color:#3862d8;
+  .task-snippet-ask{
+    margin:0 0 12px;
+    color:#4a5160;
     font-size:13px;
     font-weight:600;
+    line-height:1.35;
   }
-  .english-line.short{width:52%}
-  .english-line.mid{width:74%}
+  .task-snippet-ask em{
+    font-style:italic;
+    font-weight:650;
+  }
+  .task-rows{
+    display:grid;
+    gap:9px;
+  }
+  .task-row{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    min-width:0;
+    font-size:16px;
+    font-weight:550;
+    line-height:1.25;
+    letter-spacing:.01em;
+  }
+  .task-row .task-word{
+    flex:none;
+    font-family:Georgia, "Times New Roman", serif;
+  }
+  .task-row .dash{flex:none;color:#9aa1ad}
+  .task-row .blank{
+    flex:1;
+    min-width:48px;
+    height:0;
+    margin-bottom:3px;
+    border-bottom:1.5px solid #9eb6ef;
+  }
+  .task-row .filled{
+    flex:none;
+    color:#2f6b4f;
+    font-family:Georgia, "Times New Roman", serif;
+    font-weight:600;
+  }
+  .task-row .punct{flex:none;color:#9aa1ad}
+  .russian-snippet{
+    position:relative;
+    padding-right:92px;
+  }
+  .russian-snippet .task-mascot{
+    position:absolute;
+    right:8px;
+    top:54px;
+    width:78px;
+    height:auto;
+    pointer-events:none;
+    user-select:none;
+  }
+  .math-snippet .task-row,
+  .english-snippet .task-row{
+    font-family:ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:0;
+  }
+  .math-snippet .task-row .blank{
+    border-bottom-color:#c5cad3;
+  }
+  .english-snippet .task-row .blank{
+    flex:0 0 34px;
+    border-bottom-color:#c5cad3;
+  }
+  .english-snippet .task-row{
+    flex-wrap:wrap;
+    gap:6px 7px;
+  }
+  .picker-screen.is-check .explain-only{display:none !important}
+  .picker-screen:not(.is-check) .check-only{display:none !important}
+  .mock-sheet{display:none}
   .example-meta{
     padding:16px 6px 7px;
   }
@@ -1202,17 +1230,11 @@
     .picker-heading h1{font-size:32px}
     .example-grid{grid-template-columns:1fr}
     .example-preview{height:200px}
+    .task-snippet{padding:15px 15px 12px}
     .demo-notice{display:block;margin-top:-12px}
     .demo-notice strong{display:block;margin-bottom:3px}
   }
 
-
-  .example-card[data-example="russian"] .example-preview img,
-  .example-card[data-example="math"] .example-preview img,
-  .example-card[data-example="english"] .example-preview img{
-    object-fit:cover;
-    object-position:center center;
-  }
   .math-example{
     margin:10px 0 14px;
     padding:15px 14px;
@@ -1764,11 +1786,25 @@
       border-radius:16px;
     }
     .example-preview{
-      height:84px;
-      border-radius:11px;
+      height:108px;
+      border-radius:12px;
     }
-    .example-preview img{
-      object-fit:cover;
+    .task-snippet{
+      padding:10px 10px 8px;
+    }
+    .task-snippet-ask{
+      margin-bottom:7px;
+      font-size:11px;
+    }
+    .task-rows{gap:5px}
+    .task-row{font-size:12px;gap:5px}
+    .math-snippet .task-row,
+    .english-snippet .task-row{font-size:11.5px}
+    .russian-snippet{padding-right:52px}
+    .russian-snippet .task-mascot{
+      right:4px;
+      top:34px;
+      width:46px;
     }
     .example-meta{
       padding:2px 25px 2px 11px;
@@ -1990,15 +2026,15 @@
     box-shadow:0 0 0 1px rgba(113,102,120,.34),0 12px 28px rgba(43,38,47,.07);
   }
   .example-preview{
-    border-color:#ddd6ce;
-    background:#ebe6e0;
+    border:0;
+    background:#fff;
+    box-shadow:
+      0 1px 2px rgba(43,38,47,.04),
+      0 10px 22px rgba(43,38,47,.06);
   }
   .intent-art{
     border-color:#e2dee2;
     background:#f2f0ee;
-  }
-  .example-sheet{
-    box-shadow:none;
   }
   .example-checkmark{
     background:var(--action);
@@ -2031,7 +2067,11 @@
       border-radius:17px;
     }
     .example-preview{height:148px;border-radius:12px}
-    .example-preview img{object-fit:cover}
+    .task-snippet{padding:12px}
+    .task-snippet-ask{font-size:12px;margin-bottom:8px}
+    .task-row{font-size:13.5px}
+    .russian-snippet{padding-right:64px}
+    .russian-snippet .task-mascot{width:56px;top:42px}
     .example-meta{padding:6px 34px 6px 16px}
   }
   @media (max-width:880px){
@@ -2163,9 +2203,24 @@
     <div class="example-grid" role="radiogroup" aria-label="Выберите задание">
       <button type="button" class="example-card selected" data-example="russian" role="radio" aria-checked="true" onclick="selectExample(this)">
         <div class="example-checkmark">✓</div>
-        <div class="example-preview">
-          <div class="example-sheet">
-            <img src="/examples/thumbs/russian.jpg" alt="Задание по русскому языку" fetchpriority="high" decoding="async">
+        <div class="example-preview" aria-label="Превью задания по русскому языку">
+          <div class="task-snippet russian-snippet">
+            <p class="task-snippet-ask">Прочитай. Вставь пропущенные буквы…</p>
+            <div class="task-rows">
+              <div class="task-row">
+                <span class="task-word">ст_рожить</span><span class="dash">—</span>
+                <span class="blank explain-only"></span><span class="filled check-only">стóрож</span><span class="punct">,</span>
+              </div>
+              <div class="task-row">
+                <span class="task-word">ж_мчужина</span><span class="dash">—</span>
+                <span class="blank explain-only"></span><span class="filled check-only">же́мчуг</span><span class="punct">,</span>
+              </div>
+              <div class="task-row">
+                <span class="task-word">кр_кливый</span><span class="dash">—</span>
+                <span class="blank explain-only"></span><span class="filled check-only">кри́к</span><span class="punct">,</span>
+              </div>
+            </div>
+            <img class="task-mascot" src="/examples/rooster.png" alt="" decoding="async">
           </div>
         </div>
         <div class="example-meta">
@@ -2177,9 +2232,14 @@
 
       <button type="button" class="example-card" data-example="math" role="radio" aria-checked="false" onclick="selectExample(this)">
         <div class="example-checkmark">✓</div>
-        <div class="example-preview">
-          <div class="example-sheet">
-            <img src="/examples/thumbs/math.jpg" alt="Задание по математике на единицы измерения" decoding="async">
+        <div class="example-preview" aria-label="Превью задания по математике">
+          <div class="task-snippet math-snippet">
+            <p class="task-snippet-ask">Вырази в указанных единицах:</p>
+            <div class="task-rows">
+              <div class="task-row"><span>86 км 9 м</span><span class="dash">=</span><span class="blank"></span><span>м</span></div>
+              <div class="task-row"><span>61 м 25 мм</span><span class="dash">=</span><span class="blank"></span><span>мм</span></div>
+              <div class="task-row"><span>4 т 18 кг</span><span class="dash">=</span><span class="blank"></span><span>кг</span></div>
+            </div>
           </div>
         </div>
         <div class="example-meta">
@@ -2192,9 +2252,22 @@
 
       <button type="button" class="example-card" data-example="english" role="radio" aria-checked="false" onclick="selectExample(this)">
         <div class="example-checkmark">✓</div>
-        <div class="example-preview">
-          <div class="example-sheet">
-            <img src="/examples/thumbs/english.jpg" alt="Задание по английскому языку на артикли" decoding="async">
+        <div class="example-preview" aria-label="Превью задания по английскому">
+          <div class="task-snippet english-snippet">
+            <p class="task-snippet-ask">Insert <em>a / an / the</em></p>
+            <div class="task-rows">
+              <div class="task-row">
+                <span>It’s</span><span class="blank"></span><span>dog.</span>
+                <span class="blank"></span><span>dog is big.</span>
+              </div>
+              <div class="task-row">
+                <span>We have</span><span class="blank"></span><span>dog and</span>
+                <span class="blank"></span><span>cat.</span>
+              </div>
+              <div class="task-row">
+                <span>I drink</span><span class="blank"></span><span>water.</span>
+              </div>
+            </div>
           </div>
         </div>
         <div class="example-meta">
@@ -2349,13 +2422,7 @@ function updatePickerCopy(){
     ? 'Проверить эту работу'
     : 'Показать разбор';
 
-  const russianPreview = document.querySelector('.example-card[data-example="russian"] img');
-  if(russianPreview){
-    russianPreview.src = isCheck ? '/examples/thumbs/russian-completed.jpg' : '/examples/thumbs/russian.jpg';
-    russianPreview.alt = isCheck
-      ? 'Выполненная работа по русскому языку'
-      : 'Задание по русскому языку';
-  }
+  document.getElementById('pickerScreen').classList.toggle('is-check', isCheck);
 
   document.querySelectorAll('.example-card').forEach(card => {
     const checkUnavailable = isCheck && card.dataset.example !== 'russian';
