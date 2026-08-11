@@ -7,7 +7,11 @@
 <title>Домашкинс — помощник с домашним заданием</title>
 <link rel="preload" as="image" href="/examples/intent-explain.png">
 <link rel="preload" as="image" href="/examples/intent-check.png">
-<link rel="preload" as="image" href="/examples/russian.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="/examples/thumbs/russian.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="/examples/thumbs/russian-completed.jpg">
+<link rel="preload" as="image" href="/examples/thumbs/math.jpg">
+<link rel="preload" as="image" href="/examples/thumbs/english.jpg">
+<link rel="preload" as="image" href="/examples/russian.jpg">
 <link rel="preload" as="image" href="/examples/russian-completed.png">
 <link rel="preload" as="image" href="/examples/math.jpg">
 <link rel="preload" as="image" href="/examples/english.jpg">
@@ -1043,42 +1047,28 @@
   }
   .example-preview{
     position:relative;
-    height:268px;
-    padding:12px;
+    height:220px;
     overflow:hidden;
-    border:1px solid #e2ddd8;
-    border-radius:15px;
-    background:
-      linear-gradient(165deg, #f6f3ef 0%, #ebe6e0 100%);
+    border:1px solid #ddd6ce;
+    border-radius:14px;
+    background:#ebe6e0;
   }
-  .example-preview::after{
-    content:"";
-    position:absolute;
-    left:12px;
-    right:12px;
-    bottom:12px;
-    height:28px;
-    pointer-events:none;
-    background:linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.72));
-  }
+  .example-preview::after{display:none}
   .example-sheet{
     height:100%;
     overflow:hidden;
-    border-radius:3px;
-    background:#fff;
-    box-shadow:
-      0 1px 0 rgba(255,255,255,.7) inset,
-      0 1px 2px rgba(55,42,36,.06),
-      0 10px 22px rgba(55,42,36,.1);
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
   }
   .example-preview img{
     width:100%;
     height:100%;
     display:block;
-    object-fit:contain;
-    object-position:center top;
-    background:#fff;
-    filter:contrast(1.03) saturate(.94) brightness(1.01);
+    object-fit:cover;
+    object-position:center center;
+    background:#ebe6e0;
+    filter:none;
   }
   .mock-sheet{
     height:100%;
@@ -1211,23 +1201,17 @@
     .picker-screen{padding:20px 18px 30px}
     .picker-heading h1{font-size:32px}
     .example-grid{grid-template-columns:1fr}
-    .example-preview{height:240px;padding:10px}
-    .example-preview::after{left:10px;right:10px;bottom:10px;height:22px}
+    .example-preview{height:200px}
     .demo-notice{display:block;margin-top:-12px}
     .demo-notice strong{display:block;margin-bottom:3px}
   }
 
 
-  .example-card[data-example="russian"] .example-preview img{
-    object-position:center top;
-  }
-  .example-card[data-example="math"] .example-preview img{
-    object-fit:contain;
-    object-position:center top;
-  }
+  .example-card[data-example="russian"] .example-preview img,
+  .example-card[data-example="math"] .example-preview img,
   .example-card[data-example="english"] .example-preview img{
-    object-fit:contain;
-    object-position:center top;
+    object-fit:cover;
+    object-position:center center;
   }
   .math-example{
     margin:10px 0 14px;
@@ -1782,13 +1766,9 @@
     .example-preview{
       height:84px;
       border-radius:11px;
-      padding:5px;
-    }
-    .example-preview::after{
-      left:5px;right:5px;bottom:5px;height:12px;
     }
     .example-preview img{
-      object-fit:contain;
+      object-fit:cover;
     }
     .example-meta{
       padding:2px 25px 2px 11px;
@@ -2010,18 +1990,15 @@
     box-shadow:0 0 0 1px rgba(113,102,120,.34),0 12px 28px rgba(43,38,47,.07);
   }
   .example-preview{
-    border-color:#e2ddd8;
-    background:linear-gradient(165deg, #f5f2ee 0%, #ebe6e1 100%);
+    border-color:#ddd6ce;
+    background:#ebe6e0;
   }
   .intent-art{
     border-color:#e2dee2;
     background:#f2f0ee;
   }
   .example-sheet{
-    box-shadow:
-      0 1px 0 rgba(255,255,255,.75) inset,
-      0 1px 2px rgba(55,42,36,.05),
-      0 10px 20px rgba(55,42,36,.09);
+    box-shadow:none;
   }
   .example-checkmark{
     background:var(--action);
@@ -2053,9 +2030,8 @@
       padding:9px;
       border-radius:17px;
     }
-    .example-preview{height:148px;border-radius:12px;padding:8px}
-    .example-preview::after{left:8px;right:8px;bottom:8px;height:18px}
-    .example-preview img{object-fit:contain}
+    .example-preview{height:148px;border-radius:12px}
+    .example-preview img{object-fit:cover}
     .example-meta{padding:6px 34px 6px 16px}
   }
   @media (max-width:880px){
@@ -2189,7 +2165,7 @@
         <div class="example-checkmark">✓</div>
         <div class="example-preview">
           <div class="example-sheet">
-            <img src="/examples/russian.jpg" alt="Задание по русскому языку" fetchpriority="high" decoding="async">
+            <img src="/examples/thumbs/russian.jpg" alt="Задание по русскому языку" fetchpriority="high" decoding="async">
           </div>
         </div>
         <div class="example-meta">
@@ -2203,7 +2179,7 @@
         <div class="example-checkmark">✓</div>
         <div class="example-preview">
           <div class="example-sheet">
-            <img src="/examples/math.jpg" alt="Задание по математике на единицы измерения" decoding="async">
+            <img src="/examples/thumbs/math.jpg" alt="Задание по математике на единицы измерения" decoding="async">
           </div>
         </div>
         <div class="example-meta">
@@ -2218,7 +2194,7 @@
         <div class="example-checkmark">✓</div>
         <div class="example-preview">
           <div class="example-sheet">
-            <img src="/examples/english.jpg" alt="Задание по английскому языку на артикли" decoding="async">
+            <img src="/examples/thumbs/english.jpg" alt="Задание по английскому языку на артикли" decoding="async">
           </div>
         </div>
         <div class="example-meta">
@@ -2375,7 +2351,7 @@ function updatePickerCopy(){
 
   const russianPreview = document.querySelector('.example-card[data-example="russian"] img');
   if(russianPreview){
-    russianPreview.src = isCheck ? '/examples/russian-completed.png' : '/examples/russian.jpg';
+    russianPreview.src = isCheck ? '/examples/thumbs/russian-completed.jpg' : '/examples/thumbs/russian.jpg';
     russianPreview.alt = isCheck
       ? 'Выполненная работа по русскому языку'
       : 'Задание по русскому языку';
