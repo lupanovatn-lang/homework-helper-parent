@@ -2197,8 +2197,8 @@
               <q>Прочитай инструкцию к заданию. Расскажи своими словами, что нужно сделать?</q>
             </div>
             <div class="actions">
-              <button class="btn btn-primary" onclick="understood(this)">Ребёнок понял</button>
-              <button class="btn btn-secondary" onclick="notUnderstood(this)">Не может объяснить</button>
+              <button class="btn btn-primary" onclick="understood(this)">Получилось объяснить</button>
+              <button class="btn btn-secondary" onclick="notUnderstood(this)">Нужна подсказка</button>
             </div>
           </div>
         </div>
@@ -2683,8 +2683,8 @@ function getRussianStart(){
           <q>Прочитай инструкцию к заданию. Расскажи своими словами, что нужно сделать?</q>
         </div>
         <div class="actions">
-          <button class="btn btn-primary" onclick="russianUnderstood(this)">Ребёнок понял</button>
-          <button class="btn btn-secondary" onclick="russianNotUnderstood(this)">Не может объяснить</button>
+          <button class="btn btn-primary" onclick="russianUnderstood(this)">Получилось объяснить</button>
+          <button class="btn btn-secondary" onclick="russianNotUnderstood(this)">Нужна подсказка</button>
         </div>
       </div>
     </div>`;
@@ -2712,8 +2712,8 @@ function getMathStart(){
         </div>
         <p class="note">В ответе должно прозвучать: перевести величину в нужную единицу измерения и записать ответ.</p>
         <div class="actions">
-          <button class="btn btn-primary" onclick="mathUnderstood(this)">Ребёнок понял</button>
-          <button class="btn btn-secondary" onclick="mathNotUnderstood(this)">Не может объяснить</button>
+          <button class="btn btn-primary" onclick="mathUnderstood(this)">Получилось объяснить</button>
+          <button class="btn btn-secondary" onclick="mathNotUnderstood(this)">Нужна подсказка</button>
         </div>
       </div>
     </div>`;
@@ -2742,8 +2742,8 @@ function getEnglishStart(){
         </div>
         <p class="note">В ответе должны прозвучать: прочитать предложение и выбрать для пропуска a, an или the.</p>
         <div class="actions">
-          <button class="btn btn-primary" onclick="englishUnderstood(this)">Ребёнок понял</button>
-          <button class="btn btn-secondary" onclick="englishNotUnderstood(this)">Не может объяснить</button>
+          <button class="btn btn-primary" onclick="englishUnderstood(this)">Получилось объяснить</button>
+          <button class="btn btn-secondary" onclick="englishNotUnderstood(this)">Нужна подсказка</button>
         </div>
       </div>
     </div>`;
@@ -3018,7 +3018,7 @@ function russianNotUnderstood(btn){
 }
 
 function russianUnderstood(btn){
-  addUser('Ребёнок понял задание');
+  addUser('Получилось объяснить');
   disableButtons(btn.closest('.bubble'));
   addAssistant(`
     <div class="stepbar"><span class="stepdot done"></span><span class="stepdot active"></span><span class="stepdot"></span></div>
@@ -3187,7 +3187,7 @@ function mathNotUnderstood(btn){
 }
 
 function mathUnderstood(btn){
-  addUser('Ребёнок понял задание');
+  addUser('Получилось объяснить');
   disableButtons(btn.closest('.bubble'));
   addAssistant(`
     <div class="stepbar"><span class="stepdot done"></span><span class="stepdot active"></span><span class="stepdot"></span></div>
@@ -3461,7 +3461,7 @@ function englishNotUnderstood(btn){
 }
 
 function englishUnderstood(btn){
-  addUser('Ребёнок понял задание');
+  addUser('Получилось объяснить');
   disableButtons(btn.closest('.bubble'));
   addAssistant(`
     <div class="stepbar"><span class="stepdot done"></span><span class="stepdot active"></span><span class="stepdot"></span></div>
