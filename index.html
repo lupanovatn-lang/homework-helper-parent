@@ -111,6 +111,12 @@
     color:#fff;background:var(--primary);
     margin-top:3px;
   }
+  .avatar.user-avatar{
+    background:#ebe7eb;
+    color:#5c5561;
+    font-size:11px;
+    font-weight:700;
+  }
   .bubble{
     max-width:590px;
     border:1px solid var(--line);
@@ -1913,6 +1919,11 @@
     border-radius:11px;
     box-shadow:0 6px 14px rgba(74,63,82,.11);
   }
+  .avatar.user-avatar{
+    background:#ebe7eb;
+    color:#5c5561;
+    box-shadow:none;
+  }
   .bubble{
     border-color:var(--line);
     background:#fff;
@@ -2327,7 +2338,10 @@
     <div class="chat" id="chat">
       <div class="thread" id="thread">
         <div class="message user">
+        <div class="user-stack">
           <div class="bubble">Помоги объяснить ребёнку это задание</div>
+        </div>
+        <div class="avatar user-avatar" aria-hidden="true">Вы</div>
         </div>
 
         <div class="message assistant">
@@ -2584,6 +2598,7 @@ function getCheckDemoStart(subject){
         <div class="bubble">Вот фото выполненной работы. Проверь её.</div>
         ${getMobileTaskPhoto(subject, 'check')}
       </div>
+      <div class="avatar user-avatar" aria-hidden="true">Вы</div>
     </div>
     <div class="message assistant">
       <div class="avatar">ИИ</div>
@@ -2606,6 +2621,7 @@ function getRussianCheckStart(){
         <div class="bubble">Вот фото выполненной работы. Проверь её.</div>
         ${getMobileTaskPhoto('russian', 'check')}
       </div>
+      <div class="avatar user-avatar" aria-hidden="true">Вы</div>
     </div>
     <div class="message assistant">
       <div class="avatar">ИИ</div>
@@ -2816,6 +2832,7 @@ function getRussianStart(){
         <div class="bubble">Вот фото задания. Помоги объяснить его ребёнку.</div>
         ${getMobileTaskPhoto('russian')}
       </div>
+      <div class="avatar user-avatar" aria-hidden="true">Вы</div>
     </div>
     <div class="message assistant">
       <div class="avatar">ИИ</div>
@@ -2846,6 +2863,7 @@ function getMathStart(){
         <div class="bubble">Вот фото задания. Помоги объяснить его ребёнку.</div>
         ${getMobileTaskPhoto('math')}
       </div>
+      <div class="avatar user-avatar" aria-hidden="true">Вы</div>
     </div>
     <div class="message assistant">
       <div class="avatar">ИИ</div>
@@ -2878,6 +2896,7 @@ function getEnglishStart(){
         <div class="bubble">Вот фото задания. Помоги объяснить его ребёнку.</div>
         ${getMobileTaskPhoto('english')}
       </div>
+      <div class="avatar user-avatar" aria-hidden="true">Вы</div>
     </div>
     <div class="message assistant">
       <div class="avatar">ИИ</div>
@@ -3074,7 +3093,7 @@ function addAssistant(content){
 function addUser(text){
   const wrap = document.createElement('div');
   wrap.className = 'message user fade-in';
-  wrap.innerHTML = '<div class="bubble">' + text + '</div>';
+  wrap.innerHTML = '<div class="user-stack"><div class="bubble">' + text + '</div></div><div class="avatar user-avatar" aria-hidden="true">Вы</div>';
   document.getElementById('thread').appendChild(wrap);
   scrollBottom();
 }
