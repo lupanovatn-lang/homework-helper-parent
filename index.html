@@ -5,13 +5,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Домашкинс — помощник с домашним заданием</title>
-<link rel="preload" as="image" href="/examples/intent-explain.png">
-<link rel="preload" as="image" href="/examples/intent-check.png">
-<link rel="preload" as="image" href="/examples/rooster.png">
-<link rel="preload" as="image" href="/examples/russian.jpg">
-<link rel="preload" as="image" href="/examples/russian-completed.png">
-<link rel="preload" as="image" href="/examples/math.jpg">
-<link rel="preload" as="image" href="/examples/english.jpg">
+<link rel="preload" as="image" href="/examples/intent-explain.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="/examples/intent-check.jpg">
 <style>
   :root{
     --bg:#f5f6f8;
@@ -2134,7 +2129,7 @@
       <button type="button" class="intent-card selected" data-intent="explain" role="radio" aria-checked="true" onclick="selectIntent(this)">
         <div class="example-checkmark">✓</div>
         <div class="intent-art">
-          <img src="/examples/intent-explain.png" alt="" decoding="async">
+          <img src="/examples/intent-explain.jpg" alt="" width="800" height="500" decoding="async" fetchpriority="high">
         </div>
         <div class="intent-meta">
           <strong>Разобрать задание</strong>
@@ -2145,7 +2140,7 @@
       <button type="button" class="intent-card" data-intent="check" role="radio" aria-checked="false" onclick="selectIntent(this)">
         <div class="example-checkmark">✓</div>
         <div class="intent-art">
-          <img src="/examples/intent-check.png" alt="" decoding="async">
+          <img src="/examples/intent-check.jpg" alt="" width="800" height="500" decoding="async">
         </div>
         <div class="intent-meta">
           <strong>Проверить работу</strong>
