@@ -1003,8 +1003,8 @@
     position:relative;
     width:100%;
     min-width:0;
-    padding:12px;
-    border:2px solid transparent;
+    padding:11px;
+    border:1px solid transparent;
     border-radius:20px;
     background:#fff;
     color:var(--text);
@@ -1024,28 +1024,52 @@
   }
   .example-checkmark{
     position:absolute;
-    top:20px;
-    right:20px;
+    top:18px;
+    right:18px;
     z-index:3;
-    width:28px;
-    height:28px;
+    width:26px;
+    height:26px;
     display:none;
     place-items:center;
     border-radius:50%;
     background:var(--primary);
     color:#fff;
-    font-size:15px;
+    font-size:14px;
     font-weight:700;
+    box-shadow:0 0 0 3px #fff;
   }
   .example-card.selected .example-checkmark{
     display:grid;
   }
   .example-preview{
-    height:250px;
+    position:relative;
+    height:248px;
+    padding:13px;
     overflow:hidden;
-    border:1px solid var(--line);
-    border-radius:14px;
-    background:#f3f5f9;
+    border:1px solid #e2ddd8;
+    border-radius:15px;
+    background:
+      linear-gradient(165deg, #f6f3ef 0%, #ebe6e0 100%);
+  }
+  .example-preview::after{
+    content:"";
+    position:absolute;
+    left:13px;
+    right:13px;
+    bottom:13px;
+    height:42px;
+    pointer-events:none;
+    background:linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.88));
+  }
+  .example-sheet{
+    height:100%;
+    overflow:hidden;
+    border-radius:3px;
+    background:#fff;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.7) inset,
+      0 1px 2px rgba(55,42,36,.06),
+      0 10px 22px rgba(55,42,36,.1);
   }
   .example-preview img{
     width:100%;
@@ -1053,6 +1077,7 @@
     display:block;
     object-fit:cover;
     object-position:center top;
+    filter:contrast(1.03) saturate(.94) brightness(1.01);
   }
   .mock-sheet{
     height:100%;
@@ -1185,16 +1210,23 @@
     .picker-screen{padding:20px 18px 30px}
     .picker-heading h1{font-size:32px}
     .example-grid{grid-template-columns:1fr}
-    .example-preview{height:220px}
+    .example-preview{height:220px;padding:11px}
+    .example-preview::after{left:11px;right:11px;bottom:11px;height:34px}
     .demo-notice{display:block;margin-top:-12px}
     .demo-notice strong{display:block;margin-bottom:3px}
   }
 
 
-  .example-card[data-example="math"] .example-preview img,
+  .example-card[data-example="russian"] .example-preview img{
+    object-position:12% 6%;
+  }
+  .example-card[data-example="math"] .example-preview img{
+    object-fit:cover;
+    object-position:center 18%;
+  }
   .example-card[data-example="english"] .example-preview img{
-    object-fit:contain;
-    background:#fff;
+    object-fit:cover;
+    object-position:center 8%;
   }
   .math-example{
     margin:10px 0 14px;
@@ -1749,10 +1781,13 @@
     .example-preview{
       height:84px;
       border-radius:11px;
+      padding:6px;
+    }
+    .example-preview::after{
+      left:6px;right:6px;bottom:6px;height:16px;
     }
     .example-preview img{
-      object-fit:contain;
-      background:#fff;
+      object-fit:cover;
     }
     .example-meta{
       padding:2px 25px 2px 11px;
@@ -1973,9 +2008,23 @@
     background:#fdfcfd;
     box-shadow:0 0 0 1px rgba(113,102,120,.34),0 12px 28px rgba(43,38,47,.07);
   }
-  .example-preview,.intent-art{
+  .example-preview{
+    border-color:#e2ddd8;
+    background:linear-gradient(165deg, #f5f2ee 0%, #ebe6e1 100%);
+  }
+  .intent-art{
     border-color:#e2dee2;
     background:#f2f0ee;
+  }
+  .example-sheet{
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.75) inset,
+      0 1px 2px rgba(55,42,36,.05),
+      0 10px 20px rgba(55,42,36,.09);
+  }
+  .example-checkmark{
+    background:var(--action);
+    box-shadow:0 0 0 3px #fff;
   }
   .example-badge{
     background:#efedef;
@@ -2003,8 +2052,9 @@
       padding:9px;
       border-radius:17px;
     }
-    .example-preview{height:140px;border-radius:12px}
-    .example-preview img{object-fit:contain;background:#fff}
+    .example-preview{height:140px;border-radius:12px;padding:8px}
+    .example-preview::after{left:8px;right:8px;bottom:8px;height:24px}
+    .example-preview img{object-fit:cover}
     .example-meta{padding:6px 34px 6px 16px}
   }
   @media (max-width:880px){
@@ -2137,7 +2187,9 @@
       <button type="button" class="example-card selected" data-example="russian" role="radio" aria-checked="true" onclick="selectExample(this)">
         <div class="example-checkmark">✓</div>
         <div class="example-preview">
-          <img src="/examples/russian.jpg" alt="Задание по русскому языку" fetchpriority="high" decoding="async">
+          <div class="example-sheet">
+            <img src="/examples/russian.jpg" alt="Задание по русскому языку" fetchpriority="high" decoding="async">
+          </div>
         </div>
         <div class="example-meta">
           <span class="example-subject">Русский язык</span>
@@ -2149,7 +2201,9 @@
       <button type="button" class="example-card" data-example="math" role="radio" aria-checked="false" onclick="selectExample(this)">
         <div class="example-checkmark">✓</div>
         <div class="example-preview">
-          <img src="/examples/math.jpg" alt="Задание по математике на единицы измерения" decoding="async">
+          <div class="example-sheet">
+            <img src="/examples/math.jpg" alt="Задание по математике на единицы измерения" decoding="async">
+          </div>
         </div>
         <div class="example-meta">
           <span class="example-subject">Математика</span>
@@ -2162,7 +2216,9 @@
       <button type="button" class="example-card" data-example="english" role="radio" aria-checked="false" onclick="selectExample(this)">
         <div class="example-checkmark">✓</div>
         <div class="example-preview">
-          <img src="/examples/english.jpg" alt="Задание по английскому языку на артикли" decoding="async">
+          <div class="example-sheet">
+            <img src="/examples/english.jpg" alt="Задание по английскому языку на артикли" decoding="async">
+          </div>
         </div>
         <div class="example-meta">
           <span class="example-subject">Английский язык</span>
