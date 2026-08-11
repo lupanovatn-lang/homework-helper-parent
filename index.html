@@ -1055,31 +1055,23 @@
   }
   .task-snippet{
     height:100%;
-    padding:16px 16px 14px;
+    display:flex;
+    align-items:center;
+    padding:18px 16px;
     color:#2a2e36;
     text-align:left;
   }
-  .task-snippet-ask{
-    margin:0 0 10px;
-    color:#4a5160;
-    font-size:12.5px;
-    font-weight:600;
-    line-height:1.35;
-  }
-  .task-snippet-ask em{
-    font-style:italic;
-    font-weight:650;
-  }
   .task-rows{
     display:grid;
-    gap:9px;
+    gap:11px;
+    width:100%;
   }
   .task-row{
     display:flex;
     align-items:baseline;
     gap:8px;
     min-width:0;
-    font-size:16px;
+    font-size:17px;
     font-weight:550;
     line-height:1.25;
     letter-spacing:.01em;
@@ -1109,17 +1101,18 @@
   }
   .russian-snippet .task-mascot{
     position:absolute;
-    right:8px;
-    top:54px;
+    right:10px;
+    top:50%;
     width:78px;
     height:auto;
+    transform:translateY(-50%);
     pointer-events:none;
     user-select:none;
   }
   .math-snippet .task-row,
   .english-snippet .task-row{
     font-family:ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size:15px;
+    font-size:15.5px;
     font-weight:600;
     letter-spacing:0;
   }
@@ -1149,13 +1142,16 @@
   }
   .example-meta strong{
     display:block;
-    margin-bottom:5px;
+    margin-bottom:6px;
     font-size:18px;
     line-height:1.3;
   }
-  .example-meta span:last-child{
-    color:var(--muted);
-    font-size:13px;
+  .example-instruction{
+    display:block;
+    color:#4a5160;
+    font-size:14px;
+    font-weight:500;
+    line-height:1.4;
   }
   .example-card.pending{
     cursor:default;
@@ -1790,21 +1786,18 @@
       border-radius:12px;
     }
     .task-snippet{
-      padding:10px 10px 8px;
+      padding:12px 10px;
     }
-    .task-snippet-ask{
-      margin-bottom:7px;
-      font-size:11px;
-    }
-    .task-rows{gap:5px}
-    .task-row{font-size:12px;gap:5px}
+    .task-rows{gap:6px}
+    .task-row{font-size:12.5px;gap:5px}
     .math-snippet .task-row,
-    .english-snippet .task-row{font-size:11.5px}
+    .english-snippet .task-row{font-size:12px}
     .russian-snippet{padding-right:52px}
     .russian-snippet .task-mascot{
       right:4px;
-      top:34px;
+      top:50%;
       width:46px;
+      transform:translateY(-50%);
     }
     .example-meta{
       padding:2px 25px 2px 11px;
@@ -1818,10 +1811,9 @@
       font-size:16px;
       line-height:1.25;
     }
-    .example-meta span:last-child{
-      display:block;
-      font-size:11.5px;
-      line-height:1.3;
+    .example-instruction{
+      font-size:12px;
+      line-height:1.35;
     }
     .example-checkmark{
       top:11px;
@@ -2067,11 +2059,11 @@
       border-radius:17px;
     }
     .example-preview{height:148px;border-radius:12px}
-    .task-snippet{padding:12px}
-    .task-snippet-ask{font-size:12px;margin-bottom:8px}
-    .task-row{font-size:13.5px}
+    .task-snippet{padding:14px 12px}
+    .task-row{font-size:14px}
     .russian-snippet{padding-right:64px}
-    .russian-snippet .task-mascot{width:56px;top:42px}
+    .russian-snippet .task-mascot{width:56px;top:50%;transform:translateY(-50%)}
+    .example-instruction{font-size:13px}
     .example-meta{padding:6px 34px 6px 16px}
   }
   @media (max-width:880px){
@@ -2205,7 +2197,6 @@
         <div class="example-checkmark">✓</div>
         <div class="example-preview" aria-label="Превью задания по русскому языку">
           <div class="task-snippet russian-snippet">
-            <p class="task-snippet-ask">Вставь пропущенные буквы. Напиши проверочное слово. Поставь ударение.</p>
             <div class="task-rows">
               <div class="task-row">
                 <span class="task-word">ст_рожить</span><span class="dash">—</span>
@@ -2226,7 +2217,7 @@
         <div class="example-meta">
           <span class="example-subject">Русский язык</span>
           <strong>Безударные гласные</strong>
-          <span>Вставить буквы и подобрать проверочные слова</span>
+          <span class="example-instruction">Вставь пропущенные буквы. Напиши проверочное слово. Поставь ударение.</span>
         </div>
       </button>
 
@@ -2234,7 +2225,6 @@
         <div class="example-checkmark">✓</div>
         <div class="example-preview" aria-label="Превью задания по математике">
           <div class="task-snippet math-snippet">
-            <p class="task-snippet-ask">Вырази в указанных единицах:</p>
             <div class="task-rows">
               <div class="task-row"><span>86 км 9 м</span><span class="dash">=</span><span class="blank"></span><span>м</span></div>
               <div class="task-row"><span>61 м 25 мм</span><span class="dash">=</span><span class="blank"></span><span>мм</span></div>
@@ -2245,7 +2235,7 @@
         <div class="example-meta">
           <span class="example-subject">Математика</span>
           <strong>Единицы измерения</strong>
-          <span>Перевести величины в указанные единицы</span>
+          <span class="example-instruction">Вырази в указанных единицах.</span>
           <span class="example-badge mode-badge hidden">В проверке скоро</span>
         </div>
       </button>
@@ -2254,7 +2244,6 @@
         <div class="example-checkmark">✓</div>
         <div class="example-preview" aria-label="Превью задания по английскому">
           <div class="task-snippet english-snippet">
-            <p class="task-snippet-ask">Вставь <em>a/an/the</em></p>
             <div class="task-rows">
               <div class="task-row">
                 <span>It’s</span><span class="blank"></span><span>dog.</span>
@@ -2273,7 +2262,7 @@
         <div class="example-meta">
           <span class="example-subject">Английский язык</span>
           <strong>Артикли a / an / the</strong>
-          <span>Вставить подходящие артикли в предложения</span>
+          <span class="example-instruction">Вставь a/an/the.</span>
           <span class="example-badge mode-badge hidden">В проверке скоро</span>
         </div>
       </button>
