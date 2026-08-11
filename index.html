@@ -2425,9 +2425,15 @@ function selectIntent(card){
 
 function continueIntent(){
   currentMode = selectedIntent;
-  updatePickerCopy();
-  document.getElementById('intentScreen').classList.add('is-hidden');
-  document.getElementById('pickerScreen').classList.remove('is-hidden');
+  selectedExample = 'russian';
+  document.getElementById('pickerScreen').classList.add('is-hidden');
+  if(currentMode === 'check'){
+    startCheckDemo('russian');
+  }else{
+    loadExample('russian');
+    document.getElementById('intentScreen').classList.add('is-hidden');
+    document.getElementById('appShell').classList.remove('is-hidden');
+  }
 }
 
 function updatePickerCopy(){
@@ -2489,10 +2495,7 @@ function sendSelectedExample(){
 }
 
 function backToPicker(){
-  updatePickerCopy();
-  document.getElementById('appShell').classList.add('is-hidden');
-  document.getElementById('pickerScreen').classList.remove('is-hidden');
-  document.getElementById('intentScreen').classList.add('is-hidden');
+  backToIntent();
 }
 
 function getTaskPhotoMeta(subject, mode = currentMode){
@@ -2595,7 +2598,7 @@ function getCheckDemoStart(subject){
         <p class="note">${variant.note}</p>
         ${variant.items.map(item => checkCard(...item)).join('')}
         <div class="actions">
-          <button class="btn btn-primary" onclick="backToPicker()">Выбрать другое задание</button>
+          <button class="btn btn-primary" onclick="backToIntent()">К выбору сценария</button>
         </div>
       </div>
     </div>`;
@@ -2604,7 +2607,7 @@ function getCheckDemoStart(subject){
 function getRussianCheckStart(){
   return `
     <div class="message user">
-      <div class="bubble">Проверь эту работу</div>
+      <div class="bubble">Вот фото выполненной работы. Проверь её.</div>
     </div>
     ${getMobileTaskPhoto('russian', 'check')}
     <div class="message assistant">
@@ -2809,7 +2812,7 @@ function getMobileTaskPhoto(subject, mode = 'explain'){
 function getRussianStart(){
   return `
     <div class="message user">
-      <div class="bubble">Помоги объяснить ребёнку это задание</div>
+      <div class="bubble">Вот фото задания. Помоги объяснить его ребёнку.</div>
     </div>
     ${getMobileTaskPhoto('russian')}
     <div class="message assistant">
@@ -3641,7 +3644,7 @@ function simulateMathCheck(){
     ${checkCard('7 т 9 ц = ___ кг', '«Ты перевёл в килограммы обе части: и тонны, и центнеры?»', '7 т 9 ц = 7 900 кг')}
     ${checkCard('2 ц = ___ г', '«Ответ нужен в граммах. Через какую промежуточную единицу можно выполнить перевод?»', '2 ц = 200 000 г')}
     <div class="actions">
-      <button class="btn btn-primary" onclick="backToPicker()">Выбрать другое задание</button>
+      <button class="btn btn-primary" onclick="backToIntent()">К выбору сценария</button>
     </div>
   `);
 }
@@ -3945,7 +3948,7 @@ function simulateEnglishCheck(){
     ${checkCard('I drink ___ water.', '«Здесь говорится о воде вообще или о какой-то конкретной воде? Нужен ли артикль?»', 'I drink water. Артикль не нужен.')}
     ${checkCard('It has got ___ tail. ___ tail is long.', '«В каком предложении хвост называется впервые, а в каком речь идёт уже о том же самом хвосте?»', 'It has got a tail. The tail is long.')}
     <div class="actions">
-      <button class="btn btn-primary" onclick="backToPicker()">Выбрать другое задание</button>
+      <button class="btn btn-primary" onclick="backToIntent()">К выбору сценария</button>
     </div>
   `);
 }
