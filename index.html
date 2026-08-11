@@ -2191,13 +2191,13 @@
               <span class="stepdot"></span>
             </div>
             <div class="eyebrow">Шаг 1 из 3</div>
-            <h2>Убедитесь, что ребёнок понял задание</h2>
+            <h2>Сначала поймём задание</h2>
             <div class="say">
-              <div class="say-label">Спросите ребёнка</div>
+              <div class="say-label">Вопрос ребёнку</div>
               <q>Прочитай задание.<br>Что нужно сделать с каждым словом?<br>Расскажи своими словами.</q>
             </div>
             <div class="actions">
-              <button class="btn btn-primary" onclick="understood(this)">Получилось объяснить</button>
+              <button class="btn btn-primary" onclick="understood(this)">Можно идти дальше</button>
               <button class="btn btn-secondary" onclick="notUnderstood(this)">Нужна подсказка</button>
             </div>
           </div>
@@ -2495,7 +2495,7 @@ function russianCheckIssuePearl(btn){
     <p class="note">В работе написали проверочное <b>жемчужинка</b> — оно не подходит. Сначала вернитесь к заданию: нужно вставить пропущенную букву.</p>
     <div class="word">ж_мчужина</div>
     <div class="say">
-      <div class="say-label">Спросите ребёнка</div>
+      <div class="say-label">Вопрос ребёнку</div>
       <q>Чтобы верно вставить пропущенную букву, какое проверочное слово поможет услышать эту гласную под ударением?</q>
     </div>
     <div class="actions">
@@ -2562,7 +2562,7 @@ function russianCheckIssueGray(btn){
     <p class="note">Проверочное слово <b>серый</b> подобрано верно, но в задании нужно ещё поставить ударение — его нет.</p>
     <div class="word">сероватый — серый</div>
     <div class="say">
-      <div class="say-label">Спросите ребёнка</div>
+      <div class="say-label">Вопрос ребёнку</div>
       <q>Проверочное слово серый подобрано верно. Что ещё нужно сделать в нём по заданию?</q>
     </div>
     <div class="actions">
@@ -2677,13 +2677,13 @@ function getRussianStart(){
           <span class="stepdot"></span>
         </div>
         <div class="eyebrow">Шаг 1 из 3</div>
-        <h2>Убедитесь, что ребёнок понял задание</h2>
+        <h2>Сначала поймём задание</h2>
                 <div class="say">
-          <div class="say-label">Спросите ребёнка</div>
+          <div class="say-label">Вопрос ребёнку</div>
           <q>Прочитай задание.<br>Что нужно сделать с каждым словом?<br>Расскажи своими словами.</q>
         </div>
         <div class="actions">
-          <button class="btn btn-primary" onclick="russianUnderstood(this)">Получилось объяснить</button>
+          <button class="btn btn-primary" onclick="russianUnderstood(this)">Можно идти дальше</button>
           <button class="btn btn-secondary" onclick="russianNotUnderstood(this)">Нужна подсказка</button>
         </div>
       </div>
@@ -2705,14 +2705,14 @@ function getMathStart(){
           <span class="stepdot"></span>
         </div>
         <div class="eyebrow">Шаг 1 из 3</div>
-        <h2>Убедитесь, что ребёнок понял задание</h2>
+        <h2>Сначала поймём задание</h2>
                 <div class="say">
-          <div class="say-label">Спросите ребёнка</div>
+          <div class="say-label">Вопрос ребёнку</div>
           <q>Прочитай задание. Что нужно сделать в каждом примере?</q>
         </div>
         <p class="note">В ответе должно прозвучать: перевести величину в нужную единицу измерения и записать ответ.</p>
         <div class="actions">
-          <button class="btn btn-primary" onclick="mathUnderstood(this)">Получилось объяснить</button>
+          <button class="btn btn-primary" onclick="mathUnderstood(this)">Можно идти дальше</button>
           <button class="btn btn-secondary" onclick="mathNotUnderstood(this)">Нужна подсказка</button>
         </div>
       </div>
@@ -2735,14 +2735,14 @@ function getEnglishStart(){
           <span class="stepdot"></span>
         </div>
         <div class="eyebrow">Шаг 1 из 3</div>
-        <h2>Убедитесь, что ребёнок понял задание</h2>
+        <h2>Сначала поймём задание</h2>
                 <div class="say">
-          <div class="say-label">Спросите ребёнка</div>
+          <div class="say-label">Вопрос ребёнку</div>
           <q>Прочитай задание. Что нужно сделать в каждом предложении?</q>
         </div>
         <p class="note">В ответе должны прозвучать: прочитать предложение и выбрать для пропуска a, an или the.</p>
         <div class="actions">
-          <button class="btn btn-primary" onclick="englishUnderstood(this)">Получилось объяснить</button>
+          <button class="btn btn-primary" onclick="englishUnderstood(this)">Можно идти дальше</button>
           <button class="btn btn-secondary" onclick="englishNotUnderstood(this)">Нужна подсказка</button>
         </div>
       </div>
@@ -3008,17 +3008,57 @@ function sharedScreenNote(){
 
 /* Русский язык */
 
+const russianInstructionHints = [
+  'Посмотри на слова. Чего в них не хватает?',
+  'А что нужно написать рядом с каждым словом?',
+  'И что нужно поставить в проверочных словах?'
+];
+
 function russianNotUnderstood(btn){
+  russianShowInstructionHint(btn, 0);
+}
+
+function russianShowInstructionHint(btn, index){
   const bubble = btn.closest('.bubble');
-  if(bubble.querySelector('.hint')) return;
-  const box = document.createElement('div');
-  box.className = 'hint fade-in';
-  box.innerHTML = '<b>Подскажите начало</b>«Сначала нужно вставить букву и подобрать слово, в котором эта гласная слышится под ударением».';
-  bubble.insertBefore(box, bubble.querySelector('.actions'));
+  const say = bubble.querySelector('.say');
+  const actions = bubble.querySelector('.actions');
+  if(!say || !actions) return;
+
+  const hint = russianInstructionHints[index];
+  if(index < 2){
+    say.innerHTML = `
+      <div class="say-label">Вопрос ребёнку</div>
+      <q>${hint}</q>`;
+    actions.innerHTML = `
+      <button class="btn btn-primary" onclick="russianUnderstood(this)">Получилось</button>
+      <button class="btn btn-secondary" onclick="russianShowInstructionHint(this,${index + 1})">Ещё подсказка</button>`;
+  } else {
+    say.innerHTML = `
+      <div class="say-label">Вопрос ребёнку</div>
+      <q>${hint}<br>Теперь попробуй рассказать всё задание своими словами.</q>`;
+    actions.innerHTML = `
+      <button class="btn btn-primary" onclick="russianUnderstood(this)">Можно идти дальше</button>
+      <button class="btn btn-secondary" onclick="russianInstructionStillUnclear(this)">Всё ещё непонятно</button>`;
+  }
+  scrollBottom();
+}
+
+function russianInstructionStillUnclear(btn){
+  const bubble = btn.closest('.bubble');
+  const say = bubble.querySelector('.say');
+  const actions = bubble.querySelector('.actions');
+  if(!say || !actions) return;
+
+  say.innerHTML = `
+    <div class="say-label">Родителю</div>
+    <q>Не объясняйте задание за ребёнка. Вернитесь к фото и пройдите вопросы ещё раз — или разберите один пример вместе: на нём часто становится яснее.</q>`;
+  actions.innerHTML = `
+    <button class="btn btn-primary" onclick="russianUnderstood(this)">Перейти к примеру</button>`;
+  scrollBottom();
 }
 
 function russianUnderstood(btn){
-  addUser('Получилось объяснить');
+  addUser(btn.textContent.trim() || 'Можно идти дальше');
   disableButtons(btn.closest('.bubble'));
   addAssistant(`
     <div class="stepbar"><span class="stepdot done"></span><span class="stepdot active"></span><span class="stepdot"></span></div>
@@ -3026,7 +3066,7 @@ function russianUnderstood(btn){
     <h2>Разберите вместе один пример</h2>
     <div class="word">ст_рожить</div>
     <div class="say">
-      <div class="say-label">Спросите ребёнка</div>
+      <div class="say-label">Вопрос ребёнку</div>
       <q>Какое однокоренное слово поможет проверить пропущенную гласную?</q>
     </div>
     <div class="actions">
@@ -3130,7 +3170,7 @@ function openRussianHelp(chip, word){
   const answer = russianAnswers[word];
   document.getElementById('russianHelp').innerHTML = `
     <div class="hint fade-in">
-      <b>Спросите ребёнка</b>
+      <b>Вопрос ребёнку</b>
       ${answer.hint}
       <div class="actions">
         <button class="btn btn-ghost" onclick="showRussianAnswer(this,'${word}')">Показать ответ</button>
@@ -3187,7 +3227,7 @@ function mathNotUnderstood(btn){
 }
 
 function mathUnderstood(btn){
-  addUser('Получилось объяснить');
+  addUser('Можно идти дальше');
   disableButtons(btn.closest('.bubble'));
   addAssistant(`
     <div class="stepbar"><span class="stepdot done"></span><span class="stepdot active"></span><span class="stepdot"></span></div>
@@ -3196,7 +3236,7 @@ function mathUnderstood(btn){
     <div class="math-example">86 км 9 м = ___ м</div>
     <div class="math-stage">
       <div class="say">
-        <div class="say-label">Спросите ребёнка</div>
+        <div class="say-label">Вопрос ребёнку</div>
         <q>В каких единицах нужно записать ответ?</q>
       </div>
       <div class="actions">
@@ -3246,7 +3286,7 @@ function mathTargetUnitAnswered(btn){
   const bubble = finishMathStage(btn, '<strong>Ответ нужно записать в метрах.</strong>');
   appendMathStage(bubble, `
     <div class="say">
-      <div class="say-label">Спросите ребёнка</div>
+      <div class="say-label">Вопрос ребёнку</div>
       <q>Сколько метров в одном километре?</q>
     </div>
     <div class="actions">
@@ -3259,7 +3299,7 @@ function mathOneKmAnswered(btn){
   const bubble = finishMathStage(btn, '<strong>1 км = 1000 м.</strong>');
   appendMathStage(bubble, `
     <div class="say">
-      <div class="say-label">Спросите ребёнка</div>
+      <div class="say-label">Вопрос ребёнку</div>
       <q>Сколько метров в 86 километрах?</q>
     </div>
     <div class="actions">
@@ -3272,7 +3312,7 @@ function mathEightySixAnswered(btn){
   const bubble = finishMathStage(btn, '<strong>86 км = 86 000 м.</strong>');
   appendMathStage(bubble, `
     <div class="say">
-      <div class="say-label">Спросите ребёнка</div>
+      <div class="say-label">Вопрос ребёнку</div>
       <q>Что нужно сделать с оставшимися 9 метрами?</q>
     </div>
     <div class="actions">
@@ -3382,7 +3422,7 @@ function openMathHelp(chip, key){
   const answer = mathAnswers[key];
   document.getElementById('mathHelp').innerHTML = `
     <div class="hint fade-in">
-      <b>Спросите ребёнка</b>
+      <b>Вопрос ребёнку</b>
       «${answer.hint1}»
       <div class="actions">
         <button class="btn btn-secondary" onclick="showMathSecondHint(this,'${key}')">Ещё подсказка</button>
@@ -3461,7 +3501,7 @@ function englishNotUnderstood(btn){
 }
 
 function englishUnderstood(btn){
-  addUser('Получилось объяснить');
+  addUser('Можно идти дальше');
   disableButtons(btn.closest('.bubble'));
   addAssistant(`
     <div class="stepbar"><span class="stepdot done"></span><span class="stepdot active"></span><span class="stepdot"></span></div>
@@ -3470,7 +3510,7 @@ function englishUnderstood(btn){
     <div class="english-example">It’s ___ dog. ___ dog is big.</div>
     <div class="english-stage">
       <div class="say">
-        <div class="say-label">Спросите ребёнка</div>
+        <div class="say-label">Вопрос ребёнку</div>
         <q>В первом предложении мы говорим о собаке впервые или уже знаем, о какой собаке речь?</q>
       </div>
       <div class="actions">
@@ -3519,7 +3559,7 @@ function englishFirstMentionAnswered(btn){
   const bubble = finishEnglishStage(btn, '<strong>Собака называется впервые.</strong>');
   appendEnglishStage(bubble, `
     <div class="say">
-      <div class="say-label">Спросите ребёнка</div>
+      <div class="say-label">Вопрос ребёнку</div>
       <q>Когда называем один предмет впервые, мы выбираем a/an или the?</q>
     </div>
     <div class="actions">
@@ -3532,7 +3572,7 @@ function englishArticleGroupAnswered(btn){
   const bubble = finishEnglishStage(btn, '<strong>Когда называем один предмет впервые, выбираем a или an.</strong>');
   appendEnglishStage(bubble, `
     <div class="say">
-      <div class="say-label">Спросите ребёнка</div>
+      <div class="say-label">Вопрос ребёнку</div>
       <q>С какого звука начинается слово dog: с гласного или согласного?</q>
     </div>
     <div class="actions">
@@ -3545,7 +3585,7 @@ function englishDogSoundAnswered(btn){
   const bubble = finishEnglishStage(btn, '<strong>Dog начинается с согласного звука.</strong>');
   appendEnglishStage(bubble, `
     <div class="say">
-      <div class="say-label">Спросите ребёнка</div>
+      <div class="say-label">Вопрос ребёнку</div>
       <q>Какой артикль ставим перед согласным звуком: a или an?</q>
     </div>
     <div class="actions">
@@ -3558,7 +3598,7 @@ function englishFirstArticleAnswered(btn){
   const bubble = finishEnglishStage(btn, '<strong>Перед dog ставим a: It’s a dog.</strong>');
   appendEnglishStage(bubble, `
     <div class="say">
-      <div class="say-label">Спросите ребёнка</div>
+      <div class="say-label">Вопрос ребёнку</div>
       <q>Во втором предложении речь идёт о той же самой собаке или о новой?</q>
     </div>
     <div class="actions">
@@ -3571,7 +3611,7 @@ function englishSameDogAnswered(btn){
   const bubble = finishEnglishStage(btn, '<strong>Речь идёт о той же самой собаке.</strong>');
   appendEnglishStage(bubble, `
     <div class="say">
-      <div class="say-label">Спросите ребёнка</div>
+      <div class="say-label">Вопрос ребёнку</div>
       <q>Какой артикль ставим перед предметом, который уже называли?</q>
     </div>
     <div class="actions">
@@ -3686,7 +3726,7 @@ function openEnglishHelp(chip, key){
   const answer = englishAnswers[key];
   document.getElementById('englishHelp').innerHTML = `
     <div class="hint fade-in">
-      <b>Спросите ребёнка</b>
+      <b>Вопрос ребёнку</b>
       «${answer.hint1}»
       <div class="actions">
         <button class="btn btn-secondary" onclick="showEnglishSecondHint(this,'${key}')">Ещё подсказка</button>
@@ -3765,7 +3805,7 @@ function checkCard(title, question, answer, issue){
         <span class="check-word-status">${status}</span>
       </div>
       <div class="check-word-question">
-        <span>Спросите ребёнка</span>
+        <span>Вопрос ребёнку</span>
         ${question}
       </div>
       <button class="check-word-answer" onclick="toggleCheckAnswer(this,'${safeAnswer}')">Сверить ответ</button>
