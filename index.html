@@ -93,6 +93,16 @@
     align-items:flex-start;
   }
   .message.user{justify-content:flex-end}
+  .user-stack{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:8px;
+    max-width:min(440px, 100%);
+  }
+  .user-stack .bubble{
+    max-width:100%;
+  }
   .avatar{
     flex:none;
     width:30px;height:30px;border-radius:10px;
@@ -834,13 +844,16 @@
   }
   .mobile-photo{
     display:block;
-    width:min(440px, calc(100% - 40px));
-    margin:0 0 20px 40px;
+    width:min(320px, 100%);
+    margin:8px 0 0;
+  }
+  .message.user .mobile-photo{
+    margin-left:auto;
   }
   .mobile-photo-card{
     width:100%;
     display:block;
-    padding:10px;
+    padding:8px;
     border:1px solid var(--line);
     border-radius:16px;
     background:#fff;
@@ -849,28 +862,20 @@
     box-shadow:0 8px 24px rgba(30,40,70,.055);
     cursor:zoom-in;
   }
-  .mobile-photo-label{
-    display:block;
-    margin:1px 2px 8px;
-    color:var(--muted);
-    font-size:12px;
-    font-weight:650;
-  }
   .mobile-photo img{
     width:100%;
-    max-height:360px;
+    max-height:280px;
     display:block;
     object-fit:contain;
-    border:1px solid var(--line);
     border-radius:12px;
     background:#fff;
   }
   .mobile-photo.is-check img{
-    max-height:520px;
+    max-height:420px;
   }
   .mobile-photo-open{
     display:block;
-    margin:8px 2px 1px;
+    margin:8px 2px 0;
     color:var(--primary);
     font-size:12px;
     font-weight:600;
@@ -889,11 +894,11 @@
     .app{display:block;height:auto;min-height:100vh;overflow:visible}
     .composer{right:0}
     .mobile-photo{
-      width:calc(100% - 40px);
-      margin:0 0 20px 40px;
+      width:min(280px, 100%);
+      margin:8px 0 0;
     }
     .mobile-photo img{
-      max-height:280px;
+      max-height:240px;
     }
     .header{padding:0 16px}
     .chat{padding:22px 14px 110px}
@@ -2121,29 +2126,19 @@
       border-radius:20px;
     }
     .mobile-photo{
-      width:min(560px,100%);
-      margin:0 auto 18px;
+      width:min(280px, 100%);
+      margin:8px 0 0;
     }
     .mobile-photo-card{
-      padding:0;
-      border:0;
-      background:transparent;
-      box-shadow:none;
-    }
-    .mobile-photo-label{
-      margin:0 2px 7px;
-      font-size:11px;
-      letter-spacing:.05em;
-      text-transform:uppercase;
+      padding:6px;
     }
     .mobile-photo img{
       max-height:220px;
-      border-color:#e3e0e3;
-      border-radius:15px;
+      border-radius:12px;
       background:#fff;
     }
     .mobile-photo.is-check img{
-      max-height:520px;
+      max-height:360px;
     }
     .mobile-photo-open{margin-top:7px}
   }
@@ -2585,9 +2580,11 @@ function getCheckDemoStart(subject){
   const variant = variants[subject] || variants.math;
   return `
     <div class="message user">
-      <div class="bubble">Проверь эту работу</div>
+      <div class="user-stack">
+        <div class="bubble">Вот фото выполненной работы. Проверь её.</div>
+        ${getMobileTaskPhoto(subject, 'check')}
+      </div>
     </div>
-    ${getMobileTaskPhoto(subject, 'check')}
     <div class="message assistant">
       <div class="avatar">ИИ</div>
       <div class="bubble">
@@ -2605,9 +2602,11 @@ function getCheckDemoStart(subject){
 function getRussianCheckStart(){
   return `
     <div class="message user">
-      <div class="bubble">Вот фото выполненной работы. Проверь её.</div>
+      <div class="user-stack">
+        <div class="bubble">Вот фото выполненной работы. Проверь её.</div>
+        ${getMobileTaskPhoto('russian', 'check')}
+      </div>
     </div>
-    ${getMobileTaskPhoto('russian', 'check')}
     <div class="message assistant">
       <div class="avatar">ИИ</div>
       <div class="bubble">
@@ -2803,8 +2802,7 @@ function getMobileTaskPhoto(subject, mode = 'explain'){
   const isCheck = mode === 'check';
   return `
     <div class="mobile-photo${isCheck ? ' is-check' : ''}">
-      <button class="mobile-photo-card" type="button" onclick="openPhotoModal()" aria-label="Открыть ${isCheck ? 'фото выполненной работы' : 'фото задания'} крупнее">
-        <span class="mobile-photo-label">${isCheck ? 'Фото выполненной работы' : 'Фото задания'}</span>
+      <button class="mobile-photo-card" type="button" onclick="openPhotoModal()" aria-label="Открыть фото крупнее">
         <img src="${photo.src}" alt="${photo.alt}" decoding="async">
         <span class="mobile-photo-open">Открыть крупнее</span>
       </button>
@@ -2814,9 +2812,11 @@ function getMobileTaskPhoto(subject, mode = 'explain'){
 function getRussianStart(){
   return `
     <div class="message user">
-      <div class="bubble">Вот фото задания. Помоги объяснить его ребёнку.</div>
+      <div class="user-stack">
+        <div class="bubble">Вот фото задания. Помоги объяснить его ребёнку.</div>
+        ${getMobileTaskPhoto('russian')}
+      </div>
     </div>
-    ${getMobileTaskPhoto('russian')}
     <div class="message assistant">
       <div class="avatar">ИИ</div>
       <div class="bubble">
@@ -2842,9 +2842,11 @@ function getRussianStart(){
 function getMathStart(){
   return `
     <div class="message user">
-      <div class="bubble">Помоги объяснить ребёнку это задание</div>
+      <div class="user-stack">
+        <div class="bubble">Вот фото задания. Помоги объяснить его ребёнку.</div>
+        ${getMobileTaskPhoto('math')}
+      </div>
     </div>
-    ${getMobileTaskPhoto('math')}
     <div class="message assistant">
       <div class="avatar">ИИ</div>
       <div class="bubble">
@@ -2872,9 +2874,11 @@ function getMathStart(){
 function getEnglishStart(){
   return `
     <div class="message user">
-      <div class="bubble">Помоги объяснить ребёнку это задание</div>
+      <div class="user-stack">
+        <div class="bubble">Вот фото задания. Помоги объяснить его ребёнку.</div>
+        ${getMobileTaskPhoto('english')}
+      </div>
     </div>
-    ${getMobileTaskPhoto('english')}
     <div class="message assistant">
       <div class="avatar">ИИ</div>
       <div class="bubble">
