@@ -2192,7 +2192,7 @@
 
     <div class="picker-heading">
       <h1 id="pickerTitle">Какое задание разобрать?</h1>
-      <p id="pickerSubtitle">Выберите один из готовых примеров.</p>
+      <p id="pickerSubtitle">Выберите один из готовых примеров. Загрузка своих фотографий пока недоступна.</p>
     </div>
 
     <div class="example-grid" role="radiogroup" aria-label="Выберите задание">
@@ -2404,7 +2404,7 @@ function updatePickerCopy(){
   document.getElementById('pickerTitle').textContent = isCheck
     ? 'Какую работу проверить?'
     : 'Какое задание разобрать?';
-  document.getElementById('pickerSubtitle').textContent = 'Выберите один из готовых примеров.';
+  document.getElementById('pickerSubtitle').textContent = 'Выберите один из готовых примеров. Загрузка своих фотографий пока недоступна.';
   document.getElementById('pickerAction').textContent = isCheck
     ? 'Проверить эту работу'
     : 'Показать разбор';
