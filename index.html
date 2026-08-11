@@ -264,6 +264,32 @@
   .btn-secondary{background:#f2f4f8;color:var(--text);border:1px solid var(--line)}
   .btn-ghost{background:transparent;color:var(--primary);padding-left:4px;padding-right:4px}
   .btn-success{background:var(--success);color:#fff}
+  .hint-actions{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:6px;
+  }
+  .answer-peek-link{
+    border:0;
+    background:transparent;
+    color:var(--muted);
+    font-size:13px;
+    font-weight:500;
+    padding:2px 2px 4px;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    cursor:pointer;
+  }
+  .answer-peek-link:hover{color:var(--text)}
+  .answer-peek{
+    margin-top:10px;
+    color:var(--success);
+    font-size:15px;
+    font-weight:600;
+    line-height:1.4;
+  }
+  .answer-peek strong{font-weight:700}
   .stepbar{
     display:flex;
     gap:6px;
@@ -3009,9 +3035,18 @@ function sharedScreenNote(){
 /* Русский язык */
 
 const russianInstructionHints = [
-  'Посмотри на слова. Чего в них не хватает?',
-  'А что нужно написать рядом с каждым словом?',
-  'И что нужно поставить в проверочных словах?'
+  {
+    ask: 'Посмотри на слова. Чего в них не хватает?',
+    check: 'Пропущенных букв'
+  },
+  {
+    ask: 'А что нужно написать рядом с каждым словом?',
+    check: 'Проверочное слово'
+  },
+  {
+    ask: 'И что нужно поставить в проверочных словах?',
+    check: 'Ударение'
+  }
 ];
 
 function russianNotUnderstood(btn){
@@ -3024,36 +3059,42 @@ function russianShowInstructionHint(btn, index){
   const actions = bubble.querySelector('.actions');
   if(!say || !actions) return;
 
-  const hint = russianInstructionHints[index];
-  if(index < 2){
+  const peek = bubble.querySelector('.answer-peek');
+  if(peek) peek.remove();
+
+  if(index >= russianInstructionHints.length){
     say.innerHTML = `
       <div class="say-label">Вопрос ребёнку</div>
-      <q>${hint}</q>`;
+      <q>Теперь расскажи всё задание своими словами.</q>`;
+    actions.className = 'actions';
     actions.innerHTML = `
-      <button class="btn btn-primary" onclick="russianUnderstood(this)">Получилось</button>
-      <button class="btn btn-secondary" onclick="russianShowInstructionHint(this,${index + 1})">Ещё подсказка</button>`;
-  } else {
-    say.innerHTML = `
-      <div class="say-label">Вопрос ребёнку</div>
-      <q>${hint}<br>Теперь попробуй рассказать всё задание своими словами.</q>`;
-    actions.innerHTML = `
-      <button class="btn btn-primary" onclick="russianUnderstood(this)">Можно идти дальше</button>
-      <button class="btn btn-secondary" onclick="russianInstructionStillUnclear(this)">Всё ещё непонятно</button>`;
+      <button class="btn btn-primary" onclick="russianUnderstood(this)">Можно идти дальше</button>`;
+    scrollBottom();
+    return;
   }
+
+  const hint = russianInstructionHints[index];
+  say.innerHTML = `
+    <div class="say-label">Вопрос ребёнку</div>
+    <q>${hint.ask}</q>`;
+  actions.className = 'actions hint-actions';
+  actions.innerHTML = `
+    <button class="btn btn-primary" onclick="russianShowInstructionHint(this,${index + 1})">Дальше</button>
+    <button type="button" class="answer-peek-link" onclick="russianRevealInstructionCheck(this,${index})">Проверить ответ</button>`;
   scrollBottom();
 }
 
-function russianInstructionStillUnclear(btn){
+function russianRevealInstructionCheck(btn, index){
   const bubble = btn.closest('.bubble');
-  const say = bubble.querySelector('.say');
-  const actions = bubble.querySelector('.actions');
-  if(!say || !actions) return;
+  if(!bubble || bubble.querySelector('.answer-peek')) return;
+  const hint = russianInstructionHints[index];
+  if(!hint) return;
 
-  say.innerHTML = `
-    <div class="say-label">Родителю</div>
-    <q>Не объясняйте задание за ребёнка. Вернитесь к фото и пройдите вопросы ещё раз — или разберите один пример вместе: на нём часто становится яснее.</q>`;
-  actions.innerHTML = `
-    <button class="btn btn-primary" onclick="russianUnderstood(this)">Перейти к примеру</button>`;
+  const peek = document.createElement('div');
+  peek.className = 'answer-peek fade-in';
+  peek.innerHTML = `✓ <strong>${hint.check}</strong>`;
+  bubble.insertBefore(peek, bubble.querySelector('.actions'));
+  btn.remove();
   scrollBottom();
 }
 
