@@ -2191,7 +2191,7 @@
     </div>
 
     <div class="picker-heading">
-      <h1 id="pickerTitle">Какое задание разобрать?</h1>
+      <h1 id="pickerTitle">Какое задание разберём?</h1>
       <p id="pickerSubtitle">Выберите один из готовых примеров. Загрузка своих фотографий пока недоступна.</p>
     </div>
 
@@ -2402,8 +2402,8 @@ function continueIntent(){
 function updatePickerCopy(){
   const isCheck = currentMode === 'check';
   document.getElementById('pickerTitle').textContent = isCheck
-    ? 'Какую работу проверить?'
-    : 'Какое задание разобрать?';
+    ? 'Какую работу проверим?'
+    : 'Какое задание разберём?';
   document.getElementById('pickerSubtitle').textContent = 'Выберите один из готовых примеров. Загрузка своих фотографий пока недоступна.';
   document.getElementById('pickerAction').textContent = isCheck
     ? 'Проверить эту работу'
