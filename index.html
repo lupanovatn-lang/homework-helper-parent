@@ -158,7 +158,8 @@
     font-size:12px;
     margin-bottom:5px;
   }
-  .summary-card strong{font-size:14px;line-height:1.4;display:block;font-weight:500}
+  .summary-card strong{font-size:14px;line-height:1.4;display:block;font-weight:650}
+  .summary-card strong + span{margin-bottom:0;margin-top:4px}
   .task-instruction{
     margin:15px 0 10px;
     padding:0;
@@ -2420,15 +2421,8 @@ function startCheckDemo(subject){
 }
 
 function getCheckDemoStart(subject){
+  if(subject === 'russian') return getRussianCheckStart();
   const variants = {
-    russian: {
-      title: 'Проверьте ещё два слова',
-      note: 'Остальные слова выглядят верно. По очереди остановитесь на каждом спорном месте: сначала задайте вопрос ребёнку — сверните ответ только после того, как он ответит.',
-      items: [
-        ['жемчужина', '«В слове жемчужи́нка ударение на у — какая гласная в корне остаётся без ударения? Какое короткое слово поможет её услышать?»', 'жемчужина — же́мчуг (не жемчужинка)', 'неверное проверочное слово'],
-        ['сероватый', '«Проверочное слово серый подобрано верно. Что ещё нужно сделать в нём по заданию?»', 'сероватый — се́рый', 'нет ударения'],
-      ],
-    },
     math: {
       title: 'Проверьте ещё два примера',
       note: 'Остальные примеры выглядят верно. По очереди разберите каждый спорный пример: сначала задайте вопрос ребёнку — сверните ответ только после того, как он ответит.',
@@ -2446,7 +2440,7 @@ function getCheckDemoStart(subject){
       ],
     },
   };
-  const variant = variants[subject] || variants.russian;
+  const variant = variants[subject] || variants.math;
   return `
     <div class="message user">
       <div class="bubble">Проверь эту работу</div>
@@ -2465,6 +2459,182 @@ function getCheckDemoStart(subject){
       </div>
     </div>`;
 }
+
+function getRussianCheckStart(){
+  return `
+    <div class="message user">
+      <div class="bubble">Проверь эту работу</div>
+    </div>
+    ${getMobileTaskPhoto('russian', 'check')}
+    <div class="message assistant">
+      <div class="avatar">ИИ</div>
+      <div class="bubble">
+        <div class="stepbar">
+          <span class="stepdot active"></span>
+          <span class="stepdot"></span>
+          <span class="stepdot"></span>
+        </div>
+        <div class="eyebrow">Шаг 1 из 3</div>
+        <h2>Посмотрите, что стоит перепроверить</h2>
+        <p class="note">Остальные слова выглядят верно. Нашлись два места — разберём их по очереди, как в разборе задания.</p>
+        <div class="summary">
+          <div class="summary-card"><span>1</span><strong>жемчужина</strong><span>неверное проверочное слово</span></div>
+          <div class="summary-card"><span>2</span><strong>сероватый</strong><span>нет ударения</span></div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="russianCheckIssuePearl(this)">Разберём первое слово</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function russianCheckIssuePearl(btn){
+  addUser('Разберём первое слово');
+  disableButtons(btn.closest('.bubble'));
+  addAssistant(`
+    <div class="stepbar"><span class="stepdot done"></span><span class="stepdot active"></span><span class="stepdot"></span></div>
+    <div class="eyebrow">Шаг 2 из 3</div>
+    <h2>Разберите слово «жемчужина»</h2>
+    <p class="note">В работе написано проверочное слово <b>жемчужинка</b> — оно не подходит: ударение на у, и гласная е остаётся без ударения.</p>
+    <div class="word">жемчужина — жемчужи́нка</div>
+    <div class="say">
+      <div class="say-label">Спросите ребёнка</div>
+      <q>В слове жемчужи́нка ударение на у — какая гласная в корне остаётся без ударения? Какое короткое слово поможет её услышать?</q>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="russianCheckPearlAnswered(this)">Ребёнок ответил</button>
+      <button class="btn btn-secondary" onclick="russianCheckPearlHint(this)">Нужна подсказка</button>
+    </div>
+  `);
+}
+
+function russianCheckPearlHint(btn){
+  const bubble = btn.closest('.bubble');
+  if(!bubble.querySelector('.hint')){
+    const hint = document.createElement('div');
+    hint.className = 'hint fade-in';
+    hint.innerHTML = '<b>Подсказка ребёнку</b>«Как называется материал, из которого делают жемчужины?»';
+    bubble.insertBefore(hint, bubble.querySelector('.actions'));
+  }
+  const actions = btn.closest('.actions');
+  actions.querySelectorAll('button').forEach(button => {
+    if(button !== btn) button.remove();
+  });
+  btn.textContent = 'Ребёнок ответил';
+  btn.className = 'btn btn-primary';
+  btn.setAttribute('onclick', 'russianCheckPearlAnswered(this)');
+  scrollBottom();
+}
+
+function russianCheckPearlAnswered(btn){
+  const bubble = btn.closest('.bubble');
+  const oldActions = bubble.querySelector('.actions');
+  if(oldActions) oldActions.remove();
+  if(!bubble.querySelector('.example-result')){
+    bubble.insertAdjacentHTML('beforeend', `
+      <div class="example-result fade-in">
+        <div class="example-check">
+          <div class="example-check-icon">✓</div>
+          <div class="example-check-copy">
+            <strong>Проверочное слово — же́мчуг</strong>
+            <span>Под ударением слышится <b>е</b>. Слово жемчужинка здесь не подходит.</span>
+          </div>
+        </div>
+      </div>
+      <div class="write-task fade-in">
+        <div class="write-task-label">✎ Попросите ребёнка исправить</div>
+        <div class="write-task-text">
+          Зачеркнуть неверное проверочное слово и записать рядом верное с ударением.
+          <span class="write-task-example">жемчужина — же́мчуг</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="russianCheckIssueGray(this)">Дальше</button>
+      </div>`);
+  }
+  scrollBottom();
+}
+
+function russianCheckIssueGray(btn){
+  addUser('Исправили первое слово');
+  disableButtons(btn.closest('.bubble'));
+  addAssistant(`
+    <div class="stepbar"><span class="stepdot done"></span><span class="stepdot done"></span><span class="stepdot active"></span></div>
+    <div class="eyebrow">Шаг 3 из 3</div>
+    <h2>Разберите слово «сероватый»</h2>
+    <p class="note">Проверочное слово <b>серый</b> подобрано верно, но в задании нужно ещё поставить ударение — его нет.</p>
+    <div class="word">сероватый — серый</div>
+    <div class="say">
+      <div class="say-label">Спросите ребёнка</div>
+      <q>Проверочное слово серый подобрано верно. Что ещё нужно сделать в нём по заданию?</q>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="russianCheckGrayAnswered(this)">Ребёнок ответил</button>
+      <button class="btn btn-secondary" onclick="russianCheckGrayHint(this)">Нужна подсказка</button>
+    </div>
+  `);
+}
+
+function russianCheckGrayHint(btn){
+  const bubble = btn.closest('.bubble');
+  if(!bubble.querySelector('.hint')){
+    const hint = document.createElement('div');
+    hint.className = 'hint fade-in';
+    hint.innerHTML = '<b>Подсказка ребёнку</b>«Прочитай задание ещё раз: что нужно сделать в проверочных словах кроме записи?»';
+    bubble.insertBefore(hint, bubble.querySelector('.actions'));
+  }
+  const actions = btn.closest('.actions');
+  actions.querySelectorAll('button').forEach(button => {
+    if(button !== btn) button.remove();
+  });
+  btn.textContent = 'Ребёнок ответил';
+  btn.className = 'btn btn-primary';
+  btn.setAttribute('onclick', 'russianCheckGrayAnswered(this)');
+  scrollBottom();
+}
+
+function russianCheckGrayAnswered(btn){
+  const bubble = btn.closest('.bubble');
+  const oldActions = bubble.querySelector('.actions');
+  if(oldActions) oldActions.remove();
+  if(!bubble.querySelector('.example-result')){
+    bubble.insertAdjacentHTML('beforeend', `
+      <div class="example-result fade-in">
+        <div class="example-check">
+          <div class="example-check-icon">✓</div>
+          <div class="example-check-copy">
+            <strong>Нужно поставить ударение: се́рый</strong>
+            <span>Само проверочное слово верное — не хватало только ударения.</span>
+          </div>
+        </div>
+      </div>
+      <div class="write-task fade-in">
+        <div class="write-task-label">✎ Попросите ребёнка исправить</div>
+        <div class="write-task-text">
+          Поставить ударение в проверочном слове.
+          <span class="write-task-example">сероватый — се́рый</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="russianCheckDone(this)">Готово</button>
+      </div>`);
+  }
+  scrollBottom();
+}
+
+function russianCheckDone(btn){
+  addUser('Исправили второе слово');
+  disableButtons(btn.closest('.bubble'));
+  addAssistant(`
+    <div class="eyebrow">Проверка завершена</div>
+    <h2>Оба места разобрали</h2>
+    <p class="note">Ребёнок сам нашёл, что исправить: подобрал верное проверочное слово и поставил ударение.</p>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="backToIntent()">К выбору сценария</button>
+    </div>
+  `);
+}
+
 
 function loadExample(subject){
   currentSubject = subject;
@@ -3005,18 +3175,8 @@ function russianFinishWork(btn){
 function simulateRussianCheck(){
   currentMode = 'check';
   setTaskPhoto('russian');
-  addUser('Проверь эту работу');
-  document.getElementById('thread').insertAdjacentHTML('beforeend', getMobileTaskPhoto('russian', 'check'));
-  addAssistant(`
-    <div class="eyebrow">Проверка</div>
-    <h2>Проверьте ещё два слова</h2>
-    <p class="note">Остальные слова выглядят верно. По очереди остановитесь на каждом спорном месте: сначала задайте вопрос ребёнку — сверните ответ только после того, как он ответит.</p>
-    ${checkCard('жемчужина', '«В слове жемчужи́нка ударение на у — какая гласная в корне остаётся без ударения? Какое короткое слово поможет её услышать?»', 'жемчужина — же́мчуг (не жемчужинка)', 'неверное проверочное слово')}
-    ${checkCard('сероватый', '«Проверочное слово серый подобрано верно. Что ещё нужно сделать в нём по заданию?»', 'сероватый — се́рый', 'нет ударения')}
-    <div class="actions">
-      <button class="btn btn-primary" onclick="backToIntent()">К выбору сценария</button>
-    </div>
-  `);
+  document.getElementById('thread').insertAdjacentHTML('beforeend', getRussianCheckStart());
+  scrollBottom();
 }
 
 /* Математика */
